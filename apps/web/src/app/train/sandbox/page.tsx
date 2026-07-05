@@ -9,7 +9,7 @@ import { BarChart2, RefreshCw, ChevronLeft, ChevronRight, RotateCcw } from "luci
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function SandboxPage() {
-  const [chess] = useState(() => new Chess());
+  // Store FEN as the single source of truth — reconstruct Chess from it each time
   const [fen, setFen] = useState(INITIAL_FEN);
   const [history, setHistory] = useState<string[]>([INITIAL_FEN]);
   const [histIdx, setHistIdx] = useState(0);
@@ -19,39 +19,41 @@ export default function SandboxPage() {
   const [fenError, setFenError] = useState("");
 
   const handleMove = (from: string, to: string) => {
-    const result = chess.move({ from, to, promotion: "q" });
-    if (!result) return false;
-    playMoveSound(result.san);
-    const newFen = chess.fen();
-    const newHistory = [...history.slice(0, histIdx + 1), newFen];
-    setHistory(newHistory);
-    setHistIdx(newHistory.length - 1);
-    setFen(newFen);
-    setMoveLog((prev) => [...prev, result.san]);
-    return true;
+    try {
+      // Always reconstruct from current FEN so state is always clean
+      const chess = new Chess(fen);
+      const result = chess.move({ from, to, promotion: "q" });
+      if (!result) return false;
+      playMoveSound(result.san);
+      const newFen = chess.fen();
+      const newHistory = [...history.slice(0, histIdx + 1), newFen];
+      setHistory(newHistory);
+      setHistIdx(newHistory.length - 1);
+      setFen(newFen);
+      setMoveLog((prev) => [...prev, result.san]);
+      return true;
+    } catch {
+      // Invalid move — just ignore it silently
+      return false;
+    }
   };
 
   const goBack = () => {
     if (histIdx <= 0) return;
     const newIdx = histIdx - 1;
-    const targetFen = history[newIdx];
-    chess.load(targetFen);
     setHistIdx(newIdx);
-    setFen(targetFen);
+    setFen(history[newIdx]);
     setMoveLog((prev) => prev.slice(0, -1));
   };
 
   const goForward = () => {
     if (histIdx >= history.length - 1) return;
     const newIdx = histIdx + 1;
-    const targetFen = history[newIdx];
-    chess.load(targetFen);
     setHistIdx(newIdx);
-    setFen(targetFen);
+    setFen(history[newIdx]);
   };
 
   const reset = () => {
-    chess.reset();
     setFen(INITIAL_FEN);
     setHistory([INITIAL_FEN]);
     setHistIdx(0);
@@ -61,9 +63,9 @@ export default function SandboxPage() {
 
   const loadFen = () => {
     try {
-      const c = new Chess(customFen.trim());
-      chess.load(customFen.trim());
-      const newFen = chess.fen();
+      const trimmed = customFen.trim();
+      const c = new Chess(trimmed); // validate
+      const newFen = c.fen();
       setFen(newFen);
       setHistory([newFen]);
       setHistIdx(0);
@@ -75,10 +77,15 @@ export default function SandboxPage() {
   };
 
   const gameStatus = () => {
-    if (chess.isCheckmate()) return { text: "Checkmate!", color: "text-rose-400" };
-    if (chess.isDraw()) return { text: "Draw", color: "text-amber-400" };
-    if (chess.isCheck()) return { text: `${chess.turn() === "w" ? "White" : "Black"} is in Check!`, color: "text-orange-400" };
-    return { text: `${chess.turn() === "w" ? "White" : "Black"} to move`, color: "text-slate-400" };
+    try {
+      const chess = new Chess(fen);
+      if (chess.isCheckmate()) return { text: "Checkmate!", color: "text-rose-400" };
+      if (chess.isDraw()) return { text: "Draw", color: "text-amber-400" };
+      if (chess.isCheck()) return { text: `${chess.turn() === "w" ? "White" : "Black"} is in Check!`, color: "text-orange-400" };
+      return { text: `${chess.turn() === "w" ? "White" : "Black"} to move`, color: "text-slate-400" };
+    } catch {
+      return { text: "Ready", color: "text-slate-400" };
+    }
   };
   const status = gameStatus();
 

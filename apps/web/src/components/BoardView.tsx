@@ -74,18 +74,16 @@ export function BoardView({
 
   const handleSquareClick = (square: string) => {
     if (onSquareClick) onSquareClick(square);
-
-    // Click-to-move only works when pieces are draggable (i.e. interactive board)
     if (!onPieceDrop || !arePiecesDraggable) return;
 
     try {
       const chess = new Chess(fen || "start");
 
-      // If a square is already selected and the clicked square is a valid destination
+      // If a square is already selected and clicked square is a valid destination
       if (selectedSquare && moveOptionSquares[square] && square !== selectedSquare) {
         const pieceObj = chess.get(selectedSquare as any);
         const pieceStr = pieceObj ? pieceObj.type : "p";
-        const success = onPieceDrop(selectedSquare, square, pieceStr);
+        onPieceDrop(selectedSquare, square, pieceStr);
         setSelectedSquare(null);
         setMoveOptionSquares({});
         return;
@@ -112,7 +110,6 @@ export function BoardView({
               };
         });
 
-        // Highlight selected square
         newSquares[square] = {
           background: "rgba(20,184,120,0.25)",
           boxShadow: "inset 0 0 0 3px rgba(20,184,120,0.6)",
@@ -120,7 +117,6 @@ export function BoardView({
 
         setMoveOptionSquares(newSquares);
       } else {
-        // Deselect
         setSelectedSquare(null);
         setMoveOptionSquares({});
       }
