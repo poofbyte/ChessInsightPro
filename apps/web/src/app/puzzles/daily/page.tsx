@@ -29,12 +29,22 @@ export default function DailyPuzzlePage() {
       .then((r) => r.json())
       .then((data) => {
         setPuzzle(data);
-        const game = new Chess();
-        // Apply all moves before puzzle start from PGN
-        const pgn = data.game.pgn;
-        game.loadPgn(pgn);
-        // Walk back to puzzle position (last move of the PGN leads to puzzle FEN)
-        const c = new Chess(data.puzzle.initialPly ? data.puzzle.initialPly : data.puzzle.fen || data.fen);
+        const initialFen = data.puzzle.fen;
+        const c = new Chess(initialFen);
+        
+        // Play the opponent's first move (solution[0]) automatically
+        const solution = data.puzzle.solution;
+        if (solution && solution.length > 0) {
+          const firstMove = solution[0];
+          const from = firstMove.slice(0, 2);
+          const to = firstMove.slice(2, 4);
+          const promotion = firstMove.length > 4 ? firstMove[4] : undefined;
+          c.move({ from, to, promotion });
+          setMoveIdx(1);
+        } else {
+          setMoveIdx(0);
+        }
+        
         setChess(c);
         setLoading(false);
       })

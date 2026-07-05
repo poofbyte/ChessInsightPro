@@ -2,10 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { Target, Trophy, Timer, RotateCcw } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useChessStore, BOARD_THEMES } from "../../store";
-
-const Chessboard = dynamic(() => import("react-chessboard").then((m) => m.Chessboard), { ssr: false });
+import { BoardView } from "../../../components/BoardView";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
@@ -106,14 +104,12 @@ export default function CoordinatesPage() {
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-7">
               <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
-                <Chessboard
-                  position="start"
+                <BoardView
+                  fen="start"
                   arePiecesDraggable={false}
                   onSquareClick={handleSquareClick}
-                  boardOrientation={boardOrientation}
+                  orientation={boardOrientation}
                   showBoardNotation={showCoords}
-                  customDarkSquareStyle={{ backgroundColor: theme.dark }}
-                  customLightSquareStyle={{ backgroundColor: theme.light }}
                   customSquareStyles={{
                     [target]: { background: "rgba(20,180,120,0.4)", borderRadius: "4px" },
                   }}

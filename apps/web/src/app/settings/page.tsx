@@ -2,9 +2,7 @@
 
 import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
 import { Settings, Cpu, Palette, CheckCircle } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const Chessboard = dynamic(() => import("react-chessboard").then((m) => m.Chessboard), { ssr: false });
+import { BoardView } from "../../components/BoardView";
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
 
@@ -64,12 +62,10 @@ export default function SettingsPage() {
 
           {/* Live preview */}
           <div className="rounded-2xl overflow-hidden border border-slate-700 max-w-[240px] mx-auto shadow-xl">
-            <Chessboard
-              position={PREVIEW_FEN}
+            <BoardView
+              fen={PREVIEW_FEN}
               arePiecesDraggable={false}
               boardWidth={240}
-              customDarkSquareStyle={{ backgroundColor: BOARD_THEMES[store.boardTheme].dark }}
-              customLightSquareStyle={{ backgroundColor: BOARD_THEMES[store.boardTheme].light }}
             />
           </div>
 

@@ -1,5 +1,5 @@
 import { Game, GameEval, MoveEvaluation, LineEval, CoachStyle } from "@chessinsight/types";
-import { parsePgn, getEvaluateGameParams, getIsPieceSacrifice } from "@chessinsight/chess-core";
+import { parsePgn, getEvaluateGameParams, getIsPieceSacrifice, moveLineUciToSan } from "@chessinsight/chess-core";
 import { StockfishWasmProvider } from "@chessinsight/engine";
 import { getLineWinPercentage, fetchLichessCloudEval } from "@chessinsight/evaluator";
 import { calculatePositionalMetrics } from "@chessinsight/positional";
@@ -86,6 +86,16 @@ export const analyzeGame = async (
         alternativeBestWinChance,
       });
 
+      let bestAltMove = prevEval.bestMove;
+      if (bestAltMove) {
+        try {
+          const toSan = moveLineUciToSan(prevFen);
+          bestAltMove = toSan(bestAltMove);
+        } catch {
+          // Fallback to UCI if conversion fails
+        }
+      }
+
       // Construct facts for explanation generator
       facts = {
         moveType: classification,
@@ -94,7 +104,7 @@ export const analyzeGame = async (
         positionalFeatures: [],
         materialDelta: 0,
         initiativeChange: currentWinChance - lastWinChance > 10 ? "Gained" : currentWinChance - lastWinChance < -10 ? "Lost" : "Neutral",
-        bestAlternativeMove: prevEval.bestMove,
+        bestAlternativeMove: bestAltMove,
       };
     }
 

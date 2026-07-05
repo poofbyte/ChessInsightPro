@@ -13,7 +13,7 @@ const NAV_SECTIONS = [
   {
     section: null,
     items: [
-      { href: "/analysis", icon: History, label: "Game Reviewer" },
+      { href: "/", icon: History, label: "Game Reviewer" },
       { href: "/profile",  icon: Award,   label: "Player Analytics" },
     ],
   },
