@@ -3,27 +3,46 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Brain,
-  History,
-  Award,
-  BookOpen,
-  Settings,
-  Compass,
+  Brain, History, Award, BookOpen, Settings,
+  Puzzle, Zap, Swords, Grid3X3,
+  GraduationCap, Bot, Map, AlignLeft, ScrollText, Target,
+  BarChart2, Trophy, Dumbbell,
 } from "lucide-react";
 
-const NAV_ITEMS = [
+const NAV_SECTIONS = [
   {
     section: null,
     items: [
       { href: "/analysis", icon: History, label: "Game Reviewer" },
-      { href: "/profile", icon: Award, label: "Player Analytics" },
+      { href: "/profile",  icon: Award,   label: "Player Analytics" },
+    ],
+  },
+  {
+    section: "Puzzles",
+    items: [
+      { href: "/puzzles/daily",   icon: Puzzle,   label: "Daily Puzzle" },
+      { href: "/puzzles/rush",    icon: Zap,      label: "Puzzle Rush" },
+      { href: "/puzzles/battle",  icon: Swords,   label: "Puzzle Battle" },
+      { href: "/puzzles/custom",  icon: Grid3X3,  label: "Custom Puzzles" },
     ],
   },
   {
     section: "Learn",
     items: [
-      { href: "/learn/openings", icon: Compass, label: "Openings" },
-      { href: "/learn/lessons", icon: BookOpen, label: "Lessons" },
+      { href: "/learn/lessons",     icon: GraduationCap, label: "Lessons" },
+      { href: "/learn/play-coach",  icon: Bot,           label: "Play Coach" },
+      { href: "/learn/openings",    icon: Map,           label: "Openings" },
+      { href: "/learn/terms",       icon: AlignLeft,     label: "Chess Terms" },
+      { href: "/learn/rules",       icon: ScrollText,    label: "Rules" },
+      { href: "/learn/coordinates", icon: Target,        label: "Coordinates" },
+    ],
+  },
+  {
+    section: "Train",
+    items: [
+      { href: "/train/sandbox",   icon: BarChart2, label: "Analysis" },
+      { href: "/train/endgames",  icon: Trophy,    label: "Endgames" },
+      { href: "/train/practice",  icon: Dumbbell,  label: "Practice" },
     ],
   },
 ];
@@ -32,45 +51,43 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
   const pathname = usePathname();
 
   const isActive = (href: string) =>
-    href === "/analysis"
-      ? pathname === "/analysis" || pathname.startsWith("/analysis/")
-      : pathname === href || pathname.startsWith(href + "/");
+    pathname === href || (href !== "/" && pathname.startsWith(href));
 
   return (
-    <aside className="w-64 shrink-0 border-r border-slate-800/80 bg-[#0d1326] flex flex-col h-full">
+    <aside className="w-60 shrink-0 border-r border-slate-800/80 bg-[#0d1326] flex flex-col h-full">
       {/* Logo */}
-      <div className="p-6 flex items-center gap-3 border-b border-slate-800/60">
+      <Link href="/" className="p-5 flex items-center gap-3 border-b border-slate-800/60 hover:bg-slate-800/20 transition">
         <div className="p-2 rounded-lg bg-teal-500/20 text-teal-400">
-          <Brain className="w-6 h-6 animate-pulse" />
+          <Brain className="w-5 h-5 animate-pulse" />
         </div>
         <div>
-          <h1 className="font-bold tracking-tight text-lg">ChessInsight</h1>
-          <span className="text-xs text-teal-400 font-semibold uppercase tracking-wider">Pro v2.0</span>
+          <h1 className="font-bold tracking-tight text-base leading-tight">ChessInsight</h1>
+          <span className="text-[10px] text-teal-400 font-semibold uppercase tracking-wider">Pro v2.0</span>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-6">
-        {NAV_ITEMS.map((group, gi) => (
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-5">
+        {NAV_SECTIONS.map((group, gi) => (
           <div key={gi}>
             {group.section && (
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-4 mb-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
                 {group.section}
               </p>
             )}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {group.items.map(({ href, icon: Icon, label }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm ${
                     isActive(href)
-                      ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/10 text-teal-300 border-l-4 border-teal-500 font-medium"
-                      : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
+                      ? "bg-teal-500/15 text-teal-300 border-l-[3px] border-teal-500 pl-[9px] font-semibold"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
                   }`}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  <span className="text-sm">{label}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{label}</span>
                 </Link>
               ))}
             </div>
@@ -80,27 +97,27 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
 
       {/* ELO Badge */}
       {estimatedElo !== undefined && (
-        <div className="p-4 m-4 rounded-2xl bg-slate-900/60 border border-teal-500/20 text-center">
-          <span className="text-xs text-teal-400 font-bold uppercase tracking-widest">Estimated ELO</span>
-          <div className="text-3xl font-black mt-1 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+        <div className="mx-3 mb-2 p-3 rounded-2xl bg-slate-900/60 border border-teal-500/20 text-center">
+          <span className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
+          <div className="text-2xl font-black mt-0.5 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
             {estimatedElo}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Games analyzed: {gamesPlayed ?? 0}</div>
+          <div className="text-[10px] text-slate-500">{gamesPlayed ?? 0} games</div>
         </div>
       )}
 
-      {/* Settings link */}
-      <div className="px-4 pb-4">
+      {/* Settings */}
+      <div className="px-3 pb-4">
         <Link
           href="/settings"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all text-sm ${
             pathname === "/settings"
-              ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/10 text-teal-300 border-l-4 border-teal-500 font-medium"
-              : "text-slate-500 hover:bg-slate-800/40 hover:text-white"
+              ? "bg-teal-500/15 text-teal-300 border-l-[3px] border-teal-500 pl-[9px] font-semibold"
+              : "text-slate-500 hover:bg-slate-800/50 hover:text-slate-200"
           }`}
         >
-          <Settings className="w-5 h-5 shrink-0" />
-          <span className="text-sm">Settings</span>
+          <Settings className="w-4 h-4 shrink-0" />
+          <span>Settings</span>
         </Link>
       </div>
     </aside>

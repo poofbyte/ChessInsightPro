@@ -1,0 +1,173 @@
+"use client";
+
+import { useState } from "react";
+import { BoardView } from "../../../components/BoardView";
+import { Chess } from "@chessinsight/chess-core";
+import { playMoveSound } from "../../store";
+import { PUZZLE_DB, PUZZLE_THEMES, LocalPuzzle, getPuzzlesByTheme } from "../../../lib/puzzle-db";
+import { Grid3X3, Filter, ChevronRight, CheckCircle, RotateCcw } from "lucide-react";
+
+export default function CustomPuzzlesPage() {
+  const [selectedTheme, setSelectedTheme] = useState("All");
+  const [ratingFilter, setRatingFilter] = useState<"all" | "easy" | "medium" | "hard">("all");
+  const [activePuzzle, setActivePuzzle] = useState<LocalPuzzle | null>(null);
+  const [chess, setChess] = useState<Chess | null>(null);
+  const [status, setStatus] = useState<"idle" | "correct" | "wrong" | "done">("idle");
+
+  const getFilteredPuzzles = () => {
+    let pool = getPuzzlesByTheme(selectedTheme);
+    if (ratingFilter === "easy")  pool = pool.filter((p) => p.rating < 900);
+    if (ratingFilter === "medium") pool = pool.filter((p) => p.rating >= 900 && p.rating < 1300);
+    if (ratingFilter === "hard")   pool = pool.filter((p) => p.rating >= 1300);
+    return pool;
+  };
+
+  const launchPuzzle = (p: LocalPuzzle) => {
+    setActivePuzzle(p);
+    setChess(new Chess(p.fen));
+    setStatus("idle");
+  };
+
+  const handleMove = (from: string, to: string) => {
+    if (!activePuzzle || !chess || status === "done") return false;
+    const expected = activePuzzle.solution[0];
+    const move = `${from}${to}`;
+    if (move === expected || move + "q" === expected) {
+      const result = chess.move({ from, to, promotion: "q" });
+      if (!result) return false;
+      playMoveSound(result.san);
+      setStatus("done");
+      return true;
+    } else {
+      setStatus("wrong");
+      const audio = new Audio("/sounds/illegal-move.webm");
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+      setTimeout(() => setStatus("idle"), 1000);
+      return false;
+    }
+  };
+
+  const filtered = getFilteredPuzzles();
+
+  return (
+    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 rounded-2xl bg-purple-500/15 border border-purple-500/20">
+            <Grid3X3 className="w-6 h-6 text-purple-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black">Custom Puzzles</h1>
+            <p className="text-slate-400 text-sm">Filter by theme and rating. Build your tactical repertoire.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-12 gap-8">
+          {/* Filters + list */}
+          <div className="col-span-5 flex flex-col gap-4">
+            {/* Theme filter */}
+            <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+              <div className="flex items-center gap-2 text-xs font-black uppercase text-purple-400 tracking-widest">
+                <Filter className="w-4 h-4" /> Theme
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {PUZZLE_THEMES.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setSelectedTheme(t)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedTheme === t ? "bg-purple-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Rating filter */}
+            <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+              <div className="text-xs font-black uppercase text-purple-400 tracking-widest">Difficulty</div>
+              <div className="grid grid-cols-4 gap-1">
+                {(["all", "easy", "medium", "hard"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRatingFilter(r)}
+                    className={`py-2 rounded-xl text-xs font-bold capitalize transition ${ratingFilter === r ? "bg-purple-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Puzzle list */}
+            <div className="flex-1 space-y-2 max-h-[400px] overflow-y-auto">
+              {filtered.length === 0 ? (
+                <p className="text-center text-slate-500 italic text-sm py-8">No puzzles match your filter.</p>
+              ) : (
+                filtered.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => launchPuzzle(p)}
+                    className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${activePuzzle?.id === p.id ? "border-purple-500 bg-purple-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}
+                  >
+                    <div>
+                      <span className="text-sm font-bold text-white">{p.theme}</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">{p.hint}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RatingBadge rating={p.rating} />
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Board */}
+          <div className="col-span-7 flex flex-col gap-4">
+            {activePuzzle && chess ? (
+              <>
+                <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${status === "correct" || status === "done" ? "border-emerald-500" : status === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
+                  <BoardView fen={chess.fen()} onPieceDrop={handleMove} arePiecesDraggable={status !== "done"} />
+                </div>
+                <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-purple-400 uppercase tracking-widest">{activePuzzle.theme}</span>
+                    <RatingBadge rating={activePuzzle.rating} />
+                  </div>
+                  <p className="text-sm text-slate-300">{activePuzzle.hint}</p>
+                  {status === "done" && (
+                    <>
+                      <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                        <CheckCircle className="w-4 h-4" /> Solved! 
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">{activePuzzle.explanation}</p>
+                    </>
+                  )}
+                  {status === "wrong" && <p className="text-rose-400 text-sm font-semibold">Wrong move. Try again!</p>}
+                  <button onClick={() => { setChess(new Chess(activePuzzle.fen)); setStatus("idle"); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition mt-2">
+                    <RotateCcw className="w-3 h-3" /> Reset puzzle
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="aspect-square rounded-2xl border border-dashed border-slate-700 flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <Grid3X3 className="w-12 h-12 text-slate-700 mx-auto" />
+                  <p className="text-slate-500 text-sm">Select a puzzle from the list</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RatingBadge({ rating }: { rating: number }) {
+  const color = rating < 900 ? "bg-emerald-500/20 text-emerald-400" : rating < 1300 ? "bg-amber-500/20 text-amber-400" : "bg-rose-500/20 text-rose-400";
+  return <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${color}`}>{rating}</span>;
+}

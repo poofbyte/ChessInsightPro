@@ -6,11 +6,11 @@ import {
   Game, Move, CoachStyle, PlayerProfile,
 } from "@chessinsight/types";
 import { parsePgn, Chess } from "@chessinsight/chess-core";
-import { useChessStore, playMoveSound } from "../store";
+import { useChessStore, playMoveSound, BOARD_THEMES } from "../store";
 import { analyzeGame } from "../pipeline";
 import { db } from "../db";
 import {
-  estimateElo, calculateGameAccuracy, initializeProfile, updateProfileWithGame,
+  calculateGameAccuracy, initializeProfile, updateProfileWithGame,
 } from "@chessinsight/player-profile";
 import { WeaknessDetector } from "@chessinsight/weakness-detector";
 import { BlunderPuzzleGenerator } from "@chessinsight/puzzles";
@@ -20,10 +20,10 @@ import { getLineWinPercentage } from "@chessinsight/evaluator";
 import { resolvePgnFromUrl } from "../../lib/pgn-resolver";
 import {
   Upload, RefreshCw, ChevronLeft, ChevronRight, Compass,
-  History, Brain, AlertTriangle, Sparkles, BookOpen,
+  Brain,
 } from "lucide-react";
+import { BoardView } from "../../components/BoardView";
 
-// SSR-safe dynamic imports
 const Chessboard = dynamic(() => import("react-chessboard").then((m) => m.Chessboard), { ssr: false });
 const GameLineChart = dynamic(() => import("../../components/GameLineChart"), { ssr: false });
 
