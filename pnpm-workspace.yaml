@@ -1,0 +1,10 @@
+packages:
+  - 'apps/*'
+  - 'packages/core/*'
+  - 'packages/analysis/*'
+  - 'packages/player/*'
+  - 'packages/training/*'
+  - 'packages/visualization/*'
+  - 'packages/shared/*'
+allowBuilds:
+  sharp: true
