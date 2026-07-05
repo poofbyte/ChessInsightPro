@@ -12,7 +12,7 @@ export const analyzeGame = async (
   game: Game,
   onProgress: (progress: number) => void
 ): Promise<GameEval> => {
-  const engine = new StockfishWasmProvider("/engines/stockfish-17/stockfish-17-lite.js");
+  const engine = new StockfishWasmProvider("/engines/stockfish-17/stockfish-17-lite-single.js");
   await engine.initialize();
 
   const { fens, uciMoves } = getEvaluateGameParams(game.pgn);
