@@ -93,9 +93,17 @@ const resolvePgnFromUrl = async (input: string): Promise<string> => {
     
     let archiveRes;
     try {
-      archiveRes = await fetch(corsProxyUrl(archiveUrl));
+      // Try direct fetch first since api.chess.com supports CORS natively and avoids proxy payload limits (e.g. 413)
+      archiveRes = await fetch(archiveUrl);
+      if (!archiveRes.ok) {
+        throw new Error(`Direct fetch returned status ${archiveRes.status}`);
+      }
     } catch {
-      archiveRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(archiveUrl)}`);
+      try {
+        archiveRes = await fetch(corsProxyUrl(archiveUrl));
+      } catch {
+        archiveRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(archiveUrl)}`);
+      }
     }
 
     if (!archiveRes.ok) {
