@@ -11,3 +11,5 @@ pnpm-debug.log*
 # Assembled Stockfish WASM files
 apps/web/public/engines/stockfish-17/stockfish-17.wasm
 apps/web/public/engines/stockfish-17/stockfish-17-single.wasm
+apps/web/public/engines/stockfish-18/stockfish-18.wasm
+apps/web/public/engines/stockfish-18/stockfish-18-single.wasm

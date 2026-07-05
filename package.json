@@ -11,6 +11,7 @@
     "postinstall": "node scripts/setup-engines.js"
   },
   "devDependencies": {
+    "stockfish": "18.0.8",
     "typescript": "^5.7.2"
   }
 }

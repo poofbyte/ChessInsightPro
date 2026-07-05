@@ -219,7 +219,7 @@ export default function Home() {
       };
 
       // Run orchestrator pipeline
-      const analysisResult = await analyzeGame(newGame, (progress) => {
+      const analysisResult = await analyzeGame(newGame, store.engineVersion, (progress) => {
         store.setAnalysisProgress(progress);
       });
 
@@ -903,9 +903,37 @@ export default function Home() {
             </div>
 
             <h3 className="text-xl font-bold mb-2">Import Chess Game PGN</h3>
-            <p className="text-slate-400 text-xs leading-relaxed mb-6">
-              Paste the PGN text containing the headers and moves list to trigger Stockfish 17 review pipeline.
+            <p className="text-slate-400 text-xs leading-relaxed mb-4">
+              Paste the PGN text containing the headers and moves list to trigger the Stockfish review pipeline.
             </p>
+
+            <div className="flex items-center justify-between mb-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3">
+              <span className="text-xs font-bold text-slate-300">Engine Version</span>
+              <div className="flex gap-1 bg-[#0a0f1d] p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => store.setEngineVersion("17")}
+                  className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${
+                    store.engineVersion === "17"
+                      ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Stockfish 17
+                </button>
+                <button
+                  type="button"
+                  onClick={() => store.setEngineVersion("18")}
+                  className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${
+                    store.engineVersion === "18"
+                      ? "bg-teal-500 text-black shadow-md shadow-teal-500/20"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Stockfish 18
+                </button>
+              </div>
+            </div>
 
             <textarea
               value={pgnInput}
@@ -919,7 +947,7 @@ export default function Home() {
             {store.isAnalyzing ? (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold text-teal-400">
-                  <span>Stockfish 17 is evaluating positions...</span>
+                  <span>Stockfish {store.engineVersion} is evaluating positions...</span>
                   <span>{store.analysisProgress}%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">

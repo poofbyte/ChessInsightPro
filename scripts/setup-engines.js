@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const ENGINES_DIR = path.join(__dirname, '../apps/web/public/engines/stockfish-17');
+const ENGINES_BASE = path.join(__dirname, '../apps/web/public/engines');
 
-function joinParts(baseName, partCount) {
-  const targetFile = path.join(ENGINES_DIR, `${baseName}.wasm`);
+function joinParts(engineDir, baseName, partCount) {
+  const targetFile = path.join(engineDir, `${baseName}.wasm`);
   
   if (fs.existsSync(targetFile)) {
     console.log(`[Engine Setup] ${baseName}.wasm already assembled.`);
@@ -16,7 +16,7 @@ function joinParts(baseName, partCount) {
   try {
     const buffers = [];
     for (let i = 0; i < partCount; i++) {
-      const partPath = path.join(ENGINES_DIR, `${baseName}-part-${i}.wasm`);
+      const partPath = path.join(engineDir, `${baseName}-part-${i}.wasm`);
       if (!fs.existsSync(partPath)) {
         throw new Error(`Missing part file: ${partPath}`);
       }
@@ -30,9 +30,14 @@ function joinParts(baseName, partCount) {
   }
 }
 
-if (fs.existsSync(ENGINES_DIR)) {
-  joinParts('stockfish-17', 6);
-  joinParts('stockfish-17-single', 6);
-} else {
-  console.log(`[Engine Setup] Engines directory not found at ${ENGINES_DIR}`);
+const sf17Dir = path.join(ENGINES_BASE, 'stockfish-17');
+if (fs.existsSync(sf17Dir)) {
+  joinParts(sf17Dir, 'stockfish-17', 6);
+  joinParts(sf17Dir, 'stockfish-17-single', 6);
+}
+
+const sf18Dir = path.join(ENGINES_BASE, 'stockfish-18');
+if (fs.existsSync(sf18Dir)) {
+  joinParts(sf18Dir, 'stockfish-18', 10);
+  joinParts(sf18Dir, 'stockfish-18-single', 10);
 }

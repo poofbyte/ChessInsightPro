@@ -11,6 +11,7 @@ interface ChessStore {
   coachStyle: CoachStyle;
   activeTab: number;
   boardOrientation: "white" | "black";
+  engineVersion: "17" | "18";
   
   setGame: (game: Game) => void;
   setCurrentMoveIndex: (index: number) => void;
@@ -20,6 +21,7 @@ interface ChessStore {
   setCoachStyle: (style: CoachStyle) => void;
   setActiveTab: (tab: number) => void;
   toggleBoardOrientation: () => void;
+  setEngineVersion: (version: "17" | "18") => void;
   reset: () => void;
 }
 
@@ -63,6 +65,7 @@ export const useChessStore = create<ChessStore>((set) => ({
   coachStyle: CoachStyle.Friendly,
   activeTab: 0,
   boardOrientation: "white",
+  engineVersion: "18",
 
   setGame: (game) => set({
     game,
@@ -97,6 +100,7 @@ export const useChessStore = create<ChessStore>((set) => ({
   toggleBoardOrientation: () => set((state) => ({
     boardOrientation: state.boardOrientation === "white" ? "black" : "white"
   })),
+  setEngineVersion: (engineVersion) => set({ engineVersion }),
 
   reset: () => set({
     game: null,

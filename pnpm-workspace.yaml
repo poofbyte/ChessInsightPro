@@ -8,3 +8,4 @@ packages:
   - 'packages/shared/*'
 allowBuilds:
   sharp: true
+  stockfish: true

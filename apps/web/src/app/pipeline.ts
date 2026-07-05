@@ -10,9 +10,13 @@ import { calculateGameAccuracy } from "@chessinsight/player-profile";
 
 export const analyzeGame = async (
   game: Game,
+  engineVersion: "17" | "18",
   onProgress: (progress: number) => void
 ): Promise<GameEval> => {
-  const engine = new StockfishWasmProvider("/engines/stockfish-17/stockfish-17-lite-single.js");
+  const enginePath = engineVersion === "18"
+    ? "/engines/stockfish-18/stockfish-18-lite-single.js"
+    : "/engines/stockfish-17/stockfish-17-lite-single.js";
+  const engine = new StockfishWasmProvider(enginePath);
   await engine.initialize();
 
   const { fens, uciMoves } = getEvaluateGameParams(game.pgn);
