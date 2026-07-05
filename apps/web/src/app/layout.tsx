@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased selection:bg-teal-500 selection:text-black bg-[#0a0f1d] text-white">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className="antialiased selection:bg-teal-500 selection:text-black bg-[#0a0f1d] text-white" suppressHydrationWarning>
         <SidebarShell>{children}</SidebarShell>
       </body>
     </html>
