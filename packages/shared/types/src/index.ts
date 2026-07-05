@@ -4,3 +4,4 @@ export * from "./player";
 export * from "./coach";
 export * from "./engine";
 export * from "./training";
+export * from "./opening";

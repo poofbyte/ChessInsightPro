@@ -12,3 +12,9 @@ export interface ConceptProgress {
   nextReviewDate: string; // ISO String
   correctStreak: number;
 }
+
+export interface PuzzleProvider {
+  getDailyPuzzle(): Promise<Puzzle | null>;
+  getCustomPuzzle(motif: string, difficulty: string): Promise<Puzzle | null>;
+  validatePuzzleMove(puzzleId: string, uciMove: string, moveIndex: number): boolean;
+}
