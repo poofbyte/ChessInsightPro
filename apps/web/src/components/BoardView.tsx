@@ -18,6 +18,7 @@ interface Props {
   onSquareClick?: (square: string) => void;
   showBoardNotation?: boolean;
   customSquareStyles?: Record<string, React.CSSProperties>;
+  customArrows?: any[];
 }
 
 export function BoardView({
@@ -29,6 +30,7 @@ export function BoardView({
   onSquareClick,
   showBoardNotation = true,
   customSquareStyles,
+  customArrows,
 }: Props) {
   const { boardTheme } = useChessStore();
   const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.teal;
@@ -76,6 +78,7 @@ export function BoardView({
           onSquareClick={onSquareClick}
           showBoardNotation={showBoardNotation}
           customSquareStyles={customSquareStyles}
+          customArrows={customArrows}
           customDarkSquareStyle={{ backgroundColor: theme.dark }}
           customLightSquareStyle={{ backgroundColor: theme.light }}
         />

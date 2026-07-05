@@ -21,6 +21,11 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
       }
     };
     loadProfile();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("profile-updated", loadProfile);
+      return () => window.removeEventListener("profile-updated", loadProfile);
+    }
   }, []);
 
   return (

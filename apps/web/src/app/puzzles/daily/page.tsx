@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
 import { Puzzle, Star, ChevronRight, Loader2, Share2 } from "lucide-react";
+import { playMoveSound } from "../../store";
+import { db } from "../../db";
+import { initializeProfile } from "@chessinsight/player-profile";
 
 interface DailyPuzzle {
   id: string;
@@ -27,11 +29,82 @@ export default function DailyPuzzlePage() {
   const [totalHintsUsed, setTotalHintsUsed] = useState(0);
   const [currentMoveHintLevel, setCurrentMoveHintLevel] = useState(0);
   const [hintText, setHintText] = useState("");
+  const [customSquareStyles, setCustomSquareStyles] = useState<Record<string, React.CSSProperties>>({});
+  const [customArrows, setCustomArrows] = useState<any[]>([]);
+  const [mistakesCount, setMistakesCount] = useState(0);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [eloUpdateText, setEloUpdateText] = useState("");
+
+  // Load profile on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      let prof = await db.profiles.get("default-user");
+      if (!prof) {
+        prof = initializeProfile("default-user");
+        await db.profiles.put(prof);
+      }
+      setProfile(prof);
+    };
+    loadProfile();
+  }, []);
 
   useEffect(() => {
     setCurrentMoveHintLevel(0);
     setHintText("");
+    setCustomSquareStyles({});
+    setCustomArrows([]);
   }, [moveIdx]);
+
+  const updateEloForPuzzle = async (hintsUsed: number, mistakes: number, isSolved: boolean) => {
+    if (!profile) return;
+    
+    let eloChange = 0;
+    let baseReward = 0;
+    let hintPenalty = 0;
+    const mistakePenalty = mistakes * 2;
+
+    if (isSolved) {
+      baseReward = 10;
+      if (hintsUsed === 0) hintPenalty = 0;
+      else if (hintsUsed === 1) hintPenalty = 8;
+      else if (hintsUsed === 2) hintPenalty = 10;
+      else hintPenalty = 15;
+      
+      eloChange = baseReward - hintPenalty - mistakePenalty;
+    } else {
+      eloChange = -10;
+    }
+
+    const currentElo = profile.estimatedElo || 1200;
+    const newElo = Math.max(100, currentElo + eloChange);
+    const updatedProfile = { ...profile, estimatedElo: newElo };
+    await db.profiles.put(updatedProfile);
+    setProfile(updatedProfile);
+
+    // Prepare explanation text
+    if (isSolved) {
+      setEloUpdateText(
+        `Elo Calculation breakdown:\n` +
+        `• Base Solve Reward: +${baseReward} ELO\n` +
+        `• Hint Penalty (${hintsUsed} used): -${hintPenalty} ELO\n` +
+        `• Mistakes Penalty (${mistakes} mistakes): -${mistakePenalty} ELO\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `• Net ELO Change: ${eloChange >= 0 ? "+" : ""}${eloChange} (New: ${newElo} ELO)`
+      );
+    } else {
+      setEloUpdateText(
+        `Elo Calculation breakdown:\n` +
+        `• Failed Puzzle Penalty: -10 ELO\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `• Net ELO Change: -10 (New: ${newElo} ELO)`
+      );
+    }
+    
+    // Dispatch custom event to notify sidebar shell
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("profile-updated"));
+    }
+  };
 
   const handleRequestHint = () => {
     if (!puzzle || !chess || totalHintsUsed >= 3) return;
@@ -63,8 +136,16 @@ export default function DailyPuzzlePage() {
       setHintText(`Try moving your ${pieceName}.`);
     } else if (nextLevel === 2) {
       setHintText(`The piece is located on the ${from} square.`);
+      setCustomSquareStyles({
+        [from]: { background: "rgba(251, 191, 36, 0.5)", borderRadius: "40%" },
+      });
     } else {
       setHintText(`Play the move from ${from} to ${to}.`);
+      setCustomSquareStyles({
+        [from]: { background: "rgba(251, 191, 36, 0.3)", borderRadius: "40%" },
+        [to]: { background: "rgba(16, 185, 129, 0.4)", borderRadius: "40%" },
+      });
+      setCustomArrows([[from, to, "rgb(251, 191, 36)"]]);
     }
   };
 
@@ -113,6 +194,7 @@ export default function DailyPuzzlePage() {
       if (next >= solution.length) {
         setStatus("done");
         setSolved(true);
+        updateEloForPuzzle(totalHintsUsed, mistakesCount, true);
       } else {
         setStatus("correct");
         // Make opponent's reply after short delay
@@ -129,6 +211,7 @@ export default function DailyPuzzlePage() {
       return true;
     } else {
       setStatus("wrong");
+      setMistakesCount((prev) => prev + 1);
       setTimeout(() => setStatus("idle"), 1000);
       const audio = new Audio("/sounds/illegal-move.webm");
       audio.volume = 0.6;
@@ -170,6 +253,8 @@ export default function DailyPuzzlePage() {
                   fen={chess.fen()}
                   onPieceDrop={handleMove}
                   arePiecesDraggable={status !== "done"}
+                  customSquareStyles={customSquareStyles}
+                  customArrows={customArrows}
                 />
               </div>
             </div>
@@ -210,20 +295,51 @@ export default function DailyPuzzlePage() {
                 )}
 
                 {!solved && status !== "done" && (
-                  <button
-                    onClick={handleRequestHint}
-                    disabled={totalHintsUsed >= 3}
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
-                  >
-                    {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
-                  </button>
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleRequestHint}
+                      disabled={totalHintsUsed >= 3}
+                      className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
+                    >
+                      {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
+                    </button>
+                    
+                    <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1.5">
+                      <span className="font-bold text-slate-300 block mb-1">💡 Rating Rules:</span>
+                      <div className="flex justify-between">
+                        <span>• Perfect solve (0 hints):</span>
+                        <span className="text-emerald-400 font-bold">+10 ELO</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>• 1 Hint used:</span>
+                        <span className="text-emerald-500 font-bold">+2 ELO</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>• 2 Hints used:</span>
+                        <span className="text-amber-500 font-bold">+0 ELO</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>• 3 Hints used:</span>
+                        <span className="text-rose-400 font-bold">-5 ELO</span>
+                      </div>
+                      <div className="flex justify-between border-t border-slate-900 pt-1 mt-1 text-[10px] text-slate-500">
+                        <span>• Mistake Penalty:</span>
+                        <span className="text-rose-500 font-semibold">-2 ELO each</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
               {solved && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-3">
-                  <p className="text-emerald-400 font-black text-lg">🎉 Puzzle Solved!</p>
-                  <p className="text-slate-400 text-sm">Come back tomorrow for a new challenge.</p>
+                <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-4">
+                  <p className="text-emerald-400 font-black text-lg text-center">🎉 Puzzle Solved!</p>
+                  {eloUpdateText && (
+                    <pre className="p-3 bg-slate-950 border border-slate-900 rounded-xl text-left text-xs text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
+                      {eloUpdateText}
+                    </pre>
+                  )}
+                  <p className="text-slate-400 text-sm text-center">Come back tomorrow for a new challenge.</p>
                 </div>
               )}
             </div>

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
+import { db } from "../../db";
+import { initializeProfile } from "@chessinsight/player-profile";
 import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Swords, Shield, Trophy, Zap } from "lucide-react";
 
@@ -21,10 +23,39 @@ export default function PuzzleBattlePage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const botIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [totalHintsUsed, setTotalHintsUsed] = useState(0);
+  const [currentMoveHintLevel, setCurrentMoveHintLevel] = useState(0);
+  const [hintText, setHintText] = useState("");
+  const [customSquareStyles, setCustomSquareStyles] = useState<Record<string, React.CSSProperties>>({});
+  const [customArrows, setCustomArrows] = useState<any[]>([]);
+  const [sessionEloChange, setSessionEloChange] = useState(0);
+  const [eloLog, setEloLog] = useState<string[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [mistakesCount, setMistakesCount] = useState(0);
+
+  // Load profile on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      let prof = await db.profiles.get("default-user");
+      if (!prof) {
+        prof = initializeProfile("default-user");
+        await db.profiles.put(prof);
+      }
+      setProfile(prof);
+    };
+    loadProfile();
+  }, []);
+
   const loadPuzzle = useCallback(() => {
     const p = getRandomPuzzle();
     setPuzzle(p);
     setChess(new Chess(p.fen));
+    setTotalHintsUsed(0);
+    setCurrentMoveHintLevel(0);
+    setHintText("");
+    setCustomSquareStyles({});
+    setCustomArrows([]);
+    setMistakesCount(0);
   }, []);
 
   // Bot solve speed based on rating (ms per puzzle)
@@ -34,6 +65,8 @@ export default function PuzzleBattlePage() {
     setUserScore(0);
     setBotScore(0);
     setTimeLeft(BATTLE_DURATION);
+    setSessionEloChange(0);
+    setEloLog([]);
     setPhase("playing");
     loadPuzzle();
 
@@ -56,10 +89,74 @@ export default function PuzzleBattlePage() {
     if (botIntervalRef.current) clearInterval(botIntervalRef.current);
   }, []);
 
+  useEffect(() => {
+    if (phase === "done" && sessionEloChange !== 0) {
+      const saveProfileElo = async () => {
+        let prof = await db.profiles.get("default-user");
+        if (!prof) {
+          prof = initializeProfile("default-user");
+        }
+        const currentElo = prof.estimatedElo || 1200;
+        const newElo = Math.max(100, currentElo + sessionEloChange);
+        const updatedProfile = { ...prof, estimatedElo: newElo };
+        await db.profiles.put(updatedProfile);
+        setProfile(updatedProfile);
+        
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("profile-updated"));
+        }
+      };
+      saveProfileElo();
+    }
+  }, [phase]);
+
   useEffect(() => () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (botIntervalRef.current) clearInterval(botIntervalRef.current);
   }, []);
+
+  const handleRequestHint = () => {
+    if (!puzzle || !chess || totalHintsUsed >= 3 || phase !== "playing") return;
+
+    const solution = puzzle.solution;
+    const expected = solution[0];
+    if (!expected) return;
+
+    const from = expected.slice(0, 2);
+    const to = expected.slice(2, 4);
+    const piece = chess.get(from as any);
+    
+    const PIECE_NAMES: Record<string, string> = {
+      p: "Pawn",
+      n: "Knight",
+      b: "Bishop",
+      r: "Rook",
+      q: "Queen",
+      k: "King",
+    };
+
+    const nextLevel = currentMoveHintLevel + 1;
+    setCurrentMoveHintLevel(nextLevel);
+    setTotalHintsUsed((prev) => prev + 1);
+
+    if (nextLevel === 1) {
+      const typeKey = piece?.type;
+      const pieceName = typeKey ? PIECE_NAMES[typeKey] : "piece";
+      setHintText(`Try moving your ${pieceName}.`);
+    } else if (nextLevel === 2) {
+      setHintText(`The piece is located on the ${from} square.`);
+      setCustomSquareStyles({
+        [from]: { background: "rgba(251, 191, 36, 0.5)", borderRadius: "40%" },
+      });
+    } else {
+      setHintText(`Play the move from ${from} to ${to}.`);
+      setCustomSquareStyles({
+        [from]: { background: "rgba(251, 191, 36, 0.3)", borderRadius: "40%" },
+        [to]: { background: "rgba(16, 185, 129, 0.4)", borderRadius: "40%" },
+      });
+      setCustomArrows([[from, to, "rgb(251, 191, 36)"]]);
+    }
+  };
 
   const handleMove = (from: string, to: string) => {
     if (!puzzle || !chess || phase !== "playing") return false;
@@ -72,14 +169,35 @@ export default function PuzzleBattlePage() {
       playMoveSound(result.san);
       setFlash("correct");
       setUserScore((s) => s + 1);
+
+      let change = 0;
+      if (totalHintsUsed === 0) change = 10;
+      else if (totalHintsUsed === 1) change = 2;
+      else if (totalHintsUsed === 2) change = 0;
+      else change = -5;
+      
+      setSessionEloChange((s) => s + change);
+      setEloLog((prev) => [
+        ...prev,
+        `✓ Puzzle #${userScore + mistakesCount + 1} Solved (${totalHintsUsed} hints): ${change >= 0 ? "+" : ""}${change} ELO`
+      ]);
+
       setTimeout(() => { setFlash(null); loadPuzzle(); }, 500);
       return true;
     } else {
       setFlash("wrong");
+      setMistakesCount((prev) => prev + 1);
+      
+      setSessionEloChange((s) => s - 10);
+      setEloLog((prev) => [
+        ...prev,
+        `✗ Puzzle #${userScore + mistakesCount + 1} Failed (Mistake): -10 ELO`
+      ]);
+
       const audio = new Audio("/sounds/illegal-move.webm");
       audio.volume = 0.6;
       audio.play().catch(() => {});
-      setTimeout(() => setFlash(null), 600);
+      setTimeout(() => { setFlash(null); loadPuzzle(); }, 600);
       return false;
     }
   };
@@ -137,7 +255,12 @@ export default function PuzzleBattlePage() {
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-7">
               <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
-                <BoardView fen={chess.fen()} onPieceDrop={handleMove} />
+                <BoardView
+                  fen={chess.fen()}
+                  onPieceDrop={handleMove}
+                  customSquareStyles={customSquareStyles}
+                  customArrows={customArrows}
+                />
               </div>
             </div>
             <div className="col-span-5 flex flex-col gap-4">
@@ -158,17 +281,90 @@ export default function PuzzleBattlePage() {
                 <p className="font-bold text-white mt-1">{puzzle.theme}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{puzzle.hint}</p>
               </div>
+
+              {/* Hint Card */}
+              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
+                  <span className="text-xs text-slate-500 font-bold">Used: {totalHintsUsed} / 3</span>
+                </div>
+                
+                {hintText && (
+                  <p className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 leading-relaxed font-semibold">
+                    {hintText}
+                  </p>
+                )}
+
+                <div className="space-y-3">
+                  <button
+                    onClick={handleRequestHint}
+                    disabled={totalHintsUsed >= 3}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
+                  >
+                    {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
+                  </button>
+                  
+                  <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1.5 text-left">
+                    <span className="font-bold text-slate-300 block mb-1">💡 Rating Rules:</span>
+                    <div className="flex justify-between">
+                      <span>• Perfect solve (0 hints):</span>
+                      <span className="text-emerald-400 font-bold">+10 ELO</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>• 1 Hint used:</span>
+                      <span className="text-emerald-500 font-bold">+2 ELO</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>• 2 Hints used:</span>
+                      <span className="text-amber-500 font-bold">+0 ELO</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>• 3 Hints used:</span>
+                      <span className="text-rose-400 font-bold">-5 ELO</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-900 pt-1 mt-1 text-[10px] text-slate-500">
+                      <span>• Mistake Penalty:</span>
+                      <span className="text-rose-500 font-semibold">-10 ELO each</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {phase === "done" && (
-          <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
-            <Trophy className={`w-16 h-16 ${userWins ? "text-yellow-400" : "text-slate-500"}`} />
+          <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
+            <Trophy className={`w-16 h-16 ${userWins ? "text-yellow-400 animate-bounce" : "text-slate-500"}`} />
             <div>
               <h2 className="text-4xl font-black mb-2">{userWins ? "You Win! 🏆" : userScore === botScore ? "It's a Draw!" : "Bot Wins!"}</h2>
               <p className="text-slate-400">Final score: <strong className="text-teal-400">{userScore}</strong> vs <strong className="text-rose-400">{botScore}</strong></p>
             </div>
+            
+            {/* ELO Summary Log */}
+            <div className="w-full max-w-sm p-5 bg-[#0d1326] border border-slate-800 rounded-2xl text-left space-y-3">
+              <h3 className="text-sm font-black text-orange-400 uppercase tracking-widest text-center">Session ELO Impact</h3>
+              <div className="text-center py-2">
+                <span className="text-slate-500 text-xs block">Net Rating Change</span>
+                <span className={`text-3xl font-black ${sessionEloChange >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                  {sessionEloChange >= 0 ? "+" : ""}{sessionEloChange} ELO
+                </span>
+                {profile && (
+                  <span className="text-xs text-slate-500 block mt-1">Current Rating: {profile.estimatedElo || 1200} ELO</span>
+                )}
+              </div>
+              
+              {eloLog.length > 0 && (
+                <div className="border-t border-slate-800 pt-3 mt-1 space-y-1.5 max-h-[160px] overflow-y-auto font-mono text-[11px] text-slate-455">
+                  {eloLog.map((log, idx) => (
+                    <div key={idx} className="truncate">
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button onClick={() => setPhase("idle")} className="px-8 py-3 bg-red-500 text-white font-black rounded-xl hover:bg-red-400 transition">
               Battle Again
             </button>
