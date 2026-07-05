@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Game, Move, MoveClassification, CoachStyle, PlayerProfile } from "@chessinsight/types";
 import { parsePgn, Chess } from "@chessinsight/chess-core";
-import { useChessStore } from "./store";
+import { useChessStore, playMoveSound } from "./store";
 import { analyzeGame } from "./pipeline";
 import { db } from "./db";
 import { estimateElo, calculateGameAccuracy, initializeProfile, updateProfileWithGame } from "@chessinsight/player-profile";
@@ -297,8 +297,9 @@ export default function Home() {
       const solutionMove = activePuzzle.solutionMoves[puzzleMoveIdx];
 
       if (uciMove === solutionMove) {
-        puzzleGame.move({ from, to, promotion });
+        const resultMove = puzzleGame.move({ from, to, promotion });
         setPuzzleSuccess(true);
+        playMoveSound(resultMove.san);
 
         const motif = activePuzzle.hint.includes("Fork") ? "Fork" : activePuzzle.hint.includes("Pin") ? "Pin" : "HangingPiece";
         db.learning.get(motif).then((card) => {
@@ -311,6 +312,9 @@ export default function Home() {
         return true;
       } else {
         setPuzzleSuccess(false);
+        const audio = new Audio("/sounds/illegal-move.webm");
+        audio.volume = 0.6;
+        audio.play().catch(() => {});
         return false;
       }
     } catch {
