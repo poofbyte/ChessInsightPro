@@ -106,7 +106,8 @@ export default function PuzzleRushPage() {
   useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
 
   const handleRequestHint = () => {
-    if (!puzzle || !chess || totalHintsUsed >= 3 || phase !== "playing") return;
+    // Gate: per-move level (resets each puzzle load)
+    if (!puzzle || !chess || currentMoveHintLevel >= 3 || phase !== "playing") return;
 
     const solution = puzzle.solution;
     const expected = solution[0];
@@ -117,12 +118,8 @@ export default function PuzzleRushPage() {
     const piece = chess.get(from as any);
     
     const PIECE_NAMES: Record<string, string> = {
-      p: "Pawn",
-      n: "Knight",
-      b: "Bishop",
-      r: "Rook",
-      q: "Queen",
-      k: "King",
+      p: "Pawn", n: "Knight", b: "Bishop",
+      r: "Rook", q: "Queen", k: "King",
     };
 
     const nextLevel = currentMoveHintLevel + 1;
@@ -130,21 +127,23 @@ export default function PuzzleRushPage() {
     setTotalHintsUsed((prev) => prev + 1);
 
     if (nextLevel === 1) {
-      const typeKey = piece?.type;
-      const pieceName = typeKey ? PIECE_NAMES[typeKey] : "piece";
-      setHintText(`Try moving your ${pieceName}.`);
+      const pieceName = piece?.type ? PIECE_NAMES[piece.type] : "piece";
+      setHintText(`💡 Hint 1/3: Try moving your ${pieceName}.`);
+      setCustomSquareStyles({});
+      setCustomArrows([]);
     } else if (nextLevel === 2) {
-      setHintText(`The piece is located on the ${from} square.`);
+      setHintText(`💡 Hint 2/3: The piece is on square ${from.toUpperCase()}.`);
       setCustomSquareStyles({
-        [from]: { background: "rgba(251, 191, 36, 0.5)", borderRadius: "40%" },
+        [from]: { background: "rgba(251,191,36,0.55)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(251,191,36,0.9)" },
       });
+      setCustomArrows([]);
     } else {
-      setHintText(`Play the move from ${from} to ${to}.`);
+      setHintText(`💡 Hint 3/3: Move from ${from.toUpperCase()} → ${to.toUpperCase()}.`);
       setCustomSquareStyles({
-        [from]: { background: "rgba(251, 191, 36, 0.3)", borderRadius: "40%" },
-        [to]: { background: "rgba(16, 185, 129, 0.4)", borderRadius: "40%" },
+        [from]: { background: "rgba(251,191,36,0.35)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(251,191,36,0.9)" },
+        [to]: { background: "rgba(16,185,129,0.45)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(16,185,129,0.9)" },
       });
-      setCustomArrows([[from, to, "rgb(251, 191, 36)"]]);
+      setCustomArrows([[from, to, "#fbbf24"]]);
     }
   };
 
@@ -270,25 +269,29 @@ export default function PuzzleRushPage() {
               </div>
 
               {/* Hint Card */}
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-4">
+              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
-                  <span className="text-xs text-slate-500 font-bold">Used: {totalHintsUsed} / 3</span>
+                  <div className="flex gap-1.5">
+                    {[1,2,3].map((i) => (
+                      <div key={i} className={`w-2 h-2 rounded-full transition-all ${currentMoveHintLevel >= i ? "bg-amber-400" : "bg-slate-700"}`} />
+                    ))}
+                  </div>
                 </div>
                 
                 {hintText && (
-                  <p className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 leading-relaxed font-semibold">
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-relaxed font-semibold">
                     {hintText}
-                  </p>
+                  </div>
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <button
                     onClick={handleRequestHint}
-                    disabled={totalHintsUsed >= 3}
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
+                    disabled={currentMoveHintLevel >= 3}
+                    className="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-30 disabled:cursor-not-allowed text-amber-300 border border-amber-500/30 text-xs font-bold rounded-xl transition-all"
                   >
-                    {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
+                    {currentMoveHintLevel >= 3 ? "✓ All hints shown" : `💡 Show Hint ${currentMoveHintLevel + 1} of 3`}
                   </button>
                   
                   <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1.5 text-left">

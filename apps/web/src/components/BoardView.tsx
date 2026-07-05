@@ -19,7 +19,7 @@ interface Props {
   onSquareClick?: (square: string) => void;
   showBoardNotation?: boolean;
   customSquareStyles?: Record<string, React.CSSProperties>;
-  customArrows?: any[];
+  customArrows?: [string, string, string][];
 }
 
 export function BoardView({
@@ -38,17 +38,17 @@ export function BoardView({
   const containerRef = useRef<HTMLDivElement>(null);
   const [measuredWidth, setMeasuredWidth] = useState<number | undefined>(boardWidth);
 
-  // States for Click-to-Move
+  // Click-to-move states — these are SEPARATE from parent hint highlights
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
-  const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
+  const [moveOptionSquares, setMoveOptionSquares] = useState<Record<string, React.CSSProperties>>({});
 
+  // Reset click-to-move selection when position or draggability changes
   useEffect(() => {
     setSelectedSquare(null);
-    setOptionSquares({});
-  }, [fen]);
+    setMoveOptionSquares({});
+  }, [fen, arePiecesDraggable]);
 
   useEffect(() => {
-    // If boardWidth is explicitly passed, use it.
     if (boardWidth !== undefined) {
       setMeasuredWidth(boardWidth);
       return;
@@ -57,18 +57,14 @@ export function BoardView({
     const container = containerRef.current;
     if (!container) return;
 
-    // Initial measure
     if (container.clientWidth > 0) {
       setMeasuredWidth(container.clientWidth);
     }
 
-    // Resize observer to keep it responsive
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
-        if (width > 0) {
-          setMeasuredWidth(width);
-        }
+        if (width > 0) setMeasuredWidth(width);
       }
     });
 
@@ -77,27 +73,25 @@ export function BoardView({
   }, [boardWidth]);
 
   const handleSquareClick = (square: string) => {
-    // Trigger parent square click if exists
-    if (onSquareClick) {
-      onSquareClick(square);
-    }
+    if (onSquareClick) onSquareClick(square);
 
-    // Click-to-move only if writable
+    // Click-to-move only works when pieces are draggable (i.e. interactive board)
     if (!onPieceDrop || !arePiecesDraggable) return;
 
     try {
       const chess = new Chess(fen || "start");
 
-      // 1. If a square is selected and the clicked square is one of the legal moves:
-      if (selectedSquare && optionSquares[square] && square !== selectedSquare) {
-        const pieceType = chess.get(selectedSquare as any)?.type || "p";
-        onPieceDrop(selectedSquare, square, pieceType);
+      // If a square is already selected and the clicked square is a valid destination
+      if (selectedSquare && moveOptionSquares[square] && square !== selectedSquare) {
+        const pieceObj = chess.get(selectedSquare as any);
+        const pieceStr = pieceObj ? pieceObj.type : "p";
+        const success = onPieceDrop(selectedSquare, square, pieceStr);
         setSelectedSquare(null);
-        setOptionSquares({});
+        setMoveOptionSquares({});
         return;
       }
 
-      // 2. Otherwise, select the piece if it belongs to the side whose turn it is:
+      // Try selecting this square
       const piece = chess.get(square as any);
       if (piece && piece.color === chess.turn()) {
         setSelectedSquare(square);
@@ -106,33 +100,41 @@ export function BoardView({
         const newSquares: Record<string, React.CSSProperties> = {};
 
         moves.forEach((m) => {
-          const isCapture = chess.get(m.to) !== null;
-          newSquares[m.to] = {
-            background: isCapture
-              ? "radial-gradient(circle, transparent 70%, rgba(20,180,120,0.55) 70%)"
-              : "radial-gradient(circle, rgba(20,180,120,0.65) 24%, transparent 24%)",
-            cursor: "pointer",
-          };
+          const isCapture = !!chess.get(m.to);
+          newSquares[m.to] = isCapture
+            ? {
+                background: "radial-gradient(circle, transparent 68%, rgba(14,165,100,0.6) 68%)",
+                cursor: "pointer",
+              }
+            : {
+                background: "radial-gradient(circle, rgba(14,165,100,0.7) 25%, transparent 25%)",
+                cursor: "pointer",
+              };
         });
 
         // Highlight selected square
         newSquares[square] = {
-          background: "rgba(20, 180, 120, 0.25)",
+          background: "rgba(20,184,120,0.25)",
+          boxShadow: "inset 0 0 0 3px rgba(20,184,120,0.6)",
         };
 
-        setOptionSquares(newSquares);
+        setMoveOptionSquares(newSquares);
       } else {
+        // Deselect
         setSelectedSquare(null);
-        setOptionSquares({});
+        setMoveOptionSquares({});
       }
-    } catch (err) {
-      console.error("Click-to-move error:", err);
+    } catch {
+      setSelectedSquare(null);
+      setMoveOptionSquares({});
     }
   };
 
-  const mergedSquareStyles = {
-    ...customSquareStyles,
-    ...optionSquares,
+  // Merge: parent hint styles take PRIORITY over click-to-move option dots
+  // so arrows and highlighted hint squares always show on top
+  const mergedSquareStyles: Record<string, React.CSSProperties> = {
+    ...moveOptionSquares,         // click-to-move dots (lowest priority)
+    ...(customSquareStyles ?? {}), // hint squares from parent (highest priority)
   };
 
   return (
@@ -147,9 +149,10 @@ export function BoardView({
           onSquareClick={handleSquareClick}
           showBoardNotation={showBoardNotation}
           customSquareStyles={mergedSquareStyles}
-          customArrows={customArrows}
+          customArrows={customArrows as any}
           customDarkSquareStyle={{ backgroundColor: theme.dark }}
           customLightSquareStyle={{ backgroundColor: theme.light }}
+          animationDuration={200}
         />
       )}
     </div>

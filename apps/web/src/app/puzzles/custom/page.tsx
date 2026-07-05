@@ -60,12 +60,6 @@ export default function CustomPuzzlesPage() {
 
   const resetPuzzle = () => {
     if (!activePuzzle) return;
-    setChess(new Chess(activePuzzle.fen));
-    setStatus("idle");
-    setTotalHintsUsed(0);
-    setCurrentMoveHintLevel(0);
-    setHintText("");
-    setCustomSquareStyles({});
     setCustomArrows([]);
     setMistakesCount(0);
     setEloUpdateText("");
@@ -121,7 +115,7 @@ export default function CustomPuzzlesPage() {
   };
 
   const handleRequestHint = () => {
-    if (!activePuzzle || !chess || totalHintsUsed >= 3) return;
+    if (!activePuzzle || !chess || currentMoveHintLevel >= 3) return;
 
     const solution = activePuzzle.solution;
     const expected = solution[0];
@@ -132,12 +126,8 @@ export default function CustomPuzzlesPage() {
     const piece = chess.get(from as any);
     
     const PIECE_NAMES: Record<string, string> = {
-      p: "Pawn",
-      n: "Knight",
-      b: "Bishop",
-      r: "Rook",
-      q: "Queen",
-      k: "King",
+      p: "Pawn", n: "Knight", b: "Bishop",
+      r: "Rook", q: "Queen", k: "King",
     };
 
     const nextLevel = currentMoveHintLevel + 1;
@@ -145,22 +135,61 @@ export default function CustomPuzzlesPage() {
     setTotalHintsUsed((prev) => prev + 1);
 
     if (nextLevel === 1) {
-      const typeKey = piece?.type;
-      const pieceName = typeKey ? PIECE_NAMES[typeKey] : "piece";
-      setHintText(`Try moving your ${pieceName}.`);
+      const pieceName = piece?.type ? PIECE_NAMES[piece.type] : "piece";
+      setHintText(`💡 Hint 1/3: Try moving your ${pieceName}.`);
+      setCustomSquareStyles({});
+      setCustomArrows([]);
     } else if (nextLevel === 2) {
-      setHintText(`The piece is located on the ${from} square.`);
+      setHintText(`💡 Hint 2/3: The piece is on square ${from.toUpperCase()}.`);
       setCustomSquareStyles({
-        [from]: { background: "rgba(251, 191, 36, 0.5)", borderRadius: "40%" },
+        [from]: { background: "rgba(251,191,36,0.55)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(251,191,36,0.9)" },
       });
+      setCustomArrows([]);
     } else {
-      setHintText(`Play the move from ${from} to ${to}.`);
+      setHintText(`💡 Hint 3/3: Move from ${from.toUpperCase()} → ${to.toUpperCase()}.`);
       setCustomSquareStyles({
-        [from]: { background: "rgba(251, 191, 36, 0.3)", borderRadius: "40%" },
-        [to]: { background: "rgba(16, 185, 129, 0.4)", borderRadius: "40%" },
+        [from]: { background: "rgba(251,191,36,0.35)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(251,191,36,0.9)" },
+        [to]: { background: "rgba(16,185,129,0.45)", borderRadius: "4px", boxShadow: "inset 0 0 0 3px rgba(16,185,129,0.9)" },
       });
-      setCustomArrows([[from, to, "rgb(251, 191, 36)"]]);
+      setCustomArrows([[from, to, "#fbbf24"]]);
     }
+  };
+
+  const handleAutoSolve = () => {
+    if (!activePuzzle || !chess || status === "done") return;
+
+    setStatus("done");
+    updateEloForPuzzle(totalHintsUsed, mistakesCount, false);
+
+    const solution = activePuzzle.solution;
+    const expected = solution[0];
+    if (!expected) return;
+
+    const from = expected.slice(0, 2);
+    const to = expected.slice(2, 4);
+    const promo = expected.length > 4 ? expected[4] : undefined;
+
+    const result = chess.move({ from, to, promotion: promo });
+    if (result) {
+      playMoveSound(result.san);
+      setChess(new Chess(chess.fen()));
+    }
+  };
+
+  const loadNextPuzzle = () => {
+    const filtered = getFilteredPuzzles();
+    if (filtered.length === 0) return;
+    const next = filtered[Math.floor(Math.random() * filtered.length)];
+    setActivePuzzle(next);
+    setChess(new Chess(next.fen));
+    setStatus("idle");
+    setMistakesCount(0);
+    setTotalHintsUsed(0);
+    setCurrentMoveHintLevel(0);
+    setHintText("");
+    setCustomSquareStyles({});
+    setCustomArrows([]);
+    setEloUpdateText("");
   };
 
   const handleMove = (from: string, to: string) => {
@@ -173,6 +202,21 @@ export default function CustomPuzzlesPage() {
       playMoveSound(result.san);
       setStatus("done");
       updateEloForPuzzle(totalHintsUsed, mistakesCount, true);
+      // Save to localStorage history
+      const STORAGE_KEY = "chess_insight_solved_puzzles";
+      try {
+        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const record = {
+          id: activePuzzle.id,
+          solvedAt: new Date().toISOString(),
+          hintsUsed: totalHintsUsed,
+          mistakes: mistakesCount,
+          themes: [activePuzzle.theme],
+        };
+        const filtered2 = existing.filter((h: any) => h.id !== record.id);
+        filtered2.unshift(record);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered2.slice(0, 50)));
+      } catch {}
       return true;
     } else {
       setStatus("wrong");
@@ -298,61 +342,73 @@ export default function CustomPuzzlesPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-4 pt-1 mt-2 border-t border-slate-900">
-                    <button onClick={resetPuzzle} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition">
-                      <RotateCcw className="w-3 h-3" /> Reset puzzle
+                  <div className="flex gap-3 pt-1 mt-2 border-t border-slate-900">
+                    {status === "done" && (
+                      <button
+                        onClick={loadNextPuzzle}
+                        className="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1"
+                      >
+                        Next Puzzle →
+                      </button>
+                    )}
+                    <button onClick={resetPuzzle} className="flex items-center gap-1 text-xs text-slate-500 hover:text-white transition py-2 px-3">
+                      <RotateCcw className="w-3 h-3" /> Reset
                     </button>
                   </div>
                 </div>
 
                 {/* Hint Card */}
-                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-4">
+                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
-                    <span className="text-xs text-slate-500 font-bold">Used: {totalHintsUsed} / 3</span>
+                    <div className="flex gap-1.5">
+                      {[1,2,3].map((i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full transition-all ${currentMoveHintLevel >= i ? "bg-amber-400" : "bg-slate-700"}`} />
+                      ))}
+                    </div>
                   </div>
                   
                   {hintText && (
-                    <p className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 leading-relaxed font-semibold">
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-relaxed font-semibold">
                       {hintText}
-                    </p>
+                    </div>
                   )}
 
                   {status !== "done" && (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <button
                         onClick={handleRequestHint}
-                        disabled={totalHintsUsed >= 3}
-                        className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
+                        disabled={currentMoveHintLevel >= 3}
+                        className="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-30 disabled:cursor-not-allowed text-amber-300 border border-amber-500/30 text-xs font-bold rounded-xl transition-all"
                       >
-                        {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
+                        {currentMoveHintLevel >= 3 ? "✓ All hints shown" : `💡 Show Hint ${currentMoveHintLevel + 1} of 3`}
+                      </button>
+
+                      <button
+                        onClick={handleAutoSolve}
+                        className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-xl transition"
+                      >
+                        ⚡ Auto-Solve (−10 ELO)
                       </button>
                       
-                      <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1.5">
-                        <span className="font-bold text-slate-300 block mb-1">💡 Rating Rules:</span>
-                        <div className="flex justify-between">
-                          <span>• Perfect solve (0 hints):</span>
-                          <span className="text-emerald-400 font-bold">+10 ELO</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>• 1 Hint used:</span>
-                          <span className="text-emerald-500 font-bold">+2 ELO</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>• 2 Hints used:</span>
-                          <span className="text-amber-500 font-bold">+0 ELO</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>• 3 Hints used:</span>
-                          <span className="text-rose-400 font-bold">-5 ELO</span>
-                        </div>
-                        <div className="flex justify-between border-t border-slate-900 pt-1 mt-1 text-[10px] text-slate-500">
-                          <span>• Mistake Penalty:</span>
-                          <span className="text-rose-500 font-semibold">-2 ELO each</span>
-                        </div>
+                      <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1">
+                        <span className="font-bold text-slate-300 block mb-1">💡 ELO Rules:</span>
+                        {[
+                          ["Perfect solve (0 hints)", "+10", "text-emerald-400"],
+                          ["1 hint used", "+2", "text-emerald-500"],
+                          ["2 hints used", "+0", "text-amber-500"],
+                          ["3 hints used", "−5", "text-rose-400"],
+                          ["Each mistake", "−2", "text-rose-500"],
+                        ].map(([label, val, color]) => (
+                          <div key={label} className="flex justify-between">
+                            <span>• {label}</span>
+                            <span className={`font-bold ${color}`}>{val} ELO</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
+
                 </div>
               </>
             ) : (
