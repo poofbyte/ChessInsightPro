@@ -1,6 +1,6 @@
 # Software Architecture Document (SAD) — ChessInsight Pro v2.0
 
-## 1. Vision
+## 1. Vision#
 
 ChessInsight Pro aspires to be **the Duolingo of Chess Improvement**. It shifts the paradigm of chess tools away from calculation engines (which are already commoditized) and toward **conceptual comprehension and active learning**. 
 
