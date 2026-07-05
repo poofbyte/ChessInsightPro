@@ -23,6 +23,50 @@ export default function DailyPuzzlePage() {
   const [moveIdx, setMoveIdx] = useState(0);
   const [status, setStatus] = useState<"idle" | "correct" | "wrong" | "done">("idle");
   const [solved, setSolved] = useState(false);
+  
+  const [totalHintsUsed, setTotalHintsUsed] = useState(0);
+  const [currentMoveHintLevel, setCurrentMoveHintLevel] = useState(0);
+  const [hintText, setHintText] = useState("");
+
+  useEffect(() => {
+    setCurrentMoveHintLevel(0);
+    setHintText("");
+  }, [moveIdx]);
+
+  const handleRequestHint = () => {
+    if (!puzzle || !chess || totalHintsUsed >= 3) return;
+
+    const solution = puzzle.puzzle.solution;
+    const expected = solution[moveIdx];
+    if (!expected) return;
+
+    const from = expected.slice(0, 2);
+    const to = expected.slice(2, 4);
+    const piece = chess.get(from as any);
+    
+    const PIECE_NAMES: Record<string, string> = {
+      p: "Pawn",
+      n: "Knight",
+      b: "Bishop",
+      r: "Rook",
+      q: "Queen",
+      k: "King",
+    };
+
+    const nextLevel = currentMoveHintLevel + 1;
+    setCurrentMoveHintLevel(nextLevel);
+    setTotalHintsUsed((prev) => prev + 1);
+
+    if (nextLevel === 1) {
+      const typeKey = piece?.type;
+      const pieceName = typeKey ? PIECE_NAMES[typeKey] : "piece";
+      setHintText(`Try moving your ${pieceName}.`);
+    } else if (nextLevel === 2) {
+      setHintText(`The piece is located on the ${from} square.`);
+    } else {
+      setHintText(`Play the move from ${from} to ${to}.`);
+    }
+  };
 
   useEffect(() => {
     fetch("https://lichess.org/api/puzzle/daily")
@@ -103,7 +147,7 @@ export default function DailyPuzzlePage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Daily Puzzle</h1>
-            <p className="text-slate-400 text-sm">One new challenge every day from Lichess.</p>
+            <p className="text-slate-400 text-sm">One new challenge every day.</p>
           </div>
         </div>
 
@@ -151,6 +195,30 @@ export default function DailyPuzzlePage() {
 
               {/* Status */}
               <StatusBanner status={status} solved={solved} />
+
+              {/* Hint Card */}
+              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
+                  <span className="text-xs text-slate-500 font-bold">Used: {totalHintsUsed} / 3</span>
+                </div>
+                
+                {hintText && (
+                  <p className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 leading-relaxed font-semibold">
+                    {hintText}
+                  </p>
+                )}
+
+                {!solved && status !== "done" && (
+                  <button
+                    onClick={handleRequestHint}
+                    disabled={totalHintsUsed >= 3}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-xs font-bold rounded-xl transition text-slate-200 border border-slate-700"
+                  >
+                    {totalHintsUsed >= 3 ? "No hints remaining" : `Request Hint (${3 - totalHintsUsed} left)`}
+                  </button>
+                )}
+              </div>
 
               {solved && (
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-3">
