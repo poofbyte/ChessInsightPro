@@ -8,3 +8,6 @@ pnpm-debug.log*
 .pnpm-debug.log*
 *.exe
 
+# Assembled Stockfish WASM files
+apps/web/public/engines/stockfish-17/stockfish-17.wasm
+apps/web/public/engines/stockfish-17/stockfish-17-single.wasm

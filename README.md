@@ -55,24 +55,42 @@ The repository is organized as a high-performance monorepo using `pnpm` workspac
 
 ## 🚀 Getting Started
 
-### 1. Install Dependencies
+### 1. Prerequisite: PNPM & Windows Setup
+If you are developing on Windows and run into command-not-found or execution policy errors:
+- **Install PNPM globally**:
+  ```powershell
+  npm install -g pnpm
+  ```
+- **Allow script execution (PowerShell)**:
+  If PowerShell blocks running `pnpm` or `npx` script wrappers, open PowerShell and run:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+  ```
+
+### 2. Install Dependencies & Assemble Engines
 Run the install command from the root workspace directory:
 ```bash
 pnpm install
 ```
+> [!NOTE]
+> During installation, a postinstall hook (`scripts/setup-engines.js`) runs automatically to assemble the full Stockfish 17 WebAssembly engines (`stockfish-17.wasm` and `stockfish-17-single.wasm`) from their split parts. These parts were split to adhere to GitHub's 100MB file limit. If you ever need to manually trigger engine assembly, run:
+> ```bash
+> pnpm run setup-engines
+> ```
 
-### 2. Topological Compilation
+### 3. Topological Compilation
 Build all packages in the correct topological order:
 ```bash
 pnpm run build
 ```
 
-### 3. Run Development Server
+### 4. Run Development Server
 Spin up the Next.js dev server:
 ```bash
-pnpm --filter web dev
+pnpm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
 
 ---
 
