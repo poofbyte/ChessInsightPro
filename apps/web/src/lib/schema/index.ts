@@ -172,14 +172,17 @@ export const activityLogsTable: TableDefinition = {
 export const analyticsEventsTable: TableDefinition = {
   name: "analytics_events",
   columns: [
-    { name: "id", type: "TEXT PRIMARY KEY" },
-    { name: "event_name", type: "TEXT NOT NULL" },
-    { name: "session_id", type: "TEXT" },
+    { name: "event_id", type: "TEXT PRIMARY KEY" },
+    { name: "version", type: "INTEGER NOT NULL" },
+    { name: "category", type: "TEXT NOT NULL" },
+    { name: "event_type", type: "TEXT NOT NULL" },
+    { name: "correlation_id", type: "TEXT" },
+    { name: "session_id", type: "TEXT NOT NULL" },
     { name: "user_id", type: "TEXT" },
-    { name: "url", type: "TEXT" },
-    { name: "referrer", type: "TEXT" },
-    { name: "user_agent", type: "TEXT" },
+    { name: "priority", type: "TEXT NOT NULL" },
     { name: "properties", type: "TEXT" }, // JSON string
+    { name: "context", type: "TEXT" },    // JSON string
+    { name: "metadata", type: "TEXT" },   // JSON string
     { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
   ],
 };
