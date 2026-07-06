@@ -16,6 +16,7 @@ const DEFAULT_CONFIG = {
       ],
       highlight: false, badge: "", buttonLabel: "Get Started Free",
       buttonLabelLoggedIn: "Current Plan",
+      quotaLimits: { reviewsPerDay: 5, practiceRushPuzzlePerDay: 10 },
     },
     {
       id: "tier1", name: "Pro", price: 100, currency: "BDT", period: "mo",
@@ -28,6 +29,7 @@ const DEFAULT_CONFIG = {
         { text: "Priority Email Support" },
       ],
       highlight: true, badge: "Best Value", buttonLabel: "Upgrade to Pro",
+      quotaLimits: { reviewsPerMonth: 35, practiceRushPuzzlePerMonth: 70 },
     },
     {
       id: "tier2", name: "Elite", price: 200, currency: "BDT", period: "mo",
@@ -40,6 +42,7 @@ const DEFAULT_CONFIG = {
         { text: "24/7 Priority Support" },
       ],
       highlight: false, badge: "", buttonLabel: "Upgrade to Elite",
+      quotaLimits: { reviewsPerMonth: 100, practiceRushPuzzlePerMonth: 200 },
     },
   ],
   customPlan: {

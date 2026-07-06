@@ -25,6 +25,12 @@ interface PlanConfig {
   badge: string;
   buttonLabel: string;
   buttonLabelLoggedIn?: string;
+  quotaLimits?: {
+    reviewsPerDay?: number;
+    reviewsPerMonth?: number;
+    practiceRushPuzzlePerDay?: number;
+    practiceRushPuzzlePerMonth?: number;
+  };
 }
 
 interface CustomPlanConfig {
@@ -258,36 +264,78 @@ export default function AdminPricingPage() {
             )}
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Features</p>
-              <button
-                onClick={() => addFeature(pIdx)}
-                className="flex items-center gap-1 text-xs font-bold text-teal-500 hover:text-teal-400 transition"
-              >
-                <Plus className="w-3 h-3" /> Add Feature
-              </button>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Features</p>
+                <button
+                  onClick={() => addFeature(pIdx)}
+                  className="flex items-center gap-1 text-xs font-bold text-teal-500 hover:text-teal-400 transition"
+                >
+                  <Plus className="w-3 h-3" /> Add Feature
+                </button>
+              </div>
+              <div className="space-y-2">
+                {plan.features.map((feat, fIdx) => (
+                  <div key={fIdx} className="flex items-center gap-2">
+                    <input
+                      value={feat.text}
+                      onChange={(e) => updateFeature(pIdx, fIdx, e.target.value)}
+                      className="flex-1 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                      placeholder="Feature description..."
+                    />
+                    <button
+                      onClick={() => removeFeature(pIdx, fIdx)}
+                      className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              {plan.features.map((feat, fIdx) => (
-                <div key={fIdx} className="flex items-center gap-2">
-                  <input
-                    value={feat.text}
-                    onChange={(e) => updateFeature(pIdx, fIdx, e.target.value)}
-                    className="flex-1 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
-                    placeholder="Feature description..."
-                  />
-                  <button
-                    onClick={() => removeFeature(pIdx, fIdx)}
-                    className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Quota Limits (globally enforced)</p>
+              <div className="grid grid-cols-2 gap-4">
+                {plan.id === "free" ? (
+                  <>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Reviews / Day</p>
+                      <input type="number" min="0" value={plan.quotaLimits?.reviewsPerDay ?? 0}
+                        onChange={(e) => updatePlan(pIdx, { quotaLimits: { ...plan.quotaLimits, reviewsPerDay: parseInt(e.target.value) || 0 } })}
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Puzzles / Day</p>
+                      <input type="number" min="0" value={plan.quotaLimits?.practiceRushPuzzlePerDay ?? 0}
+                        onChange={(e) => updatePlan(pIdx, { quotaLimits: { ...plan.quotaLimits, practiceRushPuzzlePerDay: parseInt(e.target.value) || 0 } })}
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Reviews / Month</p>
+                      <input type="number" min="0" value={plan.quotaLimits?.reviewsPerMonth ?? 0}
+                        onChange={(e) => updatePlan(pIdx, { quotaLimits: { ...plan.quotaLimits, reviewsPerMonth: parseInt(e.target.value) || 0 } })}
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Puzzles / Month</p>
+                      <input type="number" min="0" value={plan.quotaLimits?.practiceRushPuzzlePerMonth ?? 0}
+                        onChange={(e) => updatePlan(pIdx, { quotaLimits: { ...plan.quotaLimits, practiceRushPuzzlePerMonth: parseInt(e.target.value) || 0 } })}
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2">These limits are globally enforced for all users on this plan. Changing them affects existing subscribers immediately.</p>
             </div>
-          </div>
-        </section>
+          </section>
       ))}
 
       {/* Custom Plan */}
