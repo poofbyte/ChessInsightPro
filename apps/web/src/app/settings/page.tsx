@@ -93,6 +93,21 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* Legal */}
+        <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
+          <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider">Legal</h2>
+          <div className="flex gap-4">
+            <a href="/privacy" className="flex-1 p-4 bg-black/5 dark:bg-slate-900 rounded-xl text-center hover:bg-teal-500/10 hover:border-teal-500/30 border border-transparent transition">
+              <p className="font-bold text-sm text-foreground">Privacy Policy</p>
+              <p className="text-[10px] text-slate-500 mt-1">How we handle your data</p>
+            </a>
+            <a href="/terms" className="flex-1 p-4 bg-black/5 dark:bg-slate-900 rounded-xl text-center hover:bg-teal-500/10 hover:border-teal-500/30 border border-transparent transition">
+              <p className="font-bold text-sm text-foreground">Terms of Service</p>
+              <p className="text-[10px] text-slate-500 mt-1">Rules &amp; guidelines</p>
+            </a>
+          </div>
+        </section>
+
         {/* About */}
         <section className="p-6 bg-card border border-border rounded-2xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
           <p className="font-black text-slate-700 dark:text-slate-300 text-sm mb-3">About ChessInsight Pro</p>

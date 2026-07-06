@@ -169,6 +169,21 @@ export const activityLogsTable: TableDefinition = {
   ],
 };
 
+export const analyticsEventsTable: TableDefinition = {
+  name: "analytics_events",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "event_name", type: "TEXT NOT NULL" },
+    { name: "session_id", type: "TEXT" },
+    { name: "user_id", type: "TEXT" },
+    { name: "url", type: "TEXT" },
+    { name: "referrer", type: "TEXT" },
+    { name: "user_agent", type: "TEXT" },
+    { name: "properties", type: "TEXT" }, // JSON string
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 export const ALL_TABLES: TableDefinition[] = [
   usersTable,
   sessionsTable,
@@ -183,4 +198,5 @@ export const ALL_TABLES: TableDefinition[] = [
   systemConfigTable,
   adminAuditLogTable,
   activityLogsTable,
+  analyticsEventsTable,
 ];

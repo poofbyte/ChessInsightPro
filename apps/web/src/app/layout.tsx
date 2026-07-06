@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { SidebarShell } from "../components/SidebarShell";
+import { AnalyticsProvider } from "../components/AnalyticsProvider";
 
 export const metadata: Metadata = {
   title: "ChessInsight Pro — The Duolingo of Chess Improvement",
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased selection:bg-teal-500 selection:text-foreground bg-background text-foreground" suppressHydrationWarning>
-        <SidebarShell>{children}</SidebarShell>
+        <AnalyticsProvider>
+          <SidebarShell>{children}</SidebarShell>
+        </AnalyticsProvider>
       </body>
     </html>
   );
