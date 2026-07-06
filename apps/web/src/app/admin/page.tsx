@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
-import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X } from "lucide-react";
+import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X, Eye, ExternalLink } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { accessToken, user } = useAuthStore();
@@ -14,6 +14,8 @@ export default function AdminDashboardPage() {
   const [settings, setSettings] = useState({ payment_instructions: "", verification_fields: "[]", upgrade_success_message: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Client-side guard: redirect non-admin users away
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function AdminDashboardPage() {
   }, [accessToken, user]);
 
   const handleProcessRequest = async (id: string, action: "APPROVE" | "REJECT") => {
+    setProcessingId(id);
     try {
       const res = await fetch("/api/admin/upgrade-requests", {
         method: "POST",
@@ -57,10 +60,16 @@ export default function AdminDashboardPage() {
       });
       if (res.ok) {
         setRequests(requests.map(r => r.id === id ? { ...r, status: action === "APPROVE" ? "APPROVED" : "REJECTED" } : r));
+        if (selectedRequest?.id === id) setSelectedRequest(null);
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to process request.");
       }
     } catch (e) {
       console.error(e);
+      alert("An error occurred.");
     }
+    setProcessingId(null);
   };
 
   const handleSaveSettings = async () => {
@@ -199,26 +208,24 @@ export default function AdminDashboardPage() {
                     <th className="px-6 py-4">User</th>
                     <th className="px-6 py-4">Requested Plan</th>
                     <th className="px-6 py-4">Price</th>
-                    <th className="px-6 py-4">Verification Info</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {requests.map((r: any) => (
-                    <tr key={r.id}>
+                    <tr
+                      key={r.id}
+                      className={`transition-colors ${
+                        r.status === "PENDING"
+                          ? "cursor-pointer hover:bg-teal-500/5"
+                          : "opacity-60"
+                      }`}
+                      onClick={() => r.status === "PENDING" && setSelectedRequest(r)}
+                    >
                       <td className="px-6 py-4 font-bold">{r.user_email}</td>
                       <td className="px-6 py-4">{r.requested_plan}</td>
                       <td className="px-6 py-4 font-bold">{r.requested_price_bdt} BDT</td>
-                      <td className="px-6 py-4 max-w-xs text-xs text-slate-500">
-                        {r.verification_details ? (
-                          <pre className="whitespace-pre-wrap bg-slate-100 dark:bg-slate-800 p-2 rounded-lg mt-1 text-[10px]">
-                            {JSON.stringify(JSON.parse(r.verification_details), null, 2)}
-                          </pre>
-                        ) : (
-                          <span className="italic">No verification info provided</span>
-                        )}
-                      </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${
                           r.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' :
@@ -229,17 +236,34 @@ export default function AdminDashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        {r.status === "PENDING" && (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleProcessRequest(r.id, "APPROVE")} className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 rounded-lg"><Check className="w-4 h-4" /></button>
-                            <button onClick={() => handleProcessRequest(r.id, "REJECT")} className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 rounded-lg"><X className="w-4 h-4" /></button>
+                        {r.status === "PENDING" ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-teal-500 font-bold flex items-center gap-1">
+                              <Eye className="w-3 h-3" /> Review
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "APPROVE"); }}
+                              disabled={processingId === r.id}
+                              className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 rounded-lg disabled:opacity-40"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "REJECT"); }}
+                              disabled={processingId === r.id}
+                              className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 rounded-lg disabled:opacity-40"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
+                        ) : (
+                          <span className="text-[10px] text-slate-500 italic">Processed</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {requests.length === 0 && (
-                    <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500 italic">No upgrade requests found.</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">No upgrade requests found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -292,6 +316,119 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Request Detail Modal */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setSelectedRequest(null)}>
+          <div className="bg-card border border-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-black">Upgrade Request Details</h2>
+              <button onClick={() => setSelectedRequest(null)} className="p-2 bg-black/5 dark:bg-slate-800 rounded-full hover:bg-black/10 dark:hover:bg-slate-700 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">User</p>
+                  <p className="font-bold">{selectedRequest.user_email}</p>
+                </div>
+                <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Requested Plan</p>
+                  <p className="font-bold">{selectedRequest.requested_plan}</p>
+                </div>
+                <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Price</p>
+                  <p className="font-bold text-teal-500">{selectedRequest.requested_price_bdt} BDT</p>
+                </div>
+                <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                  <span className={`inline-block px-2.5 py-1 text-[10px] font-bold rounded-full ${
+                    selectedRequest.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' :
+                    selectedRequest.status === 'APPROVED' ? 'bg-teal-500/10 text-teal-500' :
+                    'bg-rose-500/10 text-rose-500'
+                  }`}>{selectedRequest.status}</span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Verification Information</p>
+                {selectedRequest.verification_details ? (
+                  <div className="bg-black/5 dark:bg-slate-900 border border-border rounded-2xl p-4 space-y-3">
+                    {(() => {
+                      try {
+                        const details = JSON.parse(selectedRequest.verification_details);
+                        return Object.entries(details).map(([key, value]) => (
+                          <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                            <span className="text-sm font-bold text-slate-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                            <span className="text-sm font-semibold text-foreground">{String(value)}</span>
+                          </div>
+                        ));
+                      } catch {
+                        return (
+                          <pre className="whitespace-pre-wrap text-xs text-slate-500">
+                            {selectedRequest.verification_details}
+                          </pre>
+                        );
+                      }
+                    })()}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 italic">No verification information provided.</p>
+                )}
+              </div>
+
+              {selectedRequest.requested_quotas && (
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Requested Quotas</p>
+                  <div className="bg-black/5 dark:bg-slate-900 border border-border rounded-2xl p-4">
+                    {(() => {
+                      try {
+                        const quotas = JSON.parse(selectedRequest.requested_quotas);
+                        return Object.entries(quotas).map(([key, value]) => (
+                          <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                            <span className="text-sm font-bold text-slate-500 capitalize">{key}</span>
+                            <span className="text-sm font-semibold text-foreground">{String(value)}</span>
+                          </div>
+                        ));
+                      } catch {
+                        return <pre className="whitespace-pre-wrap text-xs">{selectedRequest.requested_quotas}</pre>;
+                      }
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {selectedRequest.created_at && (
+                <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Submitted At</p>
+                  <p className="text-sm">{new Date(selectedRequest.created_at).toLocaleString()}</p>
+                </div>
+              )}
+
+              {selectedRequest.status === "PENDING" && (
+                <div className="flex gap-4 pt-4 border-t border-border">
+                  <button
+                    onClick={() => handleProcessRequest(selectedRequest.id, "APPROVE")}
+                    disabled={processingId === selectedRequest.id}
+                    className="flex-1 py-3 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
+                  >
+                    {processingId === selectedRequest.id ? "Processing..." : <><Check className="w-4 h-4" /> Approve & Upgrade</>}
+                  </button>
+                  <button
+                    onClick={() => handleProcessRequest(selectedRequest.id, "REJECT")}
+                    disabled={processingId === selectedRequest.id}
+                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
+                  >
+                    {processingId === selectedRequest.id ? "Processing..." : <><X className="w-4 h-4" /> Reject</>}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
