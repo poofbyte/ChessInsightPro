@@ -9,10 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "paths": {
-      "@chessinsight/*": ["./packages/analysis/*/src", "./packages/core/*/src", "./packages/player/*/src", "./packages/shared/*/src", "./packages/training/*/src", "./packages/visualization/*/src"],
-      "@core/*": ["./packages/core/*/src"]
-    }
+    "sourceMap": true
   }
 }

@@ -17,7 +17,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@chessinsight/*": ["../../packages/analysis/*/src", "../../packages/core/*/src", "../../packages/player/*/src", "../../packages/shared/*/src", "../../packages/training/*/src", "../../packages/visualization/*/src"],
+      "@core/*": ["../../packages/core/*/src"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
