@@ -390,7 +390,7 @@ export default function RootReviewPage() {
                   value={pgnInput}
                   onChange={(e) => setPgnInput(e.target.value)}
                   placeholder={`Paste PGN move history here...\nOr enter a Chess.com game URL\n\ne.g. https://www.chess.com/game/live/...`}
-                  className="w-full h-44 bg-background border border-slate-850 focus:border-teal-500/80 rounded-2xl p-4 text-sm text-slate-100 placeholder:text-slate-650 focus:outline-none resize-none font-mono tracking-wide leading-relaxed"
+                  className="w-full h-44 bg-background border border-border focus:border-teal-500/80 rounded-2xl p-4 text-sm text-foreground placeholder:text-slate-500 focus:outline-none resize-none font-mono tracking-wide leading-relaxed"
                 />
                 
                 {errorMsg && (
@@ -478,9 +478,9 @@ function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: n
         const moveNumber = Math.floor(idx / 2) + 1;
         const isSelected = currentIndex === idx + 1;
         let colorClass = "bg-black/5 dark:bg-slate-900/40 border border-transparent";
-        if (isSelected) colorClass = "bg-teal-500/20 border border-teal-500/40 text-teal-300";
-        else if (move.evaluation?.classification === "blunder") colorClass = "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400";
-        else if (move.evaluation?.classification === "mistake") colorClass = "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400";
+        if (isSelected) colorClass = "bg-teal-500/20 border border-teal-500/40 text-teal-700 dark:text-teal-300";
+        else if (move.evaluation?.classification === "blunder") colorClass = "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400";
+        else if (move.evaluation?.classification === "mistake") colorClass = "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400";
         return (
           <button
             key={move.moveIndex}
