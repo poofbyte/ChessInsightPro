@@ -100,16 +100,27 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-5">
-        {NAV_SECTIONS.map((group, gi) => (
-          <div key={gi}>
-            {group.section && (
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
-                {group.section}
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {group.items.map(({ href, icon: Icon, label }) => (
-                <Link
+        {NAV_SECTIONS.map((group, gi) => {
+          const visibleItems = group.items.filter(item => {
+            if (accessToken) {
+              return item.href !== "/login" && item.href !== "/signup";
+            } else {
+              return item.href !== "/profile"; // Hide profile when logged out
+            }
+          });
+
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={gi}>
+              {group.section && (
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
+                  {group.section}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {visibleItems.map(({ href, icon: Icon, label }) => (
+                  <Link
                   key={href}
                   href={href}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm ${
@@ -124,7 +135,8 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
               ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Profile & Quota Recap */}
