@@ -17,7 +17,7 @@ const modules = {
 
 const formats = [
   "header", "bold", "italic", "underline", "strike",
-  "list", "bullet", "ordered", "link",
+  "list", "link",
 ];
 
 export default function RichTextEditor({
