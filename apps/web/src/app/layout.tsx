@@ -10,8 +10,26 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="antialiased selection:bg-teal-500 selection:text-black bg-[#0a0f1d] text-white" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                let theme = 'dark';
+                const stored = localStorage.getItem('chess-insight-settings');
+                if (stored) {
+                  const state = JSON.parse(stored).state;
+                  if (state && state.theme) theme = state.theme;
+                }
+                if (theme === 'dark') document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+              } catch(e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="antialiased selection:bg-teal-500 selection:text-foreground bg-background text-foreground" suppressHydrationWarning>
         <SidebarShell>{children}</SidebarShell>
       </body>
     </html>

@@ -45,7 +45,39 @@ export default function CustomPuzzlesPage() {
     return pool;
   };
 
-  const launchPuzzle = (p: LocalPuzzle) => {
+  const launchPuzzle = async (p?: LocalPuzzle) => {
+    if (!p) {
+      try {
+        const res = await fetch(`/api/puzzles/next?theme=${encodeURIComponent(selectedTheme)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.puzzle) {
+            const pzl = data.puzzle;
+            p = {
+              id: pzl.id,
+              fen: pzl.initialFen,
+              solution: pzl.solution,
+              rating: pzl.rating,
+              theme: Array.isArray(pzl.themes) ? pzl.themes[0] : (pzl.themes || ""),
+              hint: "",
+              explanation: ""
+            };
+          }
+        }
+      } catch(e) {
+        console.error("API puzzle fetch failed", e);
+      }
+      
+      if (!p) {
+        const pool = getFilteredPuzzles();
+        if (pool.length > 0) {
+          p = pool[Math.floor(Math.random() * pool.length)];
+        } else {
+          return; // No puzzles
+        }
+      }
+    }
+
     setActivePuzzle(p);
     setChess(new Chess(p.fen));
     setStatus("idle");
@@ -177,19 +209,7 @@ export default function CustomPuzzlesPage() {
   };
 
   const loadNextPuzzle = () => {
-    const filtered = getFilteredPuzzles();
-    if (filtered.length === 0) return;
-    const next = filtered[Math.floor(Math.random() * filtered.length)];
-    setActivePuzzle(next);
-    setChess(new Chess(next.fen));
-    setStatus("idle");
-    setMistakesCount(0);
-    setTotalHintsUsed(0);
-    setCurrentMoveHintLevel(0);
-    setHintText("");
-    setCustomSquareStyles({});
-    setCustomArrows([]);
-    setEloUpdateText("");
+    launchPuzzle();
   };
 
   const handleMove = (from: string, to: string) => {
@@ -232,7 +252,7 @@ export default function CustomPuzzlesPage() {
   const filtered = getFilteredPuzzles();
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-purple-500/15 border border-purple-500/20">
@@ -240,7 +260,7 @@ export default function CustomPuzzlesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Custom Puzzles</h1>
-            <p className="text-slate-400 text-sm">Filter by theme and rating. Build your tactical repertoire.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Filter by theme and rating. Build your tactical repertoire.</p>
           </div>
         </div>
 
@@ -248,7 +268,7 @@ export default function CustomPuzzlesPage() {
           {/* Filters + list */}
           <div className="col-span-5 flex flex-col gap-4">
             {/* Theme filter */}
-            <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+            <div className="p-4 bg-card border border-border rounded-2xl space-y-3">
               <div className="flex items-center gap-2 text-xs font-black uppercase text-purple-400 tracking-widest">
                 <Filter className="w-4 h-4" /> Theme
               </div>
@@ -257,7 +277,7 @@ export default function CustomPuzzlesPage() {
                   <button
                     key={t}
                     onClick={() => setSelectedTheme(t)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedTheme === t ? "bg-purple-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedTheme === t ? "bg-purple-500 text-foreground" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}
                   >
                     {t}
                   </button>
@@ -266,19 +286,25 @@ export default function CustomPuzzlesPage() {
             </div>
 
             {/* Rating filter */}
-            <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+            <div className="p-4 bg-card border border-border rounded-2xl space-y-3">
               <div className="text-xs font-black uppercase text-purple-400 tracking-widest">Difficulty</div>
               <div className="grid grid-cols-4 gap-1">
                 {(["all", "easy", "medium", "hard"] as const).map((r) => (
                   <button
                     key={r}
                     onClick={() => setRatingFilter(r)}
-                    className={`py-2 rounded-xl text-xs font-bold capitalize transition ${ratingFilter === r ? "bg-purple-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}
+                    className={`py-2 rounded-xl text-xs font-bold capitalize transition ${ratingFilter === r ? "bg-purple-500 text-foreground" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}
                   >
                     {r}
                   </button>
                 ))}
               </div>
+              <button 
+                  onClick={() => launchPuzzle()}
+                  className="w-full mt-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition"
+                >
+                  Start Random Puzzle from Filter
+                </button>
             </div>
 
             {/* Puzzle list */}
@@ -290,11 +316,11 @@ export default function CustomPuzzlesPage() {
                   <button
                     key={p.id}
                     onClick={() => launchPuzzle(p)}
-                    className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${activePuzzle?.id === p.id ? "border-purple-500 bg-purple-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}
+                    className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${activePuzzle?.id === p.id ? "border-purple-500 bg-purple-500/10" : "border-border bg-card hover:border-slate-600"}`}
                   >
                     <div>
-                      <span className="text-sm font-bold text-white">{p.theme}</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">{p.hint}</span>
+                      <span className="text-sm font-bold text-foreground">{p.theme}</span>
+                      <span className="text-xs text-slate-600 dark:text-slate-400 block mt-0.5">{p.hint}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <RatingBadge rating={p.rating} />
@@ -310,7 +336,7 @@ export default function CustomPuzzlesPage() {
           <div className="col-span-7 flex flex-col gap-4">
             {activePuzzle && chess ? (
               <>
-                <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${status === "correct" || status === "done" ? "border-emerald-500" : status === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
+                <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${status === "correct" || status === "done" ? "border-emerald-500" : status === "wrong" ? "border-rose-500" : "border-border"}`}>
                   <BoardView
                     fen={chess.fen()}
                     onPieceDrop={handleMove}
@@ -321,7 +347,7 @@ export default function CustomPuzzlesPage() {
                 </div>
                 
                 {/* Info panel */}
-                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-purple-400 uppercase tracking-widest">{activePuzzle.theme}</span>
                     <RatingBadge rating={activePuzzle.rating} />
@@ -334,15 +360,15 @@ export default function CustomPuzzlesPage() {
                         <CheckCircle className="w-4 h-4" /> Solved! 
                       </div>
                       {eloUpdateText && (
-                        <pre className="p-3 bg-slate-950 border border-slate-900 rounded-xl text-left text-xs text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
+                        <pre className="p-3 bg-black/10 dark:bg-slate-950 border border-border rounded-xl text-left text-xs text-slate-700 dark:text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
                           {eloUpdateText}
                         </pre>
                       )}
-                      <p className="text-xs text-slate-400 leading-relaxed text-center">{activePuzzle.explanation}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed text-center">{activePuzzle.explanation}</p>
                     </div>
                   )}
 
-                  <div className="flex gap-3 pt-1 mt-2 border-t border-slate-900">
+                  <div className="flex gap-3 pt-1 mt-2 border-t border-border">
                     {status === "done" && (
                       <button
                         onClick={loadNextPuzzle}
@@ -351,14 +377,14 @@ export default function CustomPuzzlesPage() {
                         Next Puzzle →
                       </button>
                     )}
-                    <button onClick={resetPuzzle} className="flex items-center gap-1 text-xs text-slate-500 hover:text-white transition py-2 px-3">
+                    <button onClick={resetPuzzle} className="flex items-center gap-1 text-xs text-slate-500 hover:text-foreground transition py-2 px-3">
                       <RotateCcw className="w-3 h-3" /> Reset
                     </button>
                   </div>
                 </div>
 
                 {/* Hint Card */}
-                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
                     <div className="flex gap-1.5">
@@ -391,8 +417,8 @@ export default function CustomPuzzlesPage() {
                         ⚡ Auto-Solve (−10 ELO)
                       </button>
                       
-                      <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1">
-                        <span className="font-bold text-slate-300 block mb-1">💡 ELO Rules:</span>
+                      <div className="p-3 bg-black/10 dark:bg-slate-950/40 border border-border rounded-xl text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">💡 ELO Rules:</span>
                         {[
                           ["Perfect solve (0 hints)", "+10", "text-emerald-400"],
                           ["1 hint used", "+2", "text-emerald-500"],

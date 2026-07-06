@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Game, GameEval, CoachStyle } from "@chessinsight/types";
 
-export type BoardThemeId = "slate" | "teal" | "green" | "walnut" | "purple" | "ice";
+export type BoardThemeId = "slate" | "teal" | "green" | "walnut" | "purple" | "ice" | "classicLight";
 
 export const BOARD_THEMES: Record<BoardThemeId, { label: string; dark: string; light: string }> = {
   slate:  { label: "Classic Slate",    dark: "#2d3748", light: "#4a5568" },
@@ -11,6 +11,7 @@ export const BOARD_THEMES: Record<BoardThemeId, { label: string; dark: string; l
   walnut: { label: "Dark Walnut",      dark: "#5d3a1a", light: "#c8a47a" },
   purple: { label: "Royal Purple",     dark: "#4a2c6e", light: "#9b72cf" },
   ice:    { label: "Arctic Ice",       dark: "#2c4a6e", light: "#a8d8ea" },
+  classicLight: { label: "Classic Light", dark: "#779556", light: "#ebecd0" },
 };
 
 interface ChessStore {
@@ -25,6 +26,7 @@ interface ChessStore {
   boardOrientation: "white" | "black";
   engineVersion: "17" | "18";
   boardTheme: BoardThemeId;
+  theme: "dark" | "light";
 
   setGame: (game: Game) => void;
   setCurrentMoveIndex: (index: number) => void;
@@ -36,6 +38,7 @@ interface ChessStore {
   toggleBoardOrientation: () => void;
   setEngineVersion: (version: "17" | "18") => void;
   setBoardTheme: (theme: BoardThemeId) => void;
+  setTheme: (theme: "dark" | "light") => void;
   reset: () => void;
 }
 
@@ -71,6 +74,7 @@ export const useChessStore = create<ChessStore>()(
       boardOrientation: "white",
       engineVersion: "18",
       boardTheme: "teal",
+      theme: "dark",
 
       setGame: (game) => set({
         game,
@@ -101,6 +105,7 @@ export const useChessStore = create<ChessStore>()(
       })),
       setEngineVersion: (engineVersion) => set({ engineVersion }),
       setBoardTheme: (boardTheme) => set({ boardTheme }),
+      setTheme: (theme) => set({ theme }),
 
       reset: () => set({
         game: null,
@@ -120,6 +125,7 @@ export const useChessStore = create<ChessStore>()(
         boardTheme: s.boardTheme,
         coachStyle: s.coachStyle,
         boardOrientation: s.boardOrientation,
+        theme: s.theme,
       }),
     }
   )

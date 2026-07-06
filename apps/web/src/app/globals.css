@@ -3,11 +3,29 @@
 @tailwind utilities;
 
 :root {
+  /* Light Mode (Chess.com adjacent) */
+  --background: 60 14% 96%; /* #f7f7f5 */
+  --foreground: 220 10% 20%; /* Charcoal */
+  --card: 0 0% 100%;
+  --card-foreground: 220 10% 20%;
+  --border: 0 0% 90%;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --board-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Current Dark Mode */
   --background: 224 71% 4%;
   --foreground: 210 40% 98%;
   --card: 224 71% 7%;
   --card-foreground: 210 40% 98%;
   --border: 217.2 32.6% 17.5%;
+  --glass-bg: rgba(13, 20, 38, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --board-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --radius: 0.5rem;
 }
 
 body {
@@ -18,13 +36,15 @@ body {
 
 /* Glassmorphism styling */
 .glass-panel {
-  background: rgba(13, 20, 38, 0.65);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
 }
 
 /* Custom Chessboard board customizer styling */
 .board-container {
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  box-shadow: var(--board-shadow);
+  border-radius: var(--radius);
 }

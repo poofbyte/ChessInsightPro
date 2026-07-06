@@ -198,7 +198,7 @@ export default function RootReviewPage() {
     : null;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-[1600px] mx-auto space-y-6">
         
         {game ? (
@@ -207,14 +207,14 @@ export default function RootReviewPage() {
             {/* Left: Board, Eval, and Controls */}
             <div className="col-span-7 flex flex-col gap-4">
               
-              <div className="flex justify-between items-center bg-[#0d1326]/60 border border-slate-800 p-4 rounded-2xl">
+              <div className="flex justify-between items-center bg-card/60 border border-border p-4 rounded-2xl">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-slate-900 border border-slate-700" />
+                  <div className="w-5 h-5 rounded-full bg-black/5 dark:bg-slate-900 border border-slate-700" />
                   <span className="text-sm font-semibold">{game.black.name}</span>
                 </div>
                 <button
                   onClick={() => store.reset()}
-                  className="text-xs font-bold text-slate-400 hover:text-white underline transition"
+                  className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-foreground underline transition"
                 >
                   Unload Game
                 </button>
@@ -222,13 +222,13 @@ export default function RootReviewPage() {
 
               <div className="flex gap-4">
                 {/* Eval Bar */}
-                <div className="w-6 bg-slate-800 rounded-full overflow-hidden flex flex-col border border-slate-700/50 shrink-0">
+                <div className="w-6 bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden flex flex-col border border-slate-700/50 shrink-0">
                   <div className="bg-white transition-all duration-500 ease-out" style={{ height: `${evalState.percent}%` }} />
                   <div className="bg-[#1b1f2b] flex-1" />
                 </div>
 
                 {/* Board Box */}
-                <div className="flex-1 aspect-square max-w-[640px] rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl">
+                <div className="flex-1 aspect-square max-w-[640px] rounded-3xl overflow-hidden border border-border shadow-2xl">
                   {activePuzzle ? (
                     <BoardView
                       fen={puzzleGame?.fen() || activePuzzle.initialFen}
@@ -245,7 +245,7 @@ export default function RootReviewPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center bg-[#0d1326]/60 border border-slate-800 p-4 rounded-2xl">
+              <div className="flex justify-between items-center bg-card/60 border border-border p-4 rounded-2xl">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-white border border-slate-300" />
                   <span className="text-sm font-semibold">{game.white.name}</span>
@@ -256,14 +256,14 @@ export default function RootReviewPage() {
                     onClick={() => store.setCurrentMoveIndex(Math.max(0, store.currentMoveIndex - 1))}
                     aria-label="Previous move"
                   >
-                    <ChevronLeft className="w-4 h-4 text-white" />
+                    <ChevronLeft className="w-4 h-4 text-foreground" />
                   </NavButton>
                   <NavButton
                     disabled={store.currentMoveIndex === game.moves.length}
                     onClick={() => store.setCurrentMoveIndex(Math.min(store.currentMoveIndex + 1, game.moves.length))}
                     aria-label="Next move"
                   >
-                    <ChevronRight className="w-4 h-4 text-white" />
+                    <ChevronRight className="w-4 h-4 text-foreground" />
                   </NavButton>
                 </div>
               </div>
@@ -280,8 +280,8 @@ export default function RootReviewPage() {
             {/* Right: Analysis & Feedback Panel */}
             <div className="col-span-5 flex flex-col gap-4">
               {/* Eval score */}
-              <div className="p-5 bg-[#0d1326]/80 border border-slate-800 rounded-2xl text-center shadow-lg">
-                <span className={`text-4xl font-black tracking-tight ${evalState.isWhiteAhead ? "text-white" : "text-slate-400"}`}>
+              <div className="p-5 bg-card/80 border border-border rounded-2xl text-center shadow-lg">
+                <span className={`text-4xl font-black tracking-tight ${evalState.isWhiteAhead ? "text-foreground" : "text-slate-600 dark:text-slate-400"}`}>
                   {evalState.score}
                 </span>
                 <p className="text-[10px] text-slate-500 mt-1.5 uppercase font-bold tracking-widest">
@@ -290,7 +290,7 @@ export default function RootReviewPage() {
               </div>
 
               {/* Coach panel */}
-              <div className="p-5 bg-[#0d1326]/85 border border-slate-800 rounded-2xl space-y-4 shadow-lg">
+              <div className="p-5 bg-card/85 border border-border rounded-2xl space-y-4 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-teal-400 font-bold text-sm">
                     <Brain className="w-4 h-4 text-teal-400 animate-pulse" />
@@ -299,14 +299,14 @@ export default function RootReviewPage() {
                   <select
                     value={store.coachStyle}
                     onChange={(e) => store.setCoachStyle(e.target.value as CoachStyle)}
-                    className="text-xs bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-300 focus:outline-none focus:border-teal-500 font-bold"
+                    className="text-xs bg-black/5 dark:bg-slate-900 border border-border rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-teal-500 font-bold"
                   >
                     {Object.values(CoachStyle).map((s) => (
                       <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)} Coach</option>
                     ))}
                   </select>
                 </div>
-                <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl min-h-[100px] text-sm text-slate-200 leading-relaxed font-medium">
+                <div className="p-4 bg-black/10 dark:bg-slate-950/60 border border-border rounded-2xl min-h-[100px] text-sm text-slate-900 dark:text-slate-200 leading-relaxed font-medium">
                   {store.currentMoveIndex === 0
                     ? <p className="italic text-slate-500">Starting position. Use Arrow Keys or buttons to step through moves.</p>
                     : game.moves[store.currentMoveIndex - 1]?.evaluation?.narratives?.[store.coachStyle]
@@ -316,13 +316,13 @@ export default function RootReviewPage() {
               </div>
 
               {/* Analysis Tabs Container */}
-              <div className="flex-1 flex flex-col bg-[#0d1326]/60 border border-slate-800 rounded-2xl overflow-hidden shadow-lg min-h-[350px]">
-                <div className="grid grid-cols-4 border-b border-slate-800 text-xs font-bold text-center shrink-0">
+              <div className="flex-1 flex flex-col bg-card/60 border border-border rounded-2xl overflow-hidden shadow-lg min-h-[350px]">
+                <div className="grid grid-cols-4 border-b border-border text-xs font-bold text-center shrink-0">
                   {["Move Log", "Accuracy Chart", "Positional Metrics", "Blunders"].map((tab, i) => (
                     <button
                       key={i}
                       onClick={() => store.setActiveTab(i)}
-                      className={`py-3.5 transition-all ${store.activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-slate-900/40" : "text-slate-400 hover:text-white"}`}
+                      className={`py-3.5 transition-all ${store.activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-black/5 dark:bg-slate-900/40" : "text-slate-600 dark:text-slate-400 hover:text-foreground"}`}
                     >
                       {tab}
                     </button>
@@ -344,7 +344,7 @@ export default function RootReviewPage() {
             {/* Left Column: Visual Starting Board */}
             <div className="col-span-6 flex flex-col gap-4">
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Board Preview</h2>
-              <div className="w-full aspect-square rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
+              <div className="w-full aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                 <BoardView fen="start" arePiecesDraggable={false} />
               </div>
             </div>
@@ -353,7 +353,7 @@ export default function RootReviewPage() {
             <div className="col-span-6 flex flex-col gap-6">
               
               {/* Main uploader card */}
-              <div className="p-8 bg-[#0d1326] border border-slate-800 rounded-3xl shadow-2xl space-y-6">
+              <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl space-y-6">
                 
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
@@ -361,14 +361,14 @@ export default function RootReviewPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-black">Game Reviewer</h2>
-                    <p className="text-slate-400 text-xs mt-0.5">Paste PGN text or chess.com URL to analyze</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mt-0.5">Paste PGN text or chess.com URL to analyze</p>
                   </div>
                 </div>
 
                 {/* Engine selection settings */}
-                <div className="flex items-center justify-between bg-[#0a0f1d] border border-slate-800 rounded-2xl p-3">
-                  <span className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Stockfish Engine</span>
-                  <div className="flex gap-1 p-0.5 bg-slate-900 rounded-xl border border-slate-800">
+                <div className="flex items-center justify-between bg-background border border-border rounded-2xl p-3">
+                  <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1">Stockfish Engine</span>
+                  <div className="flex gap-1 p-0.5 bg-black/5 dark:bg-slate-900 rounded-xl border border-border">
                     {(["17", "18"] as const).map((v) => (
                       <button
                         key={v}
@@ -377,7 +377,7 @@ export default function RootReviewPage() {
                         className={`px-3 py-1.5 text-xs font-black rounded-lg transition ${
                           store.engineVersion === v
                             ? "bg-teal-500 text-black shadow-md shadow-teal-500/10"
-                            : "text-slate-400 hover:text-slate-200"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-200"
                         }`}
                       >
                         SF {v}
@@ -390,7 +390,7 @@ export default function RootReviewPage() {
                   value={pgnInput}
                   onChange={(e) => setPgnInput(e.target.value)}
                   placeholder={`Paste PGN move history here...\nOr enter a Chess.com game URL\n\ne.g. https://www.chess.com/game/live/...`}
-                  className="w-full h-44 bg-[#0a0f1d] border border-slate-850 focus:border-teal-500/80 rounded-2xl p-4 text-sm text-slate-100 placeholder:text-slate-650 focus:outline-none resize-none font-mono tracking-wide leading-relaxed"
+                  className="w-full h-44 bg-background border border-slate-850 focus:border-teal-500/80 rounded-2xl p-4 text-sm text-slate-100 placeholder:text-slate-650 focus:outline-none resize-none font-mono tracking-wide leading-relaxed"
                 />
                 
                 {errorMsg && (
@@ -409,7 +409,7 @@ export default function RootReviewPage() {
                       </span>
                       <span>{store.analysisProgress}%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div className="bg-gradient-to-r from-teal-500 to-emerald-400 h-full transition-all duration-300" style={{ width: `${store.analysisProgress}%` }} />
                     </div>
                   </div>
@@ -432,10 +432,10 @@ export default function RootReviewPage() {
                       <button
                         key={g.id}
                         onClick={() => store.setGame(g)}
-                        className="w-full p-4 bg-[#0d1326]/60 hover:bg-slate-800/40 border border-slate-800 hover:border-teal-500/25 rounded-2xl transition text-left flex justify-between items-center group"
+                        className="w-full p-4 bg-card/60 hover:bg-black/10 dark:bg-slate-800/40 border border-border hover:border-teal-500/25 rounded-2xl transition text-left flex justify-between items-center group"
                       >
                         <div>
-                          <span className="font-bold text-sm block group-hover:text-white text-slate-200">{g.white.name} vs {g.black.name}</span>
+                          <span className="font-bold text-sm block group-hover:text-foreground text-slate-900 dark:text-slate-200">{g.white.name} vs {g.black.name}</span>
                           <span className="text-xs text-slate-500 mt-1 block">{g.date}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -463,7 +463,7 @@ function NavButton({ disabled, onClick, children, "aria-label": ariaLabel }: { d
       disabled={disabled}
       onClick={onClick}
       aria-label={ariaLabel}
-      className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition"
+      className="p-3 bg-black/10 dark:bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition"
     >
       {children}
     </button>
@@ -477,7 +477,7 @@ function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: n
         const isWhite = idx % 2 === 0;
         const moveNumber = Math.floor(idx / 2) + 1;
         const isSelected = currentIndex === idx + 1;
-        let colorClass = "bg-slate-900/40 border border-transparent";
+        let colorClass = "bg-black/5 dark:bg-slate-900/40 border border-transparent";
         if (isSelected) colorClass = "bg-teal-500/20 border border-teal-500/40 text-teal-300";
         else if (move.evaluation?.classification === "blunder") colorClass = "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400";
         else if (move.evaluation?.classification === "mistake") colorClass = "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400";
@@ -489,7 +489,7 @@ function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: n
           >
             <span className="font-semibold text-sm">{isWhite ? `${moveNumber}. ` : ""}{move.san}</span>
             {move.evaluation?.classification && (
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800">
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/10 dark:bg-slate-800">
                 {move.evaluation.classification}
               </span>
             )}
@@ -510,11 +510,11 @@ function MetricsView({ metrics }: { metrics: any }) {
     <div className="space-y-4">
       {bars.map(({ label, a, b, max }) => (
         <div key={label}>
-          <div className="flex justify-between text-xs text-slate-400 mb-1">
+          <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
             <span>{label}</span>
-            <span className="font-semibold text-white">{a} vs {b}</span>
+            <span className="font-semibold text-foreground">{a} vs {b}</span>
           </div>
-          <div className="h-2 bg-slate-800 rounded-full overflow-hidden flex">
+          <div className="h-2 bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden flex">
             <div className="bg-blue-500 h-full" style={{ width: `${(a / max) * 100}%` }} />
             <div className="bg-red-500 h-full flex-1" />
           </div>
@@ -529,14 +529,14 @@ function PuzzlesTab({ game, onLaunch }: { game: Game; onLaunch: (game: Game, idx
   if (blunders.length === 0) return <p className="text-sm text-slate-500 italic text-center py-6">Congrats! You made no blunders this game.</p>;
   return (
     <div className="space-y-3">
-      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Blunder Repetitions</h4>
+      <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Available Blunder Repetitions</h4>
       {game.moves.map((move, idx) => {
         if (move.evaluation?.classification !== "blunder") return null;
         return (
-          <div key={move.moveIndex} className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center">
+          <div key={move.moveIndex} className="p-4 bg-black/5 dark:bg-slate-900 border border-border rounded-xl flex justify-between items-center">
             <div>
               <span className="text-sm font-semibold">Move {move.moveIndex}: {move.san}</span>
-              <span className="text-[10px] block text-slate-400 mt-0.5">Motifs: {move.evaluation.facts?.tacticalMotifs.join(", ") || "None"}</span>
+              <span className="text-[10px] block text-slate-600 dark:text-slate-400 mt-0.5">Motifs: {move.evaluation.facts?.tacticalMotifs.join(", ") || "None"}</span>
             </div>
             <button onClick={() => onLaunch(game, idx)} className="px-3 py-1.5 bg-teal-500 text-black text-xs font-bold rounded-lg hover:bg-teal-400 transition">
               Launch Puzzle
@@ -552,13 +552,13 @@ function BlunderDrillPanel({ puzzle, success, onExit }: { puzzle: any; success: 
   return (
     <div className="p-6 bg-teal-950/40 border border-teal-500/30 rounded-2xl flex flex-col gap-3 relative overflow-hidden">
       <div className="absolute right-4 top-4">
-        <button onClick={onExit} className="text-xs font-bold text-slate-400 hover:text-white underline">Exit Puzzle</button>
+        <button onClick={onExit} className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-foreground underline">Exit Puzzle</button>
       </div>
       <div className="flex items-center gap-2 text-teal-400 font-bold text-sm">
         <Brain className="w-4 h-4" />
         <span>BLUNDER DRILL PUZZLE</span>
       </div>
-      <p className="text-slate-300 text-sm leading-relaxed">{puzzle.hint}</p>
+      <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{puzzle.hint}</p>
       {success === true && <div className="p-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-sm font-semibold">🎉 Correct Move! Well done!</div>}
       {success === false && <div className="p-3 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-sm font-semibold">❌ Incorrect. Try again.</div>}
     </div>

@@ -33,9 +33,29 @@ export default function PlayCoachPage() {
   const { boardTheme } = useChessStore();
 
   useEffect(() => {
-    const idx = Math.floor(Math.random() * COACH_TIPS.length);
-    setTip(COACH_TIPS[idx]);
+    setTip(COACH_TIPS[Math.floor(Math.random() * COACH_TIPS.length)]);
   }, []);
+
+  const fetchDynamicTip = async (fen: string, san: string) => {
+    setTip("Hmm, let me think about that...");
+    try {
+      // In a real app we'd get a base analysis from Stockfish, but here we can just pass the move context.
+      const baseAnalysis = `The player played ${san}. Provide a quick tip for the resulting position.`;
+      const res = await fetch("/api/narrative/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baseAnalysis, context: fen }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTip(data.enrichedText);
+      } else {
+        setTip(COACH_TIPS[Math.floor(Math.random() * COACH_TIPS.length)]);
+      }
+    } catch {
+      setTip(COACH_TIPS[Math.floor(Math.random() * COACH_TIPS.length)]);
+    }
+  };
 
   const startGame = () => {
     const c = new Chess();
@@ -78,9 +98,8 @@ export default function PlayCoachPage() {
         return true;
       }
 
-      // Coach tip rotation
-      const idx = Math.floor(Math.random() * COACH_TIPS.length);
-      setTip(COACH_TIPS[idx]);
+      // Coach tip rotation / API fetch
+      fetchDynamicTip(chess.fen(), result.san);
 
       // Bot responds
       setTimeout(() => {
@@ -96,7 +115,7 @@ export default function PlayCoachPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-blue-500/15 border border-blue-500/20">
@@ -104,7 +123,7 @@ export default function PlayCoachPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Play Coach</h1>
-            <p className="text-slate-400 text-sm">Play vs a bot with real-time coaching tips.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Play vs a bot with real-time coaching tips.</p>
           </div>
         </div>
 
@@ -117,13 +136,13 @@ export default function PlayCoachPage() {
                 <button
                   key={level.id}
                   onClick={() => setSelectedLevel(level)}
-                  className={`w-full p-4 rounded-2xl border text-left transition ${selectedLevel.id === level.id ? "border-blue-500 bg-blue-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}
+                  className={`w-full p-4 rounded-2xl border text-left transition ${selectedLevel.id === level.id ? "border-blue-500 bg-blue-500/10" : "border-border bg-card hover:border-slate-600"}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-white">{level.label}</span>
+                    <span className="font-bold text-foreground">{level.label}</span>
                     <span className="text-xs text-slate-500">~{level.elo} ELO</span>
                   </div>
-                  <p className="text-xs text-slate-400">{level.description}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{level.description}</p>
                 </button>
               ))}
             </div>
@@ -136,16 +155,16 @@ export default function PlayCoachPage() {
                   <button
                     key={c}
                     onClick={() => setPlayerColor(c)}
-                    className={`p-4 rounded-2xl border flex items-center gap-3 transition ${playerColor === c ? "border-blue-500 bg-blue-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}
+                    className={`p-4 rounded-2xl border flex items-center gap-3 transition ${playerColor === c ? "border-blue-500 bg-blue-500/10" : "border-border bg-card hover:border-slate-600"}`}
                   >
-                    <div className={`w-8 h-8 rounded-full border-2 ${c === "white" ? "bg-white border-slate-300" : "bg-slate-900 border-slate-600"}`} />
-                    <span className="font-bold text-white capitalize">{c}</span>
+                    <div className={`w-8 h-8 rounded-full border-2 ${c === "white" ? "bg-white border-slate-300" : "bg-black/5 dark:bg-slate-900 border-slate-600"}`} />
+                    <span className="font-bold text-foreground capitalize">{c}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <button onClick={startGame} className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black rounded-2xl hover:from-blue-400 transition shadow-lg shadow-blue-500/20">
+            <button onClick={startGame} className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-foreground font-black rounded-2xl hover:from-blue-400 transition shadow-lg shadow-blue-500/20">
               Start Game
             </button>
           </div>
@@ -154,7 +173,7 @@ export default function PlayCoachPage() {
         {phase === "playing" && chess && (
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-7">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-slate-800">
+              <div className="aspect-square rounded-2xl overflow-hidden border border-border">
                 <BoardView fen={chess.fen()} orientation={playerColor} onPieceDrop={handleMove} />
               </div>
               {status && (
@@ -164,30 +183,30 @@ export default function PlayCoachPage() {
               )}
             </div>
             <div className="col-span-5 flex flex-col gap-4">
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl">
+              <div className="p-5 bg-card border border-border rounded-2xl">
                 <div className="flex items-center gap-2 text-blue-400 font-bold text-sm mb-3">
                   <Brain className="w-4 h-4" /> Virtual Coach Tip
                 </div>
-                <div className="p-3 bg-slate-900/60 rounded-xl text-sm text-slate-300 leading-relaxed">
+                <div className="p-3 bg-black/5 dark:bg-slate-900/60 rounded-xl text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   <MessageSquare className="w-4 h-4 text-blue-400 mb-2" />
                   {tip}
                 </div>
               </div>
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-2 text-sm">
+              <div className="p-4 bg-card border border-border rounded-2xl space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Difficulty</span>
-                  <span className="font-bold text-white">{selectedLevel.label}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Difficulty</span>
+                  <span className="font-bold text-foreground">{selectedLevel.label}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Playing as</span>
-                  <span className="font-bold text-white capitalize">{playerColor}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Playing as</span>
+                  <span className="font-bold text-foreground capitalize">{playerColor}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Turn</span>
-                  <span className="font-bold text-white capitalize">{chess.turn() === "w" ? "White" : "Black"}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Turn</span>
+                  <span className="font-bold text-foreground capitalize">{chess.turn() === "w" ? "White" : "Black"}</span>
                 </div>
               </div>
-              <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 text-sm font-bold transition">
+              <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-black/10 dark:bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-bold transition">
                 <RefreshCw className="w-4 h-4" /> New Game
               </button>
             </div>

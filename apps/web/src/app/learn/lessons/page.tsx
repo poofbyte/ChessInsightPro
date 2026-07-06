@@ -70,14 +70,14 @@ export default function LessonsPage() {
     const slide = selectedLesson.slides[slideIdx];
     const isLast = slideIdx === selectedLesson.slides.length - 1;
     return (
-      <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+      <div className="flex-1 overflow-y-auto p-8 bg-background">
         <div className="max-w-5xl mx-auto">
-          <button onClick={() => setSelectedLesson(null)} className="flex items-center gap-2 text-slate-400 hover:text-white transition mb-6 text-sm">
+          <button onClick={() => setSelectedLesson(null)} className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-foreground transition mb-6 text-sm">
             <ChevronLeft className="w-4 h-4" /> Back to Lessons
           </button>
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-6">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-slate-800">
+              <div className="aspect-square rounded-2xl overflow-hidden border border-border">
                 <BoardView fen={slide.fen} arePiecesDraggable={false} />
               </div>
               {/* Progress */}
@@ -90,9 +90,9 @@ export default function LessonsPage() {
             <div className="col-span-6 flex flex-col gap-4">
               <span className="text-xs font-black text-teal-400 uppercase tracking-widest">{selectedLesson.category}</span>
               <h2 className="text-3xl font-black leading-tight">{slide.title}</h2>
-              <p className="text-slate-300 leading-relaxed">{slide.body}</p>
+              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{slide.body}</p>
               <div className="flex items-center justify-between mt-auto">
-                <button disabled={slideIdx === 0} onClick={() => setSlideIdx(s => s - 1)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 disabled:opacity-40 transition">
+                <button disabled={slideIdx === 0} onClick={() => setSlideIdx(s => s - 1)} className="px-4 py-2 bg-black/10 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-700 disabled:opacity-40 transition">
                   Previous
                 </button>
                 <span className="text-xs text-slate-500">{slideIdx + 1} / {selectedLesson.slides.length}</span>
@@ -120,7 +120,7 @@ export default function LessonsPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
@@ -128,7 +128,7 @@ export default function LessonsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Lessons</h1>
-            <p className="text-slate-400 text-sm">Structured learning with interactive board demonstrations.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Structured learning with interactive board demonstrations.</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -138,19 +138,19 @@ export default function LessonsPage() {
               <button
                 key={lesson.id}
                 onClick={() => { setSelectedLesson(lesson); setSlideIdx(0); }}
-                className="p-6 bg-[#0d1326] border border-slate-800 hover:border-teal-500/40 rounded-2xl text-left transition group"
+                className="p-6 bg-card border border-border hover:border-teal-500/40 rounded-2xl text-left transition group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <span className="text-3xl">{lesson.icon}</span>
                   {done ? (
                     <CheckCircle className="w-5 h-5 text-emerald-400" />
                   ) : (
-                    <span className="text-[10px] font-black text-slate-500 uppercase bg-slate-800 px-2 py-1 rounded-lg">{lesson.duration}</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase bg-black/10 dark:bg-slate-800 px-2 py-1 rounded-lg">{lesson.duration}</span>
                   )}
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-teal-400">{lesson.category}</span>
-                <h3 className="font-black text-lg text-white mt-1 mb-2">{lesson.title}</h3>
-                <p className="text-xs text-slate-400">{lesson.slides.length} slides</p>
+                <h3 className="font-black text-lg text-foreground mt-1 mb-2">{lesson.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{lesson.slides.length} slides</p>
                 <div className="flex items-center gap-1 text-teal-400 text-xs font-bold mt-4 opacity-0 group-hover:opacity-100 transition">
                   Start Lesson <ChevronRight className="w-3 h-3" />
                 </div>

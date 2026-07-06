@@ -65,7 +65,7 @@ export default function CoordinatesPage() {
   const accuracy = score + errors > 0 ? Math.round((score / (score + errors)) * 100) : 0;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/20">
@@ -73,7 +73,7 @@ export default function CoordinatesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Coordinate Trainer</h1>
-            <p className="text-slate-400 text-sm">Click the correct square as fast as possible. 30 seconds per round.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Click the correct square as fast as possible. 30 seconds per round.</p>
           </div>
         </div>
 
@@ -82,19 +82,19 @@ export default function CoordinatesPage() {
             <div className="space-y-3 w-full max-w-sm">
               <h2 className="text-xs font-black uppercase tracking-widest text-rose-400">Game Mode</h2>
               {(["find-square", "name-square"] as Mode[]).map((m) => (
-                <button key={m} onClick={() => setMode(m)} className={`w-full p-4 rounded-2xl border text-left transition ${mode === m ? "border-rose-500 bg-rose-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}>
-                  <span className="font-bold text-white">{m === "find-square" ? "Find the Square" : "Name the Square"}</span>
-                  <p className="text-xs text-slate-400 mt-1">{m === "find-square" ? "A square name is shown — click it on the board." : "A highlighted square appears — type its name."}</p>
+                <button key={m} onClick={() => setMode(m)} className={`w-full p-4 rounded-2xl border text-left transition ${mode === m ? "border-rose-500 bg-rose-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                  <span className="font-bold text-foreground">{m === "find-square" ? "Find the Square" : "Name the Square"}</span>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{m === "find-square" ? "A square name is shown — click it on the board." : "A highlighted square appears — type its name."}</p>
                 </button>
               ))}
             </div>
             <div className="flex items-center gap-3">
-              <label className="text-xs text-slate-400 font-bold">Show Coordinates</label>
+              <label className="text-xs text-slate-600 dark:text-slate-400 font-bold">Show Coordinates</label>
               <button onClick={() => setShowCoords((c) => !c)} className={`w-10 h-6 rounded-full transition-colors ${showCoords ? "bg-teal-500" : "bg-slate-700"}`}>
                 <div className={`w-4 h-4 bg-white rounded-full mx-1 transition-transform ${showCoords ? "translate-x-4" : ""}`} />
               </button>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black text-lg rounded-2xl hover:from-rose-400 transition shadow-lg shadow-rose-500/20">
+            <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-foreground font-black text-lg rounded-2xl hover:from-rose-400 transition shadow-lg shadow-rose-500/20">
               Start Training!
             </button>
           </div>
@@ -103,7 +103,7 @@ export default function CoordinatesPage() {
         {phase === "playing" && (
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-7">
-              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
+              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen="start"
                   arePiecesDraggable={false}
@@ -118,24 +118,24 @@ export default function CoordinatesPage() {
             </div>
             <div className="col-span-5 flex flex-col gap-4">
               {/* Target */}
-              <div className="p-6 bg-[#0d1326] border border-slate-800 rounded-2xl text-center">
+              <div className="p-6 bg-card border border-border rounded-2xl text-center">
                 <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Click this square</p>
                 <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400 font-mono">{target}</div>
               </div>
               {/* Timer */}
-              <div className={`p-5 bg-[#0d1326] border border-slate-800 rounded-2xl text-center ${timeLeft <= 10 ? "border-rose-500/50" : ""}`}>
-                <div className={`text-4xl font-black tabular-nums ${timeLeft <= 10 ? "text-rose-400 animate-pulse" : "text-white"}`}>{timeLeft}s</div>
-                <div className="h-1.5 bg-slate-800 rounded-full mt-3 overflow-hidden">
+              <div className={`p-5 bg-card border border-border rounded-2xl text-center ${timeLeft <= 10 ? "border-rose-500/50" : ""}`}>
+                <div className={`text-4xl font-black tabular-nums ${timeLeft <= 10 ? "text-rose-400 animate-pulse" : "text-foreground"}`}>{timeLeft}s</div>
+                <div className="h-1.5 bg-black/10 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
                   <div className="h-full bg-rose-500 transition-all" style={{ width: `${(timeLeft / 30) * 100}%` }} />
                 </div>
               </div>
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+                <div className="p-4 bg-card border border-border rounded-xl text-center">
                   <div className="text-3xl font-black text-emerald-400">{score}</div>
                   <div className="text-xs text-slate-500">Correct</div>
                 </div>
-                <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+                <div className="p-4 bg-card border border-border rounded-xl text-center">
                   <div className="text-3xl font-black text-rose-400">{errors}</div>
                   <div className="text-xs text-slate-500">Errors</div>
                 </div>
@@ -149,23 +149,23 @@ export default function CoordinatesPage() {
             <Trophy className="w-16 h-16 text-yellow-400" />
             <div>
               <h2 className="text-4xl font-black mb-2">Round Complete!</h2>
-              <p className="text-slate-400 text-lg">{score} correct in 30 seconds</p>
+              <p className="text-slate-600 dark:text-slate-400 text-lg">{score} correct in 30 seconds</p>
             </div>
             <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+              <div className="p-4 bg-card border border-border rounded-xl text-center">
                 <div className="text-2xl font-black text-emerald-400">{score}</div>
                 <div className="text-xs text-slate-500">Correct</div>
               </div>
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+              <div className="p-4 bg-card border border-border rounded-xl text-center">
                 <div className="text-2xl font-black text-rose-400">{errors}</div>
                 <div className="text-xs text-slate-500">Errors</div>
               </div>
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
-                <div className="text-2xl font-black text-white">{accuracy}%</div>
+              <div className="p-4 bg-card border border-border rounded-xl text-center">
+                <div className="text-2xl font-black text-foreground">{accuracy}%</div>
                 <div className="text-xs text-slate-500">Accuracy</div>
               </div>
             </div>
-            <button onClick={startGame} className="flex items-center gap-2 px-8 py-3 bg-rose-500 text-white font-black rounded-xl hover:bg-rose-400 transition">
+            <button onClick={startGame} className="flex items-center gap-2 px-8 py-3 bg-rose-500 text-foreground font-black rounded-xl hover:bg-rose-400 transition">
               <RotateCcw className="w-4 h-4" /> Play Again
             </button>
           </div>

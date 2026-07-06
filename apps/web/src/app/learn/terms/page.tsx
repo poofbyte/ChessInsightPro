@@ -52,7 +52,7 @@ export default function ChessTermsPage() {
   });
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-violet-500/15 border border-violet-500/20">
@@ -60,7 +60,7 @@ export default function ChessTermsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Chess Terms</h1>
-            <p className="text-slate-400 text-sm">Complete glossary of chess terminology — {TERMS.length} terms.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Complete glossary of chess terminology — {TERMS.length} terms.</p>
           </div>
         </div>
 
@@ -73,12 +73,12 @@ export default function ChessTermsPage() {
               placeholder="Search terms..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-[#0d1326] border border-slate-800 focus:border-violet-500 rounded-2xl text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
+              className="w-full pl-10 pr-4 py-3 bg-card border border-border focus:border-violet-500 rounded-2xl text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-600 focus:outline-none"
             />
           </div>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (
-              <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-violet-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}>{c}</button>
+              <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-violet-500 text-foreground" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}>{c}</button>
             ))}
           </div>
         </div>
@@ -89,12 +89,12 @@ export default function ChessTermsPage() {
             <p className="text-center text-slate-500 italic py-12">No terms match your search.</p>
           ) : (
             filtered.map((t) => (
-              <div key={t.term} className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl">
+              <div key={t.term} className="p-5 bg-card border border-border rounded-2xl">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-black text-white">{t.term}</h3>
+                  <h3 className="font-black text-foreground">{t.term}</h3>
                   <span className="text-[10px] font-black uppercase tracking-widest text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-lg">{t.category}</span>
                 </div>
-                <p className="text-slate-400 text-sm leading-relaxed">{t.definition}</p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{t.definition}</p>
               </div>
             ))
           )}

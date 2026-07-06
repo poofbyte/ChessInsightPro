@@ -115,7 +115,7 @@ export default function EndgamesPage() {
     d === "Intermediate" ? "text-amber-400 bg-amber-500/10" : "text-rose-400 bg-rose-500/10";
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-yellow-500/15 border border-yellow-500/20">
@@ -123,7 +123,7 @@ export default function EndgamesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Endgame Trainer</h1>
-            <p className="text-slate-400 text-sm">Master essential endgame positions that decide games at every level.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Master essential endgame positions that decide games at every level.</p>
           </div>
         </div>
 
@@ -132,15 +132,15 @@ export default function EndgamesPage() {
           <div className="col-span-5 flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
               {categories.map((c) => (
-                <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-yellow-500 text-black" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}>{c}</button>
+                <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-yellow-500 text-black" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}>{c}</button>
               ))}
             </div>
             <div className="space-y-2 max-h-[500px] overflow-y-auto">
               {filtered.map((eg) => (
-                <button key={eg.id} onClick={() => launch(eg)} className={`w-full p-4 rounded-2xl border text-left transition flex items-center justify-between ${selected?.id === eg.id ? "border-yellow-500 bg-yellow-500/10" : "border-slate-800 bg-[#0d1326] hover:border-slate-600"}`}>
+                <button key={eg.id} onClick={() => launch(eg)} className={`w-full p-4 rounded-2xl border text-left transition flex items-center justify-between ${selected?.id === eg.id ? "border-yellow-500 bg-yellow-500/10" : "border-border bg-card hover:border-slate-600"}`}>
                   <div>
-                    <div className="font-bold text-white text-sm">{eg.title}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{eg.category}</div>
+                    <div className="font-bold text-foreground text-sm">{eg.title}</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{eg.category}</div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${diffColor(eg.difficulty)}`}>{eg.difficulty}</span>
@@ -155,23 +155,23 @@ export default function EndgamesPage() {
           <div className="col-span-7 flex flex-col gap-4">
             {selected && chess ? (
               <>
-                <div className="aspect-square rounded-2xl overflow-hidden border border-slate-800">
+                <div className="aspect-square rounded-2xl overflow-hidden border border-border">
                   <BoardView fen={chess.fen()} onPieceDrop={handleMove} />
                 </div>
-                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-black text-white">{selected.title}</h3>
+                    <h3 className="font-black text-foreground">{selected.title}</h3>
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${diffColor(selected.difficulty)}`}>{selected.difficulty}</span>
                   </div>
                   <div className="flex items-center gap-2 text-teal-400 text-xs font-bold">
                     <Trophy className="w-3 h-3" /> Goal: {selected.goal}
                   </div>
-                  <p className="text-sm text-slate-300 leading-relaxed">{selected.description}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{selected.description}</p>
                   <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
                     <p className="text-xs font-black text-yellow-400 mb-1">💡 Key Concept</p>
-                    <p className="text-xs text-slate-300 leading-relaxed">{selected.tip}</p>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{selected.tip}</p>
                   </div>
-                  <button onClick={() => { setChess(new Chess(selected.fen)); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition">
+                  <button onClick={() => { setChess(new Chess(selected.fen)); }} className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 hover:text-foreground transition">
                     <RotateCcw className="w-3 h-3" /> Reset Position
                   </button>
                 </div>

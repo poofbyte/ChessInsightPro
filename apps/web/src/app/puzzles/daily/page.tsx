@@ -303,7 +303,7 @@ export default function DailyPuzzlePage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -312,7 +312,7 @@ export default function DailyPuzzlePage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Daily Puzzle</h1>
-            <p className="text-slate-400 text-sm">One new challenge every day.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">One new challenge every day.</p>
           </div>
         </div>
 
@@ -333,7 +333,7 @@ export default function DailyPuzzlePage() {
               <div className={`rounded-2xl overflow-hidden border-2 transition-all duration-200 ${
                 status === "correct" ? "border-emerald-500 shadow-lg shadow-emerald-500/20" :
                 status === "wrong" ? "border-rose-500 shadow-lg shadow-rose-500/20" :
-                status === "done" ? "border-emerald-600" : "border-slate-800"
+                status === "done" ? "border-emerald-600" : "border-border"
               }`}>
                 <BoardView
                   fen={chess.fen()}
@@ -352,19 +352,19 @@ export default function DailyPuzzlePage() {
             {/* Info panel */}
             <div className="lg:col-span-5 flex flex-col gap-4">
               {/* Puzzle Info */}
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-yellow-400">Today's Puzzle</span>
                   <span className="text-xs text-slate-500">Rating: {puzzle.rating?.rating ?? "—"}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {puzzle.puzzle.themes.slice(0, 4).map((t) => (
-                    <span key={t} className="text-[11px] px-2 py-1 bg-slate-800 rounded-lg text-slate-300 font-semibold capitalize">
+                    <span key={t} className="text-[11px] px-2 py-1 bg-black/10 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-semibold capitalize">
                       {t.replace(/([A-Z])/g, " $1")}
                     </span>
                   ))}
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed">
+                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                   Find the best move sequence for the side to play.
                 </p>
               </div>
@@ -375,7 +375,7 @@ export default function DailyPuzzlePage() {
               </div>
 
               {/* Hint Card */}
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints & Tools</span>
                   <div className="flex gap-1.5">
@@ -412,14 +412,14 @@ export default function DailyPuzzlePage() {
 
                     <button
                       onClick={resetPuzzle}
-                      className="w-full py-2 text-slate-500 hover:text-slate-300 text-xs flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full py-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 text-xs flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <RotateCcw className="w-3 h-3" /> Reset puzzle
                     </button>
 
                     {/* Rating rules legend */}
-                    <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1 mt-1">
-                      <span className="font-bold text-slate-300 block mb-1.5">💡 ELO Rules:</span>
+                    <div className="p-3 bg-black/10 dark:bg-slate-950/40 border border-border rounded-xl text-[11px] text-slate-600 dark:text-slate-400 space-y-1 mt-1">
+                      <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">💡 ELO Rules:</span>
                       {[
                         ["Perfect solve (0 hints)", "+10", "text-emerald-400"],
                         ["1 hint used", "+2", "text-emerald-500"],
@@ -444,23 +444,23 @@ export default function DailyPuzzlePage() {
                     {solved ? "🎉 Puzzle Solved!" : "✓ Puzzle Complete"}
                   </p>
                   {eloUpdateText && (
-                    <pre className="p-3 bg-slate-950 border border-slate-900 rounded-xl text-left text-xs text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
+                    <pre className="p-3 bg-black/10 dark:bg-slate-950 border border-border rounded-xl text-left text-xs text-slate-700 dark:text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">
                       {eloUpdateText}
                     </pre>
                   )}
-                  <p className="text-slate-400 text-sm text-center">Come back tomorrow for a new challenge.</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm text-center">Come back tomorrow for a new challenge.</p>
                 </div>
               )}
 
               {/* History panel */}
               {history.length > 0 && (
-                <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                   <span className="text-xs font-black uppercase tracking-widest text-violet-400">Recent History</span>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                     {history.slice(0, 10).map((h) => (
-                      <div key={h.id} className="flex items-center justify-between text-xs p-2.5 bg-slate-900 rounded-xl">
+                      <div key={h.id} className="flex items-center justify-between text-xs p-2.5 bg-black/5 dark:bg-slate-900 rounded-xl">
                         <div>
-                          <span className="text-slate-300 font-semibold">{h.themes[0] ?? "Puzzle"}</span>
+                          <span className="text-slate-700 dark:text-slate-300 font-semibold">{h.themes[0] ?? "Puzzle"}</span>
                           <span className="text-slate-600 ml-2">{new Date(h.solvedAt).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -485,14 +485,14 @@ export default function DailyPuzzlePage() {
 function StatusBanner({ status, solved }: { status: string; solved: boolean }) {
   if (solved) return null;
   const map: Record<string, { text: string; color: string; bg: string }> = {
-    idle:    { text: "Find the best move!", color: "text-slate-300", bg: "bg-slate-800/50" },
+    idle:    { text: "Find the best move!", color: "text-slate-700 dark:text-slate-300", bg: "bg-black/10 dark:bg-slate-800/50" },
     correct: { text: "✓ Correct! Find the next move...", color: "text-emerald-400", bg: "bg-emerald-500/10" },
     wrong:   { text: "✗ Not the best move — try again.", color: "text-rose-400", bg: "bg-rose-500/10" },
     done:    { text: "✓ All moves found!", color: "text-emerald-400", bg: "bg-emerald-500/10" },
   };
   const s = map[status] || map.idle;
   return (
-    <div className={`p-4 border border-slate-800 rounded-2xl text-sm font-semibold ${s.color} ${s.bg} transition-all`}>
+    <div className={`p-4 border border-border rounded-2xl text-sm font-semibold ${s.color} ${s.bg} transition-all`}>
       {s.text}
     </div>
   );

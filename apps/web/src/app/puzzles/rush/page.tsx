@@ -45,7 +45,38 @@ export default function PuzzleRushPage() {
     loadProfile();
   }, []);
 
-  const loadPuzzle = useCallback(() => {
+  const loadPuzzle = useCallback(async () => {
+    try {
+      const res = await fetch('/api/puzzles/next');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.puzzle) {
+          const p = data.puzzle;
+          // map to local puzzle format
+          const mapped = {
+            id: p.id,
+            fen: p.initialFen,
+            solution: p.solution,
+            rating: p.rating,
+            theme: Array.isArray(p.themes) ? p.themes[0] : (p.themes || ""),
+            hint: "",
+            explanation: ""
+          };
+          setPuzzle(mapped);
+          setChess(new Chess(mapped.fen));
+          setTotalHintsUsed(0);
+          setCurrentMoveHintLevel(0);
+          setHintText("");
+          setCustomSquareStyles({});
+          setCustomArrows([]);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch puzzle from API, using fallback", e);
+    }
+
+    // Fallback
     const p = getRandomPuzzle();
     setPuzzle(p);
     setChess(new Chess(p.fen));
@@ -64,13 +95,14 @@ export default function PuzzleRushPage() {
     setSessionEloChange(0);
     setEloLog([]);
     setPhase("playing");
-    loadPuzzle();
-    intervalRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) { endGame(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
+    loadPuzzle().then(() => {
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((t) => {
+          if (t <= 1) { endGame(); return 0; }
+          return t - 1;
+        });
+      }, 1000);
+    });
   };
 
   const endGame = useCallback(() => {
@@ -196,7 +228,7 @@ export default function PuzzleRushPage() {
   const secs = timeLeft % 60;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-[#0a0f1d]">
+    <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-orange-500/15 border border-orange-500/20">
@@ -204,7 +236,7 @@ export default function PuzzleRushPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Puzzle Rush</h1>
-            <p className="text-slate-400 text-sm">Solve as many puzzles as you can in 3 minutes. 3 strikes and you're out!</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Solve as many puzzles as you can in 3 minutes. 3 strikes and you're out!</p>
           </div>
         </div>
 
@@ -215,7 +247,7 @@ export default function PuzzleRushPage() {
             </div>
             <div>
               <h2 className="text-3xl font-black mb-2">Ready to Rush?</h2>
-              <p className="text-slate-400 max-w-sm mx-auto">3 minutes. 3 strikes. Score as high as you can.</p>
+              <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto">3 minutes. 3 strikes. Score as high as you can.</p>
             </div>
             <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-black font-black text-lg rounded-2xl hover:from-orange-400 hover:to-amber-400 transition shadow-lg shadow-orange-500/20">
               Start Rush!
@@ -226,7 +258,7 @@ export default function PuzzleRushPage() {
         {phase === "playing" && puzzle && chess && (
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-7">
-              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-slate-800"}`}>
+              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen={chess.fen()}
                   onPieceDrop={handleMove}
@@ -237,8 +269,8 @@ export default function PuzzleRushPage() {
             </div>
             <div className="col-span-5 flex flex-col gap-4">
               {/* Timer */}
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl text-center">
-                <div className={`text-5xl font-black tabular-nums ${timeLeft <= 30 ? "text-rose-400 animate-pulse" : "text-white"}`}>
+              <div className="p-5 bg-card border border-border rounded-2xl text-center">
+                <div className={`text-5xl font-black tabular-nums ${timeLeft <= 30 ? "text-rose-400 animate-pulse" : "text-foreground"}`}>
                   {mins}:{secs.toString().padStart(2, "0")}
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-2">
@@ -248,11 +280,11 @@ export default function PuzzleRushPage() {
               </div>
               {/* Score */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+                <div className="p-4 bg-card border border-border rounded-xl text-center">
                   <div className="text-3xl font-black text-emerald-400">{score}</div>
                   <div className="text-xs text-slate-500 mt-1">Solved</div>
                 </div>
-                <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+                <div className="p-4 bg-card border border-border rounded-xl text-center">
                   <div className="flex items-center justify-center gap-1 text-rose-400">
                     {Array.from({ length: MAX_STRIKES }).map((_, i) => (
                       <X key={i} className={`w-6 h-6 ${i < strikes ? "opacity-100" : "opacity-20"}`} />
@@ -262,14 +294,14 @@ export default function PuzzleRushPage() {
                 </div>
               </div>
               {/* Theme badge */}
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl">
+              <div className="p-4 bg-card border border-border rounded-xl">
                 <span className="text-xs font-black uppercase tracking-widest text-orange-400">Theme</span>
-                <p className="font-bold text-white mt-1">{puzzle.theme}</p>
-                <p className="text-xs text-slate-400 mt-1">{puzzle.hint}</p>
+                <p className="font-bold text-foreground mt-1">{puzzle.theme}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{puzzle.hint}</p>
               </div>
 
               {/* Hint Card */}
-              <div className="p-5 bg-[#0d1326] border border-slate-800 rounded-2xl space-y-3">
+              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
                   <div className="flex gap-1.5">
@@ -294,8 +326,8 @@ export default function PuzzleRushPage() {
                     {currentMoveHintLevel >= 3 ? "✓ All hints shown" : `💡 Show Hint ${currentMoveHintLevel + 1} of 3`}
                   </button>
                   
-                  <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-[11px] text-slate-400 space-y-1.5 text-left">
-                    <span className="font-bold text-slate-300 block mb-1">💡 Rating Rules:</span>
+                  <div className="p-3 bg-black/10 dark:bg-slate-950/40 border border-border rounded-xl text-[11px] text-slate-600 dark:text-slate-400 space-y-1.5 text-left">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">💡 Rating Rules:</span>
                     <div className="flex justify-between">
                       <span>• Perfect solve (0 hints):</span>
                       <span className="text-emerald-400 font-bold">+10 ELO</span>
@@ -312,7 +344,7 @@ export default function PuzzleRushPage() {
                       <span>• 3 Hints used:</span>
                       <span className="text-rose-400 font-bold">-5 ELO</span>
                     </div>
-                    <div className="flex justify-between border-t border-slate-900 pt-1 mt-1 text-[10px] text-slate-500">
+                    <div className="flex justify-between border-t border-border pt-1 mt-1 text-[10px] text-slate-500">
                       <span>• Strike Penalty:</span>
                       <span className="text-rose-500 font-semibold">-10 ELO each</span>
                     </div>
@@ -328,22 +360,22 @@ export default function PuzzleRushPage() {
             <Trophy className="w-16 h-16 text-yellow-400 animate-bounce" />
             <div>
               <h2 className="text-4xl font-black mb-2">Rush Complete!</h2>
-              <p className="text-slate-400">You solved <span className="text-white font-black text-2xl">{score}</span> puzzles</p>
+              <p className="text-slate-600 dark:text-slate-400">You solved <span className="text-foreground font-black text-2xl">{score}</span> puzzles</p>
             </div>
             
             <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+              <div className="p-4 bg-card border border-border rounded-xl text-center">
                 <div className="text-2xl font-black text-emerald-400">{score}</div>
                 <div className="text-xs text-slate-500">Solved</div>
               </div>
-              <div className="p-4 bg-[#0d1326] border border-slate-800 rounded-xl text-center">
+              <div className="p-4 bg-card border border-border rounded-xl text-center">
                 <div className="text-2xl font-black text-rose-400">{strikes}</div>
                 <div className="text-xs text-slate-500">Strikes</div>
               </div>
             </div>
 
             {/* ELO Summary Log */}
-            <div className="w-full max-w-sm p-5 bg-[#0d1326] border border-slate-800 rounded-2xl text-left space-y-3">
+            <div className="w-full max-w-sm p-5 bg-card border border-border rounded-2xl text-left space-y-3">
               <h3 className="text-sm font-black text-orange-400 uppercase tracking-widest text-center">Session ELO Impact</h3>
               <div className="text-center py-2">
                 <span className="text-slate-500 text-xs block">Net Rating Change</span>
@@ -356,7 +388,7 @@ export default function PuzzleRushPage() {
               </div>
               
               {eloLog.length > 0 && (
-                <div className="border-t border-slate-800 pt-3 mt-1 space-y-1.5 max-h-[160px] overflow-y-auto font-mono text-[11px] text-slate-455">
+                <div className="border-t border-border pt-3 mt-1 space-y-1.5 max-h-[160px] overflow-y-auto font-mono text-[11px] text-slate-455">
                   {eloLog.map((log, idx) => (
                     <div key={idx} className="truncate">
                       {log}
