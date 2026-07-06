@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
 
       {/* Request Detail Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setSelectedRequest(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setSelectedRequest(null)}>
           <div className="bg-card border border-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-border flex items-center justify-between">
               <h2 className="text-xl font-black">Upgrade Request Details</h2>

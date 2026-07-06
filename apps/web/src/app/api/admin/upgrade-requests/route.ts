@@ -61,6 +61,7 @@ export async function POST(req: Request) {
     const reqData = requestRes.rows[0];
     
     await dbClient.execute("BEGIN TRANSACTION");
+    let transactionActive = true;
     try {
       if (action === "APPROVE") {
         const currentUserPlan = reqData.plan as string;
@@ -70,7 +71,6 @@ export async function POST(req: Request) {
         let newQuotasStr = reqData.requested_quotas as string | null;
         let newRenewsAt = `datetime('now', '+30 days')`;
 
-        // If user already has a paid plan that is still active
         if (currentUserPlan !== 'FREE' && currentRenewsAt && currentRenewsAt > new Date()) {
           const currentQuotas = typeof reqData.custom_quotas === 'string' && reqData.custom_quotas.trim().startsWith('{')
             ? JSON.parse(reqData.custom_quotas)
@@ -78,7 +78,6 @@ export async function POST(req: Request) {
             
           const requestedQuotas = newQuotasStr ? JSON.parse(newQuotasStr) : {};
           
-          // Combine quotas
           const combinedQuotas = { ...currentQuotas };
           for (const key of Object.keys(requestedQuotas)) {
             combinedQuotas[key] = (combinedQuotas[key] || 0) + (requestedQuotas[key] || 0);
@@ -86,7 +85,6 @@ export async function POST(req: Request) {
           
           newQuotasStr = JSON.stringify(combinedQuotas);
           newPlan = 'CUSTOM';
-          // Extend by 30 days from the *existing* renews_at
           newRenewsAt = `datetime('${currentRenewsAt.toISOString()}', '+30 days')`;
         }
 
@@ -113,7 +111,7 @@ export async function POST(req: Request) {
         
         await sendUpgradeRejectedEmail(
           reqData.email as string,
-          note
+          note || ""
         );
       }
       
@@ -124,9 +122,13 @@ export async function POST(req: Request) {
       });
       
       await dbClient.execute("COMMIT");
+      transactionActive = false;
       return NextResponse.json({ success: true });
     } catch (e) {
-      await dbClient.execute("ROLLBACK");
+      console.error("Upgrade request transaction error:", e);
+      if (transactionActive) {
+        try { await dbClient.execute("ROLLBACK"); } catch {}
+      }
       throw e;
     }
   } catch (error) {
