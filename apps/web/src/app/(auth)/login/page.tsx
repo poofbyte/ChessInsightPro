@@ -12,7 +12,7 @@ function LoginForm() {
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const urlMessage = searchParams.get("message");
-  const [message, setMessage] = useState(urlMessage || (typeof window !== "undefined" ? sessionStorage.getItem("loginMessage") : null));
+  const [message, setMessage] = useState(() => urlMessage || (typeof window !== "undefined" ? sessionStorage.getItem("loginMessage") : null));
 
   useEffect(() => {
     if (!urlMessage) {
