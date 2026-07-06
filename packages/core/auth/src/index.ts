@@ -11,7 +11,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export function generateTokens(userId: string, role: string, accessSecret: string, refreshSecret: string) {
-  const accessToken = jwt.sign({ userId, role }, accessSecret, { expiresIn: "15m" });
+  const accessToken = jwt.sign({ userId, role }, accessSecret, { expiresIn: "7d" });
   const refreshToken = jwt.sign({ userId, role }, refreshSecret, { expiresIn: "30d" });
   return { accessToken, refreshToken };
 }
