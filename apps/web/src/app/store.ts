@@ -16,12 +16,20 @@ interface AuthStore {
   clearAuth: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  accessToken: null,
-  user: null,
-  setAuth: (accessToken, user) => set({ accessToken, user }),
-  clearAuth: () => set({ accessToken: null, user: null }),
-}));
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      accessToken: null,
+      user: null,
+      setAuth: (accessToken, user) => set({ accessToken, user }),
+      clearAuth: () => set({ accessToken: null, user: null }),
+    }),
+    {
+      name: "chessinsight-auth", // localStorage key
+      partialize: (state) => ({ accessToken: state.accessToken, user: state.user }),
+    }
+  )
+);
 
 export type BoardThemeId = "slate" | "teal" | "green" | "walnut" | "purple" | "ice" | "classicLight";
 

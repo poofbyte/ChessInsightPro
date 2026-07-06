@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
-import { Users, CreditCard, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X } from "lucide-react";
+import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  const { accessToken } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"dashboard" | "requests" | "settings">("dashboard");
   const [stats, setStats] = useState<any>(null);
   const [requests, setRequests] = useState<any[]>([]);
@@ -13,8 +15,19 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Client-side guard: redirect non-admin users away
   useEffect(() => {
-    if (!accessToken) return;
+    // Wait a tick for Zustand to rehydrate from storage
+    const timeout = setTimeout(() => {
+      if (!accessToken || user?.role !== "ADMIN") {
+        router.replace("/");
+      }
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [accessToken, user, router]);
+
+  useEffect(() => {
+    if (!accessToken || user?.role !== "ADMIN") return;
     
     Promise.all([
       fetch("/api/admin/dashboard", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json()),
@@ -28,8 +41,11 @@ export default function AdminDashboardPage() {
         verification_fields: settingsData.verification_fields || "[]"
       });
       setLoading(false);
+    }).catch(err => {
+      console.error("Admin data load error:", err);
+      setLoading(false);
     });
-  }, [accessToken]);
+  }, [accessToken, user]);
 
   const handleProcessRequest = async (id: string, action: "APPROVE" | "REJECT") => {
     try {
