@@ -228,47 +228,47 @@ export default function ProfilePage() {
             {user ? (
               <div className="space-y-6">
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Email</p>
-                  <input type="email" value={user.email} disabled className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-slate-400 cursor-not-allowed" />
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Email</p>
+                  <input type="email" value={user.email} disabled className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 cursor-not-allowed" />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Name <span className="text-rose-500">*</span></p>
-                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors" placeholder="Your Name" />
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Name <span className="text-rose-500">*</span></p>
+                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm" placeholder="Your Name" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Phone Number <span className="text-rose-500">*</span></p>
-                    <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} disabled={!!initialPhone && initialPhone.trim() !== ""} className={`w-full px-4 py-2 bg-black/20 border border-border rounded-xl transition-colors ${!!initialPhone && initialPhone.trim() !== "" ? 'text-slate-400 cursor-not-allowed' : 'text-foreground focus:outline-none focus:border-teal-500'}`} placeholder="+1234567890" />
-                    {!!initialPhone && initialPhone.trim() !== "" && <p className="text-[10px] text-slate-500 mt-1">Phone number cannot be changed once set.</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Chess.com URL</p>
-                    <input type="url" value={formData.chess_com_url} onChange={e => setFormData({...formData, chess_com_url: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors" placeholder="https://chess.com/member/username" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Lichess URL</p>
-                    <input type="url" value={formData.lichess_url} onChange={e => setFormData({...formData, lichess_url: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors" placeholder="https://lichess.org/@/username" />
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Phone Number <span className="text-rose-500">*</span></p>
+                    <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} disabled={!!initialPhone && initialPhone.trim() !== ""} className={`w-full px-4 py-2.5 rounded-xl transition-all shadow-sm ${!!initialPhone && initialPhone.trim() !== "" ? 'bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500'}`} placeholder="+1234567890" />
+                    {!!initialPhone && initialPhone.trim() !== "" && <p className="text-[10px] text-slate-500 mt-1.5">Phone number cannot be changed once set.</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">FIDE Profile URL</p>
-                    <input type="url" value={formData.fide_id_url} onChange={e => setFormData({...formData, fide_id_url: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors" placeholder="https://ratings.fide.com/profile/..." />
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Chess.com URL</p>
+                    <input type="url" value={formData.chess_com_url} onChange={e => setFormData({...formData, chess_com_url: e.target.value})} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm" placeholder="https://chess.com/member/username" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">FIDE ELO</p>
-                    <input type="number" value={formData.fide_elo} onChange={e => setFormData({...formData, fide_elo: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors" placeholder="e.g. 1500" />
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Lichess URL</p>
+                    <input type="url" value={formData.lichess_url} onChange={e => setFormData({...formData, lichess_url: e.target.value})} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm" placeholder="https://lichess.org/@/username" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">FIDE Profile URL</p>
+                    <input type="url" value={formData.fide_id_url} onChange={e => setFormData({...formData, fide_id_url: e.target.value})} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm" placeholder="https://ratings.fide.com/profile/..." />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">FIDE ELO</p>
+                    <input type="number" value={formData.fide_elo} onChange={e => setFormData({...formData, fide_elo: e.target.value})} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm" placeholder="e.g. 1500" />
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Short Bio</p>
-                  <textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="w-full px-4 py-2 bg-black/20 border border-border rounded-xl text-foreground focus:outline-none focus:border-teal-500 transition-colors min-h-[100px]" placeholder="Tell us a bit about your chess journey..." />
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Short Bio</p>
+                  <textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all shadow-sm min-h-[120px] resize-y" placeholder="Tell us a bit about your chess journey..." />
                 </div>
                 
                 <div className="pt-2">
