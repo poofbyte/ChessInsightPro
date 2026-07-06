@@ -31,19 +31,17 @@ export async function POST(req: Request) {
     // Parse body
     const { plan, customPriceBdt, customQuotas, verificationDetails } = await req.json();
     
-    let price = 0;
-    if (plan === "TIER1") price = 100;
-    else if (plan === "TIER2") price = 200;
-    else if (plan === "CUSTOM") price = customPriceBdt || 0;
+    const normalizedPlan = (plan || "").toUpperCase();
+    const price = Number(customPriceBdt) || 0;
     
     const requestId = crypto.randomUUID();
     
     await dbClient.execute({
       sql: `INSERT INTO pending_upgrade_requests (id, user_id, requested_plan, requested_quotas, requested_price_bdt, verification_details) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [requestId, userId, plan, customQuotas ? JSON.stringify(customQuotas) : null, price, verificationDetails ? JSON.stringify(verificationDetails) : null]
+      args: [requestId, userId, normalizedPlan, customQuotas ? JSON.stringify(customQuotas) : null, price, verificationDetails ? JSON.stringify(verificationDetails) : null]
     });
     
-    await sendAdminUpgradeRequestNotification(userEmail, plan, price, customQuotas);
+    await sendAdminUpgradeRequestNotification(userEmail, normalizedPlan, price, customQuotas);
     
     return NextResponse.json({ success: true, requestId });
   } catch (error) {

@@ -4,9 +4,22 @@ import { verifyAccessToken } from "@core/auth";
 import { getAllConfig } from "@core/config";
 
 function getPlanQuotas(pricingConfig: any, planId: string) {
-  if (!pricingConfig?.plans) return {};
-  const plan = pricingConfig.plans.find((p: any) => p.id === planId);
-  return plan?.quotaLimits || {};
+  if (pricingConfig?.plans) {
+    const plan = pricingConfig.plans.find((p: any) => p.id === planId);
+    if (plan?.quotaLimits) return plan.quotaLimits;
+  }
+  
+  // Safe defaults if Admin hasn't saved the pricing config yet
+  if (planId === "free") {
+    return {
+      reviewsPerDay: 2,
+      reviewsPerMonth: 60,
+      practiceRushPuzzlePerDay: 5,
+      practiceRushPuzzlePerMonth: 150
+    };
+  }
+  
+  return {};
 }
 
 export async function GET(req: Request) {

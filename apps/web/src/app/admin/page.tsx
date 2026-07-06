@@ -272,7 +272,9 @@ export default function AdminDashboardPage() {
                       onClick={() => r.status === "PENDING" && setSelectedRequest(r)}
                     >
                       <td className="px-6 py-4 font-bold">{r.user_email}</td>
-                      <td className="px-6 py-4">{r.requested_plan}</td>
+                      <td className="px-6 py-4">
+                        {r.requested_plan === "TIER1" ? "Pro" : r.requested_plan === "TIER2" ? "Elite" : "Custom"}
+                      </td>
                       <td className="px-6 py-4 font-bold">{r.requested_price_bdt} BDT</td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${
