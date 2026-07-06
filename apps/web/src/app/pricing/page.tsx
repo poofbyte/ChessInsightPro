@@ -2,19 +2,43 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Star } from "lucide-react";
+import { Check, Star, X } from "lucide-react";
 import { calculateCustomPrice } from "@core/pricing";
 import { useAuthStore } from "@/app/store";
+import ReactMarkdown from "react-markdown";
 
 export default function PricingPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, accessToken } = useAuthStore();
   
   const [reviews, setReviews] = useState(100);
   const [sessions, setSessions] = useState(50);
   const [isCalculating, setIsCalculating] = useState(false);
 
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalStep, setModalStep] = useState<1 | 2>(1);
+  const [selectedPlan, setSelectedPlan] = useState<{ plan: string, price: number, quotas?: any } | null>(null);
+  const [paymentConfig, setPaymentConfig] = useState<any>(null);
+  const [verificationData, setVerificationData] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const customPrice = Math.round(calculateCustomPrice(reviews, sessions));
+
+  const fetchPaymentConfig = async () => {
+    try {
+      const res = await fetch("/api/settings/payment-config", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentConfig(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch payment config:", e);
+    }
+  };
 
   const handleSelectPlan = async (plan: string, customPriceBdt?: number, customQuotas?: any) => {
     if (!user) {
@@ -22,23 +46,62 @@ export default function PricingPage() {
       return;
     }
 
+    let price = 0;
+    if (plan === "TIER1") price = 100;
+    else if (plan === "TIER2") price = 200;
+    else if (plan === "CUSTOM") price = customPriceBdt || 0;
+
+    setSelectedPlan({ plan, price, quotas: customQuotas });
+    await fetchPaymentConfig();
+    setShowModal(true);
+    setModalStep(1);
+    setIsSuccess(false);
+    setVerificationData({});
+  };
+
+  const handleVerificationSubmit = async () => {
+    if (!selectedPlan) return;
+    setIsSubmitting(true);
+    
     try {
       const res = await fetch("/api/upgrade-request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, customPriceBdt, customQuotas }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ 
+          plan: selectedPlan.plan, 
+          customPriceBdt: selectedPlan.price, 
+          customQuotas: selectedPlan.quotas,
+          verificationDetails: verificationData
+        }),
       });
       
       if (res.ok) {
-        router.push("/contact-to-upgrade");
+        setIsSuccess(true);
+      } else {
+        alert("Failed to submit request.");
       }
     } catch (e) {
       console.error(e);
+      alert("An error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getParsedFields = () => {
+    if (!paymentConfig?.verification_fields) return [];
+    try {
+      return JSON.parse(paymentConfig.verification_fields);
+    } catch {
+      return [];
     }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-8 bg-background relative">
       <div className="max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-black">Train like a Grandmaster.</h1>
@@ -183,6 +246,121 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      {showModal && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button 
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 p-2 bg-black/5 dark:bg-slate-800 rounded-full hover:bg-black/10 dark:hover:bg-slate-700 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="p-8">
+              {!isSuccess && (
+                <>
+                  <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-black">Upgrade to {selectedPlan.plan === "TIER1" ? "Pro" : selectedPlan.plan === "TIER2" ? "Elite" : "Custom"}</h2>
+                    <span className="px-3 py-1 bg-teal-500/10 text-teal-500 font-black rounded-lg">
+                      Step {modalStep} of 2
+                    </span>
+                  </div>
+                  
+                  <div className="mb-6 p-4 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Due</p>
+                      <p className="text-2xl font-black">{selectedPlan.price} BDT</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Account</p>
+                      <p className="text-sm font-bold truncate max-w-[150px]" title={user?.email}>{user?.email}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {isSuccess ? (
+                <div className="text-center py-12 space-y-6">
+                  <div className="w-20 h-20 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto">
+                    <Check className="w-10 h-10 text-teal-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black mb-2">Request Submitted!</h3>
+                    <p className="text-slate-600 dark:text-slate-400">
+                      Your payment verification is under review. You will receive an email once your account is upgraded.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => { setShowModal(false); router.push("/profile"); }}
+                    className="w-full py-4 bg-teal-500 text-white font-black rounded-xl hover:bg-teal-600 transition shadow-lg shadow-teal-500/20"
+                  >
+                    Go to Profile
+                  </button>
+                </div>
+              ) : modalStep === 1 ? (
+                <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="prose prose-slate dark:prose-invert max-w-none text-sm">
+                    {paymentConfig ? (
+                      <ReactMarkdown>{paymentConfig.payment_instructions || "Payment instructions not set."}</ReactMarkdown>
+                    ) : (
+                      <p className="animate-pulse">Loading instructions...</p>
+                    )}
+                  </div>
+                  
+                  <button 
+                    onClick={() => setModalStep(2)}
+                    disabled={!paymentConfig}
+                    className="w-full py-4 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white font-black rounded-xl transition shadow-lg shadow-teal-500/20"
+                  >
+                    I Have Paid
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Please provide your payment details so we can verify your transaction.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {getParsedFields().map((field: any) => (
+                      <div key={field.id}>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
+                          {field.label} {field.required && <span className="text-rose-500">*</span>}
+                        </label>
+                        <input
+                          type={field.type || "text"}
+                          required={field.required}
+                          value={verificationData[field.id] || ""}
+                          onChange={e => setVerificationData({...verificationData, [field.id]: e.target.value})}
+                          className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all shadow-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <button 
+                      onClick={() => setModalStep(1)}
+                      className="px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground font-bold rounded-xl transition"
+                    >
+                      Back
+                    </button>
+                    <button 
+                      onClick={handleVerificationSubmit}
+                      disabled={isSubmitting}
+                      className="flex-1 py-4 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white font-black rounded-xl transition shadow-lg shadow-teal-500/20"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Verification"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -127,6 +127,7 @@ export const pendingUpgradeRequestsTable: TableDefinition = {
     { name: "requested_plan", type: "TEXT NOT NULL" },
     { name: "requested_quotas", type: "TEXT" }, // JSON
     { name: "requested_price_bdt", type: "INTEGER NOT NULL" },
+    { name: "verification_details", type: "TEXT" }, // JSON
     { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
     { name: "status", type: "TEXT NOT NULL DEFAULT 'PENDING'" },
   ],

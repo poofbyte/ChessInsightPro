@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const userEmail = sessionRes.rows[0].email as string;
     
     // Parse body
-    const { plan, customPriceBdt, customQuotas } = await req.json();
+    const { plan, customPriceBdt, customQuotas, verificationDetails } = await req.json();
     
     let price = 0;
     if (plan === "TIER1") price = 100;
@@ -39,8 +39,8 @@ export async function POST(req: Request) {
     const requestId = crypto.randomUUID();
     
     await dbClient.execute({
-      sql: `INSERT INTO pending_upgrade_requests (id, user_id, requested_plan, requested_quotas, requested_price_bdt) VALUES (?, ?, ?, ?, ?)`,
-      args: [requestId, userId, plan, customQuotas ? JSON.stringify(customQuotas) : null, price]
+      sql: `INSERT INTO pending_upgrade_requests (id, user_id, requested_plan, requested_quotas, requested_price_bdt, verification_details) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [requestId, userId, plan, customQuotas ? JSON.stringify(customQuotas) : null, price, verificationDetails ? JSON.stringify(verificationDetails) : null]
     });
     
     await sendAdminUpgradeRequestNotification(userEmail, plan, price, customQuotas);
