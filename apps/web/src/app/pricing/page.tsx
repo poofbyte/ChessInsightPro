@@ -149,9 +149,9 @@ export default function PricingPage() {
                   <span className={`font-bold mb-1 ${textPriceMuted}`}>{plan.currency}/{plan.period}</span>
                 </div>
                 {plan.description && (
-                  <p className={`text-sm font-bold mb-6 ${descColor}`}>
+                  <div className={`text-sm font-bold mb-6 ${descColor}`}>
                     <ReactMarkdown>{plan.description}</ReactMarkdown>
-                  </p>
+                  </div>
                 )}
                 <ul className="space-y-4 mb-8 flex-1">
                   {plan.features.map((feat: any, i: number) => (
