@@ -156,6 +156,19 @@ export const adminAuditLogTable: TableDefinition = {
   ],
 };
 
+export const activityLogsTable: TableDefinition = {
+  name: "activity_logs",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "user_id", type: "TEXT NOT NULL" },
+    { name: "activity_type", type: "TEXT NOT NULL" },
+    { name: "activity_name", type: "TEXT" },
+    { name: "details", type: "TEXT" },
+    { name: "ip_address", type: "TEXT" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 export const ALL_TABLES: TableDefinition[] = [
   usersTable,
   sessionsTable,
@@ -169,4 +182,5 @@ export const ALL_TABLES: TableDefinition[] = [
   pendingUpgradeRequestsTable,
   systemConfigTable,
   adminAuditLogTable,
+  activityLogsTable,
 ];

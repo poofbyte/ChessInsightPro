@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { Puzzle, Star, ChevronRight, Loader2, RotateCcw } from "lucide-react";
@@ -214,6 +215,7 @@ export default function DailyPuzzlePage() {
     fetch("https://lichess.org/api/puzzle/daily")
       .then((r) => r.json())
       .then((data) => {
+        logActivity("puzzle_start", "Daily Puzzle", { puzzleId: data.id });
         setPuzzle(data);
         const c = new Chess(data.puzzle.fen ?? data.fen);
         // Play the first move automatically (opponent's move to set up the puzzle)
@@ -227,6 +229,7 @@ export default function DailyPuzzlePage() {
         setLoading(false);
       })
       .catch(() => {
+        logActivity("puzzle_error", "Daily Puzzle", { error: "Unable to load today's puzzle" });
         setError("Unable to load today's puzzle. Check your connection.");
         setLoading(false);
       });
@@ -242,9 +245,11 @@ export default function DailyPuzzlePage() {
       const result = chess.move({ from, to, promotion: "q" });
       if (!result) return false;
       playMoveSound(result.san);
+      logActivity("puzzle_attempt", "Daily Puzzle", { result: "correct", hintsUsed: totalHintsUsed, moveIdx });
       const next = moveIdx + 1;
       setMoveIdx(next);
       if (next >= solution.length) {
+        logActivity("puzzle_complete", "Daily Puzzle", { hintsUsed: totalHintsUsed, mistakes: mistakesCount });
         setStatus("done");
         setSolved(true);
         updateEloForPuzzle(totalHintsUsed, mistakesCount, true).then((res) => {
@@ -271,6 +276,7 @@ export default function DailyPuzzlePage() {
       }
       return true;
     } else {
+      logActivity("puzzle_attempt", "Daily Puzzle", { result: "wrong" });
       setStatus("wrong");
       setMistakesCount((prev) => prev + 1);
       setTimeout(() => setStatus("idle"), 1000);

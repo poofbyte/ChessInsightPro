@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -25,6 +26,7 @@ const TIPS = [
 type Phase = "setup" | "playing";
 
 export default function PracticePage() {
+  useEffect(() => { logActivity("page_view", "Train - Practice"); }, []);
   const [phase, setPhase] = useState<Phase>("setup");
   const [chess, setChess] = useState<Chess | null>(null);
   const [fen, setFen] = useState("start");

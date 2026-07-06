@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -88,6 +89,7 @@ export default function PuzzleRushPage() {
   }, []);
 
   const startGame = () => {
+    logActivity("puzzle_rush_start", "Puzzle Rush");
     setScore(0);
     setStrikes(0);
     setTimeLeft(DURATION);
@@ -106,9 +108,10 @@ export default function PuzzleRushPage() {
   };
 
   const endGame = useCallback(() => {
+    logActivity("puzzle_rush_complete", "Puzzle Rush", { score, strikes, sessionEloChange });
     setPhase("done");
     if (intervalRef.current) clearInterval(intervalRef.current);
-  }, []);
+  }, [score, strikes, sessionEloChange]);
 
   useEffect(() => {
     if (phase === "done" && sessionEloChange !== 0) {
@@ -185,6 +188,7 @@ export default function PuzzleRushPage() {
     const move = `${from}${to}`;
 
     if (move === expected || move + "q" === expected) {
+      logActivity("puzzle_attempt", "Puzzle Rush", { result: "correct", hintsUsed: totalHintsUsed });
       try {
         const result = chess.move({ from, to, promotion: "q" });
         if (!result) return false;
@@ -211,6 +215,7 @@ export default function PuzzleRushPage() {
       setTimeout(() => { setFlash(null); loadPuzzle(); }, 500);
       return true;
     } else {
+      logActivity("puzzle_attempt", "Puzzle Rush", { result: "wrong" });
       setFlash("wrong");
       setStrikes((s) => s + 1);
       

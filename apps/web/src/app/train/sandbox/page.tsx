@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -9,6 +10,7 @@ import { BarChart2, RefreshCw, ChevronLeft, ChevronRight, RotateCcw } from "luci
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function SandboxPage() {
+  useEffect(() => { logActivity("page_view", "Train - Sandbox"); }, []);
   // Store FEN as the single source of truth — reconstruct Chess from it each time
   const [fen, setFen] = useState(INITIAL_FEN);
   const [history, setHistory] = useState<string[]>([INITIAL_FEN]);

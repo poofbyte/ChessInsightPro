@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -90,6 +91,7 @@ const ENDGAMES = [
 ];
 
 export default function EndgamesPage() {
+  useEffect(() => { logActivity("page_view", "Train - Endgames"); }, []);
   const [selected, setSelected] = useState<typeof ENDGAMES[0] | null>(null);
   const [chess, setChess] = useState<Chess | null>(null);
   const [category, setCategory] = useState("All");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -93,6 +94,7 @@ export default function PuzzleBattlePage() {
   const botSolveMs = Math.max(4000, 12000 - (botRating - 800) * 3);
 
   const startGame = () => {
+    logActivity("puzzle_start", "Puzzle Battle", { botRating });
     setUserScore(0);
     setBotScore(0);
     setTimeLeft(BATTLE_DURATION);
@@ -116,10 +118,11 @@ export default function PuzzleBattlePage() {
   };
 
   const endGame = useCallback(() => {
+    logActivity("puzzle_complete", "Puzzle Battle", { userScore, botScore, sessionEloChange });
     setPhase("done");
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (botIntervalRef.current) clearInterval(botIntervalRef.current);
-  }, []);
+  }, [userScore, botScore, sessionEloChange]);
 
   useEffect(() => {
     if (phase === "done" && sessionEloChange !== 0) {
@@ -195,6 +198,7 @@ export default function PuzzleBattlePage() {
     const move = `${from}${to}`;
 
     if (move === expected || move + "q" === expected) {
+      logActivity("puzzle_attempt", "Puzzle Battle", { result: "correct", hintsUsed: totalHintsUsed });
       try {
         const result = chess.move({ from, to, promotion: "q" });
         if (!result) return false;
@@ -220,6 +224,7 @@ export default function PuzzleBattlePage() {
       setTimeout(() => { setFlash(null); loadPuzzle(); }, 500);
       return true;
     } else {
+      logActivity("puzzle_attempt", "Puzzle Battle", { result: "wrong" });
       setFlash("wrong");
       setMistakesCount((prev) => prev + 1);
       

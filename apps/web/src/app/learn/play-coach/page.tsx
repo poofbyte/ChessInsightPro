@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound, useChessStore } from "../../store";
@@ -24,6 +25,7 @@ const COACH_TIPS = [
 ];
 
 export default function PlayCoachPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Play Coach"); }, []);
   const [selectedLevel, setSelectedLevel] = useState(BOT_LEVELS[0]);
   const [phase, setPhase] = useState<"setup" | "playing">("setup");
   const [chess, setChess] = useState<Chess | null>(null);

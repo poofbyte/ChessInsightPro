@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { ScrollText, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -56,6 +57,7 @@ const RULES = [
 ];
 
 export default function RulesPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Rules"); }, []);
   const [idx, setIdx] = useState(0);
   const rule = RULES[idx];
 

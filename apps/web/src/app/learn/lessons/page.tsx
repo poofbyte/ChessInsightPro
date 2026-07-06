@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { GraduationCap, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
 import { BoardView } from "../../../components/BoardView";
 
@@ -62,6 +63,7 @@ const LESSONS = [
 ];
 
 export default function LessonsPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Lessons"); }, []);
   const [selectedLesson, setSelectedLesson] = useState<typeof LESSONS[0] | null>(null);
   const [slideIdx, setSlideIdx] = useState(0);
   const [completed, setCompleted] = useState<string[]>([]);

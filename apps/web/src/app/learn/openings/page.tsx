@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Map, ChevronRight, TrendingUp } from "lucide-react";
 
@@ -74,6 +75,7 @@ const OPENINGS = [
 ];
 
 export default function OpeningsPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Openings"); }, []);
   const [selected, setSelected] = useState<typeof OPENINGS[0] | null>(null);
   const [filter, setFilter] = useState("All");
 

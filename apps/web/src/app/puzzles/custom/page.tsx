@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound } from "../../store";
@@ -78,6 +79,7 @@ export default function CustomPuzzlesPage() {
       }
     }
 
+    logActivity("puzzle_start", "Custom Puzzle", { theme: p.theme, rating: p.rating });
     setActivePuzzle(p);
     setChess(new Chess(p.fen));
     setStatus("idle");
@@ -217,6 +219,7 @@ export default function CustomPuzzlesPage() {
     const expected = activePuzzle.solution[0];
     const move = `${from}${to}`;
     if (move === expected || move + "q" === expected) {
+      logActivity("puzzle_complete", "Custom Puzzle", { hintsUsed: totalHintsUsed, mistakes: mistakesCount, theme: activePuzzle.theme });
       try {
         const result = chess.move({ from, to, promotion: "q" });
         if (!result) return false;
@@ -245,6 +248,7 @@ export default function CustomPuzzlesPage() {
       }
       return true;
     } else {
+      logActivity("puzzle_attempt", "Custom Puzzle", { result: "wrong" });
       setStatus("wrong");
       setMistakesCount((prev) => prev + 1);
       const audio = new Audio("/sounds/illegal-move.webm");

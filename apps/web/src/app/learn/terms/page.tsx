@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { AlignLeft, Search } from "lucide-react";
 
 const TERMS = [
@@ -42,6 +43,7 @@ const TERMS = [
 const CATEGORIES = ["All", ...Array.from(new Set(TERMS.map((t) => t.category)))];
 
 export default function ChessTermsPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Terms"); }, []);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 

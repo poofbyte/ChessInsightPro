@@ -17,6 +17,7 @@ import { BlunderPuzzleGenerator } from "@chessinsight/puzzles";
 import { SpacedRepetitionManager } from "@chessinsight/learning";
 import { getLineWinPercentage } from "@chessinsight/evaluator";
 import { resolvePgnFromUrl } from "../lib/pgn-resolver";
+import { logActivity } from "../lib/activity-log";
 import { VisualizationFormatter } from "@chessinsight/charts";
 import {
   Upload, RefreshCw, ChevronLeft, ChevronRight,
@@ -137,6 +138,7 @@ export default function RootReviewPage() {
         await db.profiles.put(updatedProf);
       }
       await loadDatabaseData();
+      logActivity("game_review", "PGN analyzed", { game_id: newGame.id, white: newGame.white.name, black: newGame.black.name, result: newGame.result });
       setGame(newGame);
       setPgnInput("");
     } catch (e: any) {
@@ -152,6 +154,7 @@ export default function RootReviewPage() {
   const launchPuzzle = useCallback((game: Game, moveIndex: number) => {
     const puzzle = BlunderPuzzleGenerator.generatePuzzleFromBlunder(game, moveIndex);
     if (puzzle) {
+      logActivity("puzzle", "Puzzle launched", { game_id: game.id, move_index: moveIndex, hint: puzzle.hint });
       setActivePuzzle(puzzle);
       setPuzzleGame(new Chess(puzzle.initialFen));
       setPuzzleMoveIdx(0);
@@ -166,6 +169,7 @@ export default function RootReviewPage() {
       const solutionMove = activePuzzle.solutionMoves[puzzleMoveIdx];
       if (uciMove === solutionMove) {
         const resultMove = puzzleGame.move({ from, to, promotion });
+        logActivity("puzzle", "Puzzle solved", { move: uciMove });
         setPuzzleSuccess(true);
         playMoveSound(resultMove.san);
         return true;

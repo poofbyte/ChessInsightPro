@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthStore } from "@/app/store";
-import { LayoutDashboard, Users, CreditCard, Puzzle, Settings, FileText, DollarSign, ArrowLeft, ReceiptText } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, Puzzle, Settings, FileText, DollarSign, ArrowLeft, ReceiptText, BookOpenText, ClipboardList } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -36,6 +36,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/billing", label: "Billing", icon: <ReceiptText className="w-5 h-5" /> },
     { href: "/admin/pricing", label: "Pricing", icon: <DollarSign className="w-5 h-5" /> },
     { href: "/admin/config", label: "System Config", icon: <Settings className="w-5 h-5" /> },
+    { href: "/admin/activity-logs", label: "Activity Logs", icon: <ClipboardList className="w-5 h-5" /> },
+    { href: "/admin/content", label: "Content", icon: <BookOpenText className="w-5 h-5" /> },
     { href: "/admin/audit-log", label: "Audit Log", icon: <FileText className="w-5 h-5" /> },
   ];
 

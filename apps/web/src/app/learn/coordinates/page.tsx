@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { logActivity } from "@/lib/activity-log";
 import { Target, Trophy, Timer, RotateCcw } from "lucide-react";
 import { useChessStore, BOARD_THEMES } from "../../store";
 import { BoardView } from "../../../components/BoardView";
@@ -14,6 +15,7 @@ type Mode = "find-square" | "name-square";
 type Phase = "idle" | "playing" | "done";
 
 export default function CoordinatesPage() {
+  useEffect(() => { logActivity("page_view", "Learn - Coordinates"); }, []);
   const { boardTheme, boardOrientation } = useChessStore();
   const theme = BOARD_THEMES[boardTheme];
 
