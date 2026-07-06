@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { sendAdminUpgradeRequestNotification } from "@core/email";
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     
     const refreshHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
     const sessionRes = await dbClient.execute({
-      sql: `SELECT user_id FROM sessions WHERE refresh_token_hash = ?`,
+      sql: `SELECT s.user_id, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.refresh_token_hash = ?`,
       args: [refreshHash]
     });
     
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
     }
     
     const userId = sessionRes.rows[0].user_id as string;
+    const userEmail = sessionRes.rows[0].email as string;
     
     // Parse body
     const { plan, customPriceBdt, customQuotas } = await req.json();
@@ -40,6 +42,8 @@ export async function POST(req: Request) {
       sql: `INSERT INTO pending_upgrade_requests (id, user_id, requested_plan, requested_quotas, requested_price_bdt) VALUES (?, ?, ?, ?, ?)`,
       args: [requestId, userId, plan, customQuotas ? JSON.stringify(customQuotas) : null, price]
     });
+    
+    await sendAdminUpgradeRequestNotification(userEmail, plan, price, customQuotas);
     
     return NextResponse.json({ success: true, requestId });
   } catch (error) {

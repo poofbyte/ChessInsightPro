@@ -150,3 +150,40 @@ export async function sendUpgradeRejectedEmail(to: string, reason?: string) {
     return { success: false, error };
   }
 }
+
+export async function sendAdminUpgradeRequestNotification(userEmail: string, plan: string, price: number | string, quotas: any) {
+  const resend = getResend();
+  
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "hiranmayroy183@gmail.com";
+  const subject = `[Admin] New Upgrade Request from ${userEmail}`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>New Upgrade Request Submitted</h2>
+      <p><strong>User:</strong> ${userEmail}</p>
+      <p><strong>Requested Plan:</strong> ${plan}</p>
+      <p><strong>Price:</strong> ${price} BDT</p>
+      ${quotas ? `<p><strong>Requested Quotas:</strong><br/><pre>${JSON.stringify(quotas, null, 2)}</pre></p>` : ''}
+      <div style="margin: 30px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://chessinsight.pro"}/admin/upgrade-requests" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review in Admin Panel</a>
+      </div>
+    </div>
+  `;
+
+  if (!resend) {
+    console.log(`[STUB EMAIL] To: ${adminEmail} | Subject: ${subject}`);
+    return { success: true, stub: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: DEFAULT_SENDER,
+      to: adminEmail,
+      subject,
+      html
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("[Email Error] sendAdminUpgradeRequestNotification failed:", error);
+    return { success: false, error };
+  }
+}
