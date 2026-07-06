@@ -9,3 +9,4 @@ packages:
 allowBuilds:
   sharp: true
   stockfish: true
+  unrs-resolver: set this to true or false

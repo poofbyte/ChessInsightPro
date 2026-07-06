@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
     
     const result = await dbClient.execute({
-      sql: `SELECT id, password_hash, plan FROM users WHERE email = ? AND is_banned = 0`,
+      sql: `SELECT id, password_hash, plan, role FROM users WHERE email = ? AND is_banned = 0`,
       args: [email]
     });
     
@@ -34,7 +34,8 @@ export async function POST(req: Request) {
     const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
     const refreshSecret = process.env.JWT_REFRESH_SECRET || "default_refresh";
     
-    const { accessToken, refreshToken } = generateTokens(user.id as string, accessSecret, refreshSecret);
+    const role = (user.role as string) || "USER";
+    const { accessToken, refreshToken } = generateTokens(user.id as string, role, accessSecret, refreshSecret);
     
     // Hash refresh token for DB storage
     const refreshHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true, 
       accessToken, 
-      user: { id: user.id, plan: user.plan } 
+      user: { id: user.id, plan: user.plan, email, role } 
     });
     
   } catch (error) {

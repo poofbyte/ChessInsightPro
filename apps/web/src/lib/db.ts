@@ -16,11 +16,32 @@ export const dbClient = createClient({
 
 let schemaSyncPromise: Promise<void> | null = null;
 
+import { hashPassword } from "@core/auth";
+import crypto from "crypto";
+
 export async function ensureDbReady() {
   if (process.env.NODE_ENV === "test") return; // skip in tests or handle appropriately
   if (!schemaSyncPromise) {
     schemaSyncPromise = ensureSchema(dbClient, ALL_TABLES)
-      .then(() => console.log("Schema sync complete"))
+      .then(async () => {
+        console.log("Schema sync complete");
+        
+        // Admin Bootstrap
+        const adminEmail = process.env.ADMIN_BOOTSTRAP_EMAIL;
+        const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD;
+        if (adminEmail && adminPassword) {
+          const adminCheck = await dbClient.execute(`SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1`);
+          if (adminCheck.rows.length === 0) {
+            console.log("Bootstrapping first ADMIN user...");
+            const hashed = await hashPassword(adminPassword);
+            await dbClient.execute({
+              sql: `INSERT INTO users (id, email, password_hash, plan, role) VALUES (?, ?, ?, ?, ?)`,
+              args: [crypto.randomUUID(), adminEmail, hashed, "FREE", "ADMIN"]
+            });
+            console.log("Admin user bootstrapped successfully.");
+          }
+        }
+      })
       .catch((e) => {
         console.error("Schema sync failed:", e);
         schemaSyncPromise = null;

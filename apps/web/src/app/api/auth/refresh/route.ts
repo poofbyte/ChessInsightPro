@@ -18,7 +18,12 @@ export async function POST(req: Request) {
     const refreshHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
     
     const result = await dbClient.execute({
-      sql: `SELECT user_id, expires_at FROM sessions WHERE refresh_token_hash = ?`,
+      sql: `
+        SELECT s.user_id, s.expires_at, u.role 
+        FROM sessions s 
+        JOIN users u ON s.user_id = u.id 
+        WHERE s.refresh_token_hash = ?
+      `,
       args: [refreshHash]
     });
     
@@ -39,12 +44,13 @@ export async function POST(req: Request) {
     }
     
     const userId = session.user_id as string;
+    const role = (session.role as string) || "USER";
     
     // Generate new tokens
     const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
     const refreshSecret = process.env.JWT_REFRESH_SECRET || "default_refresh";
     
-    const tokens = generateTokens(userId, accessSecret, refreshSecret);
+    const tokens = generateTokens(userId, role, accessSecret, refreshSecret);
     const newRefreshHash = crypto.createHash("sha256").update(tokens.refreshToken).digest("hex");
     
     // Update session

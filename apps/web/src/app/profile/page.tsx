@@ -5,11 +5,16 @@ import { PlayerProfile } from "@chessinsight/types";
 import { db } from "../db";
 import { RecommendationEngine } from "@chessinsight/recommendations";
 import { SpacedRepetitionManager } from "@chessinsight/learning";
-import { AlertTriangle, Award, BookOpen, Target, TrendingUp } from "lucide-react";
+import { AlertTriangle, Award, BookOpen, Target, TrendingUp, User, LogOut, Settings } from "lucide-react";
+import { useAuthStore } from "@/app/store";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { user, clearAuth } = useAuthStore();
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [leitnerCards, setLeitnerCards] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"analytics" | "account">("analytics");
 
   const load = async () => {
     const [prof, cards] = await Promise.all([
@@ -51,12 +56,30 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-4">
-          <MiniStat icon={<TrendingUp className="w-4 h-4 text-teal-400" />} label="Games Played" value={String(profile.gamesPlayed)} />
-          <MiniStat icon={<Target className="w-4 h-4 text-rose-400" />} label="Weaknesses" value={String(profile.detectedWeaknesses.length)} />
-          <MiniStat icon={<BookOpen className="w-4 h-4 text-blue-400" />} label="Concepts in Leitner" value={String(leitnerCards.length)} />
+        {/* Tabs */}
+        <div className="flex items-center gap-2 border-b border-border pb-px">
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "analytics" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-300"}`}
+          >
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab("account")}
+            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "account" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-300"}`}
+          >
+            Account
+          </button>
         </div>
+
+        {activeTab === "analytics" && (
+          <div className="space-y-8">
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-4">
+              <MiniStat icon={<TrendingUp className="w-4 h-4 text-teal-400" />} label="Games Played" value={String(profile.gamesPlayed)} />
+              <MiniStat icon={<Target className="w-4 h-4 text-rose-400" />} label="Weaknesses" value={String(profile.detectedWeaknesses.length)} />
+              <MiniStat icon={<BookOpen className="w-4 h-4 text-blue-400" />} label="Concepts in Leitner" value={String(leitnerCards.length)} />
+            </div>
 
         {/* Recommendations */}
         <section className="space-y-4">
@@ -138,8 +161,68 @@ export default function ProfilePage() {
                 );
               })}
             </div>
-          )}
-        </section>
+            )}
+          </section>
+        </div>
+      )}
+
+      {activeTab === "account" && (
+        <div className="space-y-8">
+          <div className="p-6 bg-card border border-border rounded-2xl">
+            <h2 className="text-xl font-black mb-6 flex items-center gap-2">
+              <User className="w-5 h-5 text-teal-500" /> Account Details
+            </h2>
+            
+            {user ? (
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email</p>
+                  <p className="text-lg font-bold">{user.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Current Plan</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="px-3 py-1 bg-teal-500/10 text-teal-400 text-sm font-black rounded-lg border border-teal-500/20">
+                      {user.plan}
+                    </span>
+                    <span className="text-sm text-slate-500 italic">
+                      {user.plan === "FREE" ? "Resets daily" : "Renews on upcoming billing cycle"}
+                    </span>
+                  </div>
+                </div>
+                <div className="pt-6 border-t border-border flex gap-4">
+                  <button
+                    onClick={() => router.push("/pricing")}
+                    className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20"
+                  >
+                    Upgrade Plan
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await fetch("/api/auth/logout", { method: "POST" });
+                      clearAuth();
+                      router.push("/");
+                    }}
+                    className="px-6 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold rounded-xl transition flex items-center gap-2 border border-rose-500/30"
+                  >
+                    <LogOut className="w-4 h-4" /> Log out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-slate-500 mb-4">You are currently playing as a guest.</p>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="px-6 py-2.5 bg-teal-500 text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20"
+                >
+                  Log In or Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

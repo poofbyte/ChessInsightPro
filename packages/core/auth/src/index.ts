@@ -10,15 +10,15 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return await bcrypt.compare(password, hash);
 }
 
-export function generateTokens(userId: string, accessSecret: string, refreshSecret: string) {
-  const accessToken = jwt.sign({ userId }, accessSecret, { expiresIn: "15m" });
-  const refreshToken = jwt.sign({ userId }, refreshSecret, { expiresIn: "30d" });
+export function generateTokens(userId: string, role: string, accessSecret: string, refreshSecret: string) {
+  const accessToken = jwt.sign({ userId, role }, accessSecret, { expiresIn: "15m" });
+  const refreshToken = jwt.sign({ userId, role }, refreshSecret, { expiresIn: "30d" });
   return { accessToken, refreshToken };
 }
 
-export function verifyAccessToken(token: string, accessSecret: string): { userId: string } | null {
+export function verifyAccessToken(token: string, accessSecret: string): { userId: string; role: string } | null {
   try {
-    return jwt.verify(token, accessSecret) as { userId: string };
+    return jwt.verify(token, accessSecret) as { userId: string; role: string };
   } catch {
     return null;
   }

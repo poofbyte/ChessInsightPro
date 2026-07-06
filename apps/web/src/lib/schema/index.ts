@@ -11,6 +11,7 @@ export const usersTable: TableDefinition = {
     { name: "plan_renews_at", type: "TEXT" },
     { name: "signup_ip", type: "TEXT" },
     { name: "is_banned", type: "INTEGER NOT NULL DEFAULT 0" },
+    { name: "role", type: "TEXT NOT NULL DEFAULT 'USER'" },
     { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
   ],
 };
@@ -124,6 +125,29 @@ export const pendingUpgradeRequestsTable: TableDefinition = {
   ],
 };
 
+export const systemConfigTable: TableDefinition = {
+  name: "system_config",
+  columns: [
+    { name: "key", type: "TEXT PRIMARY KEY" },
+    { name: "value", type: "TEXT" }, // JSON encoded
+    { name: "updated_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+    { name: "updated_by", type: "TEXT" },
+  ],
+};
+
+export const adminAuditLogTable: TableDefinition = {
+  name: "admin_audit_log",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "admin_user_id", type: "TEXT NOT NULL" },
+    { name: "action", type: "TEXT NOT NULL" },
+    { name: "target_type", type: "TEXT" },
+    { name: "target_id", type: "TEXT" },
+    { name: "details", type: "TEXT" }, // JSON
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 export const ALL_TABLES: TableDefinition[] = [
   usersTable,
   sessionsTable,
@@ -135,4 +159,6 @@ export const ALL_TABLES: TableDefinition[] = [
   signupAttemptsTable,
   generatedPuzzlesTable,
   pendingUpgradeRequestsTable,
+  systemConfigTable,
+  adminAuditLogTable,
 ];

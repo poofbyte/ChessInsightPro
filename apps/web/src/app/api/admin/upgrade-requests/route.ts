@@ -1,0 +1,93 @@
+import { NextResponse } from "next/server";
+import { dbClient, ensureDbReady } from "@/lib/db";
+import crypto from "crypto";
+import { verifyAccessToken } from "@core/auth";
+import { headers } from "next/headers";
+
+function getAdminUserId(req: Request): string | null {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.split(" ")[1];
+  const decoded = verifyAccessToken(token, process.env.JWT_ACCESS_SECRET || "default_access");
+  return decoded && decoded.role === "ADMIN" ? decoded.userId : null;
+}
+
+export async function GET(req: Request) {
+  try {
+    const adminId = getAdminUserId(req);
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    
+    await ensureDbReady();
+    const result = await dbClient.execute(`
+      SELECT p.*, u.email as user_email
+      FROM pending_upgrade_requests p
+      JOIN users u ON p.user_id = u.id
+      ORDER BY p.created_at DESC
+    `);
+    
+    return NextResponse.json({ requests: result.rows });
+  } catch (error) {
+    console.error("Admin upgrade requests error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const adminId = getAdminUserId(req);
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    
+    await ensureDbReady();
+    const { requestId, action, note } = await req.json();
+    
+    if (action !== "APPROVE" && action !== "REJECT") {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    }
+    
+    const requestRes = await dbClient.execute({
+      sql: `SELECT user_id, requested_plan, requested_quotas FROM pending_upgrade_requests WHERE id = ? AND status = 'PENDING'`,
+      args: [requestId]
+    });
+    
+    if (requestRes.rows.length === 0) {
+      return NextResponse.json({ error: "Request not found or already processed" }, { status: 404 });
+    }
+    
+    const reqData = requestRes.rows[0];
+    
+    await dbClient.execute("BEGIN TRANSACTION");
+    try {
+      if (action === "APPROVE") {
+        await dbClient.execute({
+          sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = datetime('now', '+30 days') WHERE id = ?`,
+          args: [reqData.requested_plan as string, reqData.requested_quotas as string, reqData.user_id as string]
+        });
+        
+        await dbClient.execute({
+          sql: `UPDATE pending_upgrade_requests SET status = 'APPROVED' WHERE id = ?`,
+          args: [requestId]
+        });
+      } else {
+        await dbClient.execute({
+          sql: `UPDATE pending_upgrade_requests SET status = 'REJECTED' WHERE id = ?`,
+          args: [requestId]
+        });
+      }
+      
+      const auditId = crypto.randomUUID();
+      await dbClient.execute({
+        sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [auditId, adminId, `${action}_UPGRADE_REQUEST`, "pending_upgrade_requests", requestId, JSON.stringify({ note })]
+      });
+      
+      await dbClient.execute("COMMIT");
+      return NextResponse.json({ success: true });
+    } catch (e) {
+      await dbClient.execute("ROLLBACK");
+      throw e;
+    }
+  } catch (error) {
+    console.error("Admin upgrade requests error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
