@@ -39,8 +39,8 @@ export default function ProfilePage() {
             <Award className="w-10 h-10 text-teal-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-black">Player Analytics</h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Weakness profiling and personalized study plan based on your game history.</p>
+            <h1 className="text-2xl font-black text-white">Player Analytics</h1>
+            <p className="text-slate-300 text-sm mt-1">Weakness profiling and personalized study plan based on your game history.</p>
           </div>
           <div className="ml-auto text-right">
             <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Estimated ELO</p>

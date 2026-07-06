@@ -98,7 +98,7 @@ export default function OpeningsPage() {
           <div className="col-span-5 flex flex-col gap-4">
             <div className="flex gap-2">
               {categories.map((c) => (
-                <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filter === c ? "bg-emerald-500 text-black" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}>{c}</button>
+                <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filter === c ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
               ))}
             </div>
             <div className="space-y-2">

@@ -164,7 +164,7 @@ export default function PlayCoachPage() {
               </div>
             </div>
 
-            <button onClick={startGame} className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-foreground font-black rounded-2xl hover:from-blue-400 transition shadow-lg shadow-blue-500/20">
+            <button onClick={startGame} className="w-full py-4 bg-blue-500 text-white font-black rounded-2xl hover:bg-blue-600 transition shadow-lg shadow-blue-500/20">
               Start Game
             </button>
           </div>

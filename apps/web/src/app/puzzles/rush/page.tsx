@@ -185,11 +185,15 @@ export default function PuzzleRushPage() {
     const move = `${from}${to}`;
 
     if (move === expected || move + "q" === expected) {
-      const result = chess.move({ from, to, promotion: "q" });
-      if (!result) return false;
-      playMoveSound(result.san);
-      setFlash("correct");
-      setScore((s) => s + 1);
+      try {
+        const result = chess.move({ from, to, promotion: "q" });
+        if (!result) return false;
+        playMoveSound(result.san);
+        setFlash("correct");
+        setScore((s) => s + 1);
+      } catch (e) {
+        return false;
+      }
       
       let change = 0;
       if (totalHintsUsed === 0) change = 10;
@@ -249,7 +253,7 @@ export default function PuzzleRushPage() {
               <h2 className="text-3xl font-black mb-2">Ready to Rush?</h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto">3 minutes. 3 strikes. Score as high as you can.</p>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-black font-black text-lg rounded-2xl hover:from-orange-400 hover:to-amber-400 transition shadow-lg shadow-orange-500/20">
+            <button onClick={startGame} className="px-10 py-4 bg-orange-500 text-white font-black text-lg rounded-2xl hover:bg-orange-600 transition shadow-lg shadow-orange-500/20">
               Start Rush!
             </button>
           </div>
@@ -296,7 +300,7 @@ export default function PuzzleRushPage() {
               {/* Theme badge */}
               <div className="p-4 bg-card border border-border rounded-xl">
                 <span className="text-xs font-black uppercase tracking-widest text-orange-400">Theme</span>
-                <p className="font-bold text-foreground mt-1">{puzzle.theme}</p>
+                <p className="font-bold text-foreground mt-1">{puzzle.theme || "Mixed Tactical Motif"}</p>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{puzzle.hint}</p>
               </div>
 

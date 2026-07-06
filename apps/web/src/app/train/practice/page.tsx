@@ -46,22 +46,26 @@ export default function PracticePage() {
 
   const handleMove = (from: string, to: string) => {
     if (!chess) return false;
-    const result = chess.move({ from, to, promotion: "q" });
-    if (!result) return false;
-    playMoveSound(result.san);
-    setFen(chess.fen());
-    setTip(TIPS[Math.floor(Math.random() * TIPS.length)]);
-    if (chess.isCheckmate()) setStatus("Checkmate!");
-    else if (chess.isDraw()) setStatus("Draw.");
-    return true;
+    try {
+      const result = chess.move({ from, to, promotion: "q" });
+      if (!result) return false;
+      playMoveSound(result.san);
+      setFen(chess.fen());
+      setTip(TIPS[Math.floor(Math.random() * TIPS.length)]);
+      if (chess.isCheckmate()) setStatus("Checkmate!");
+      else if (chess.isDraw()) setStatus("Draw.");
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 rounded-2xl bg-indigo-500/15 border border-indigo-500/20">
-            <Dumbbell className="w-6 h-6 text-indigo-400" />
+          <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
+            <Dumbbell className="w-6 h-6 text-teal-400" />
           </div>
           <div>
             <h1 className="text-2xl font-black">Practice</h1>
@@ -73,13 +77,13 @@ export default function PracticePage() {
           <div className="max-w-xl mx-auto space-y-6">
             {/* Mode */}
             <div className="space-y-3">
-              <h2 className="text-xs font-black uppercase tracking-widest text-indigo-400">Starting Position</h2>
+              <h2 className="text-xs font-black uppercase tracking-widest text-teal-400">Starting Position</h2>
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => setUseScenario(false)} className={`p-4 rounded-2xl border text-left transition ${!useScenario ? "border-indigo-500 bg-indigo-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                <button onClick={() => setUseScenario(false)} className={`p-4 rounded-2xl border text-left transition ${!useScenario ? "border-teal-500 bg-teal-500/10" : "border-border bg-card hover:border-slate-600"}`}>
                   <span className="font-bold text-foreground">Standard Start</span>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Begin from the opening position.</p>
                 </button>
-                <button onClick={() => setUseScenario(true)} className={`p-4 rounded-2xl border text-left transition ${useScenario ? "border-indigo-500 bg-indigo-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                <button onClick={() => setUseScenario(true)} className={`p-4 rounded-2xl border text-left transition ${useScenario ? "border-teal-500 bg-teal-500/10" : "border-border bg-card hover:border-slate-600"}`}>
                   <span className="font-bold text-foreground">Training Scenario</span>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Start from a curated position.</p>
                 </button>
@@ -89,7 +93,7 @@ export default function PracticePage() {
             {useScenario && (
               <div className="space-y-2">
                 {SCENARIOS.map((s) => (
-                  <button key={s.id} onClick={() => setSelectedScenario(s)} className={`w-full p-4 rounded-2xl border text-left transition ${selectedScenario.id === s.id ? "border-indigo-500 bg-indigo-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                  <button key={s.id} onClick={() => setSelectedScenario(s)} className={`w-full p-4 rounded-2xl border text-left transition ${selectedScenario.id === s.id ? "border-teal-500 bg-teal-500/10" : "border-border bg-card hover:border-slate-600"}`}>
                     <span className="font-bold text-foreground text-sm">{s.label}</span>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{s.desc}</p>
                   </button>
@@ -99,10 +103,10 @@ export default function PracticePage() {
 
             {/* Board side */}
             <div className="space-y-2">
-              <h2 className="text-xs font-black uppercase tracking-widest text-indigo-400">Board Orientation</h2>
+              <h2 className="text-xs font-black uppercase tracking-widest text-teal-400">Board Orientation</h2>
               <div className="grid grid-cols-2 gap-3">
                 {(["white", "black"] as const).map((c) => (
-                  <button key={c} onClick={() => setOrientation(c)} className={`p-3 rounded-xl border flex items-center gap-2 transition ${orientation === c ? "border-indigo-500 bg-indigo-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                  <button key={c} onClick={() => setOrientation(c)} className={`p-3 rounded-xl border flex items-center gap-2 transition ${orientation === c ? "border-teal-500 bg-teal-500/10" : "border-border bg-card hover:border-slate-600"}`}>
                     <div className={`w-6 h-6 rounded-full border-2 ${c === "white" ? "bg-white border-slate-300" : "bg-black/5 dark:bg-slate-900 border-slate-600"}`} />
                     <span className="font-bold text-foreground capitalize text-sm">{c}</span>
                   </button>
@@ -110,7 +114,7 @@ export default function PracticePage() {
               </div>
             </div>
 
-            <button onClick={start} className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-foreground font-black rounded-2xl hover:from-indigo-400 transition shadow-lg shadow-indigo-500/20">
+            <button onClick={start} className="w-full py-4 bg-teal-500 text-white font-black rounded-2xl hover:bg-teal-600 transition shadow-lg shadow-teal-500/20">
               Start Practice
             </button>
           </div>
@@ -131,11 +135,11 @@ export default function PracticePage() {
             <div className="col-span-5 flex flex-col gap-4">
               {/* Coach tip */}
               <div className="p-5 bg-card border border-border rounded-2xl">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm mb-3">
+                <div className="flex items-center gap-2 text-teal-400 font-bold text-sm mb-3">
                   <Brain className="w-4 h-4" /> Thinking Tip
                 </div>
                 <div className="p-3 bg-black/5 dark:bg-slate-900/60 rounded-xl text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex gap-2">
-                  <MessageSquare className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                  <MessageSquare className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
                   {tip}
                 </div>
               </div>
@@ -153,7 +157,7 @@ export default function PracticePage() {
                   <div className="text-orange-400 font-bold">⚠ In Check!</div>
                 )}
               </div>
-              <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-black/10 dark:bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-bold transition">
+              <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-teal-500 text-white hover:bg-teal-600 rounded-xl text-sm font-bold transition shadow shadow-teal-500/20">
                 <RefreshCw className="w-4 h-4" /> New Practice
               </button>
             </div>

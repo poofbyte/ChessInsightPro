@@ -195,11 +195,15 @@ export default function PuzzleBattlePage() {
     const move = `${from}${to}`;
 
     if (move === expected || move + "q" === expected) {
-      const result = chess.move({ from, to, promotion: "q" });
-      if (!result) return false;
-      playMoveSound(result.san);
-      setFlash("correct");
-      setUserScore((s) => s + 1);
+      try {
+        const result = chess.move({ from, to, promotion: "q" });
+        if (!result) return false;
+        playMoveSound(result.san);
+        setFlash("correct");
+        setUserScore((s) => s + 1);
+      } catch (e) {
+        return false;
+      }
 
       let change = 0;
       if (totalHintsUsed === 0) change = 10;
@@ -276,7 +280,7 @@ export default function PuzzleBattlePage() {
                 <span>Magnus (2500)</span>
               </div>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-red-500 to-rose-600 text-foreground font-black text-lg rounded-2xl hover:from-red-400 transition shadow-lg shadow-red-500/20">
+            <button onClick={startGame} className="px-10 py-4 bg-blue-500 text-white font-black text-lg rounded-2xl hover:bg-blue-600 transition shadow-lg shadow-blue-500/20">
               Start Battle!
             </button>
           </div>

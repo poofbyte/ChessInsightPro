@@ -217,11 +217,15 @@ export default function CustomPuzzlesPage() {
     const expected = activePuzzle.solution[0];
     const move = `${from}${to}`;
     if (move === expected || move + "q" === expected) {
-      const result = chess.move({ from, to, promotion: "q" });
-      if (!result) return false;
-      playMoveSound(result.san);
-      setStatus("done");
-      updateEloForPuzzle(totalHintsUsed, mistakesCount, true);
+      try {
+        const result = chess.move({ from, to, promotion: "q" });
+        if (!result) return false;
+        playMoveSound(result.san);
+        setStatus("done");
+        updateEloForPuzzle(totalHintsUsed, mistakesCount, true);
+      } catch (e) {
+        return false;
+      }
       // Save to localStorage history
       const STORAGE_KEY = "chess_insight_solved_puzzles";
       try {
@@ -236,7 +240,9 @@ export default function CustomPuzzlesPage() {
         const filtered2 = existing.filter((h: any) => h.id !== record.id);
         filtered2.unshift(record);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered2.slice(0, 50)));
-      } catch {}
+      } catch (e) {
+        return false;
+      }
       return true;
     } else {
       setStatus("wrong");
@@ -277,7 +283,7 @@ export default function CustomPuzzlesPage() {
                   <button
                     key={t}
                     onClick={() => setSelectedTheme(t)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedTheme === t ? "bg-purple-500 text-foreground" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedTheme === t ? "bg-purple-500 text-white shadow-md shadow-purple-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}
                   >
                     {t}
                   </button>
@@ -293,7 +299,7 @@ export default function CustomPuzzlesPage() {
                   <button
                     key={r}
                     onClick={() => setRatingFilter(r)}
-                    className={`py-2 rounded-xl text-xs font-bold capitalize transition ${ratingFilter === r ? "bg-purple-500 text-foreground" : "bg-black/10 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-700"}`}
+                    className={`py-2 rounded-xl text-xs font-bold capitalize transition ${ratingFilter === r ? "bg-purple-500 text-white shadow-md shadow-purple-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}
                   >
                     {r}
                   </button>
@@ -395,7 +401,7 @@ export default function CustomPuzzlesPage() {
                   </div>
                   
                   {hintText && (
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-relaxed font-semibold">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-xl text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
                       {hintText}
                     </div>
                   )}
@@ -405,7 +411,7 @@ export default function CustomPuzzlesPage() {
                       <button
                         onClick={handleRequestHint}
                         disabled={currentMoveHintLevel >= 3}
-                        className="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-30 disabled:cursor-not-allowed text-amber-300 border border-amber-500/30 text-xs font-bold rounded-xl transition-all"
+                        className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/20 disabled:shadow-none"
                       >
                         {currentMoveHintLevel >= 3 ? "✓ All hints shown" : `💡 Show Hint ${currentMoveHintLevel + 1} of 3`}
                       </button>

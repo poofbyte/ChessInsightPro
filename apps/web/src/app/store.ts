@@ -105,7 +105,13 @@ export const useChessStore = create<ChessStore>()(
       })),
       setEngineVersion: (engineVersion) => set({ engineVersion }),
       setBoardTheme: (boardTheme) => set({ boardTheme }),
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => {
+        if (typeof document !== "undefined") {
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+        }
+        set({ theme });
+      },
 
       reset: () => set({
         game: null,

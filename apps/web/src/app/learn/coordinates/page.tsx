@@ -94,7 +94,7 @@ export default function CoordinatesPage() {
                 <div className={`w-4 h-4 bg-white rounded-full mx-1 transition-transform ${showCoords ? "translate-x-4" : ""}`} />
               </button>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-foreground font-black text-lg rounded-2xl hover:from-rose-400 transition shadow-lg shadow-rose-500/20">
+            <button onClick={startGame} className="px-10 py-4 bg-teal-500 text-white font-black text-lg rounded-2xl hover:bg-teal-600 transition shadow-lg shadow-teal-500/20">
               Start Training!
             </button>
           </div>
