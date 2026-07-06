@@ -1,14 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Brain, History, Award, BookOpen, Settings,
   Puzzle, Zap, Swords, Grid3X3,
   GraduationCap, Bot, Map, AlignLeft, ScrollText, Target,
-  BarChart2, Trophy, Dumbbell, Sun, Moon
+  BarChart2, Trophy, Dumbbell, Sun, Moon,
+  User, LogIn, UserPlus, CreditCard, Flame
 } from "lucide-react";
 import { useChessStore } from "../app/store";
+import { useAuthStore } from "../app/store";
 
 const NAV_SECTIONS = [
   {
@@ -46,11 +50,37 @@ const NAV_SECTIONS = [
       { href: "/train/practice",  icon: Dumbbell,  label: "Practice" },
     ],
   },
+  {
+    section: "Account",
+    items: [
+      { href: "/profile", icon: User, label: "Profile" },
+      { href: "/pricing", icon: CreditCard, label: "Pricing & Upgrade" },
+      { href: "/login", icon: LogIn, label: "Sign In" },
+      { href: "/signup", icon: UserPlus, label: "Sign Up" },
+    ],
+  },
 ];
 
 export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; gamesPlayed?: number }) {
   const pathname = usePathname();
   const { theme, setTheme } = useChessStore();
+  const { accessToken } = useAuthStore();
+  const [quotas, setQuotas] = useState<any>(null);
+
+  useEffect(() => {
+    if (accessToken) {
+      fetch("/api/user/quotas", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setQuotas(data);
+      })
+      .catch(() => {});
+    } else {
+      setQuotas(null);
+    }
+  }, [accessToken]);
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -99,12 +129,62 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
 
       {/* ELO Badge */}
       {estimatedElo !== undefined && (
-        <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-black/5 dark:bg-slate-900/60 border border-teal-500/20 text-center">
+        <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-slate-900/60 border border-teal-500/20 text-center">
           <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
           <div className="text-2xl font-black mt-0.5 text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400">
             {estimatedElo}
           </div>
           <div className="text-[10px] text-slate-500">{gamesPlayed ?? 0} games</div>
+        </div>
+      )}
+
+      {/* Quota Widget */}
+      {quotas && (
+        <div className="mx-3 mb-2 p-3 rounded-2xl bg-gradient-to-br from-teal-500/10 to-teal-500/5 border border-teal-500/20">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 flex items-center gap-1">
+              <Flame className="w-3 h-3" /> {quotas.plan === 'FREE' ? 'Free Plan' : quotas.plan}
+            </span>
+          </div>
+          
+          <div className="space-y-2 mb-3">
+            <div>
+              <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+                <span>Reviews</span>
+                <span className="font-bold text-foreground">
+                  {quotas.limits.reviews.remaining === 'unlimited' ? '∞' : quotas.limits.reviews.remaining} left
+                </span>
+              </div>
+              <div className="w-full bg-black/10 dark:bg-slate-800 rounded-full h-1.5">
+                <div 
+                  className="bg-teal-500 h-1.5 rounded-full" 
+                  style={{ width: quotas.limits.reviews.total === undefined ? '100%' : ((quotas.limits.reviews.used / quotas.limits.reviews.total) * 100) + '%' }}
+                ></div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+                <span>Puzzles</span>
+                <span className="font-bold text-foreground">
+                  {quotas.limits.puzzles.remaining === 'unlimited' ? '∞' : quotas.limits.puzzles.remaining} left
+                </span>
+              </div>
+              <div className="w-full bg-black/10 dark:bg-slate-800 rounded-full h-1.5">
+                <div 
+                  className="bg-teal-500 h-1.5 rounded-full" 
+                  style={{ width: quotas.limits.puzzles.total === undefined ? '100%' : ((quotas.limits.puzzles.used / quotas.limits.puzzles.total) * 100) + '%' }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          
+          <Link 
+            href="/pricing"
+            className="block w-full py-1.5 text-center bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg transition-colors"
+          >
+            Upgrade Plan
+          </Link>
         </div>
       )}
 

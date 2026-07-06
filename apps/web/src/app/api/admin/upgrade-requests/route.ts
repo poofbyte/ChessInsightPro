@@ -46,7 +46,8 @@ export async function POST(req: Request) {
     }
     
     const requestRes = await dbClient.execute({
-      sql: `SELECT req.user_id, req.requested_plan, req.requested_quotas, req.requested_price_bdt, u.email 
+      sql: `SELECT req.user_id, req.requested_plan, req.requested_quotas, req.requested_price_bdt, 
+                   u.email, u.plan, u.custom_quotas, u.plan_renews_at
             FROM pending_upgrade_requests req
             JOIN users u ON req.user_id = u.id
             WHERE req.id = ? AND req.status = 'PENDING'`,
@@ -62,9 +63,36 @@ export async function POST(req: Request) {
     await dbClient.execute("BEGIN TRANSACTION");
     try {
       if (action === "APPROVE") {
+        const currentUserPlan = reqData.plan as string;
+        const currentRenewsAt = reqData.plan_renews_at ? new Date(reqData.plan_renews_at as string) : null;
+        
+        let newPlan = reqData.requested_plan as string;
+        let newQuotasStr = reqData.requested_quotas as string | null;
+        let newRenewsAt = `datetime('now', '+30 days')`;
+
+        // If user already has a paid plan that is still active
+        if (currentUserPlan !== 'FREE' && currentRenewsAt && currentRenewsAt > new Date()) {
+          const currentQuotas = typeof reqData.custom_quotas === 'string' && reqData.custom_quotas.trim().startsWith('{')
+            ? JSON.parse(reqData.custom_quotas)
+            : {};
+            
+          const requestedQuotas = newQuotasStr ? JSON.parse(newQuotasStr) : {};
+          
+          // Combine quotas
+          const combinedQuotas = { ...currentQuotas };
+          for (const key of Object.keys(requestedQuotas)) {
+            combinedQuotas[key] = (combinedQuotas[key] || 0) + (requestedQuotas[key] || 0);
+          }
+          
+          newQuotasStr = JSON.stringify(combinedQuotas);
+          newPlan = 'CUSTOM';
+          // Extend by 30 days from the *existing* renews_at
+          newRenewsAt = `datetime('${currentRenewsAt.toISOString()}', '+30 days')`;
+        }
+
         await dbClient.execute({
-          sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = datetime('now', '+30 days') WHERE id = ?`,
-          args: [reqData.requested_plan as string, reqData.requested_quotas as string, reqData.user_id as string]
+          sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = ${newRenewsAt} WHERE id = ?`,
+          args: [newPlan, newQuotasStr, reqData.user_id as string]
         });
         
         await dbClient.execute({
