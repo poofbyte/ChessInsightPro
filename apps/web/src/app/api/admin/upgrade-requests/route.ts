@@ -60,77 +60,71 @@ export async function POST(req: Request) {
     
     const reqData = requestRes.rows[0];
     
-    await dbClient.execute("BEGIN TRANSACTION");
-    let transactionActive = true;
-    try {
-      if (action === "APPROVE") {
-        const currentUserPlan = reqData.plan as string;
-        const currentRenewsAt = reqData.plan_renews_at ? new Date(reqData.plan_renews_at as string) : null;
-        
-        let newPlan = reqData.requested_plan as string;
-        let newQuotasStr = reqData.requested_quotas as string | null;
-        let newRenewsAt = `datetime('now', '+30 days')`;
+    const statements: ({ sql: string; args: any[] })[] = [];
 
-        if (currentUserPlan !== 'FREE' && currentRenewsAt && currentRenewsAt > new Date()) {
-          const currentQuotas = typeof reqData.custom_quotas === 'string' && reqData.custom_quotas.trim().startsWith('{')
-            ? JSON.parse(reqData.custom_quotas)
-            : {};
-            
-          const requestedQuotas = newQuotasStr ? JSON.parse(newQuotasStr) : {};
-          
-          const combinedQuotas = { ...currentQuotas };
-          for (const key of Object.keys(requestedQuotas)) {
-            combinedQuotas[key] = (combinedQuotas[key] || 0) + (requestedQuotas[key] || 0);
-          }
-          
-          newQuotasStr = JSON.stringify(combinedQuotas);
-          newPlan = 'CUSTOM';
-          newRenewsAt = `datetime('${currentRenewsAt.toISOString()}', '+30 days')`;
+    if (action === "APPROVE") {
+      const currentUserPlan = reqData.plan as string;
+      const currentRenewsAt = reqData.plan_renews_at ? new Date(reqData.plan_renews_at as string) : null;
+
+      let newPlan = reqData.requested_plan as string;
+      let newQuotasStr = reqData.requested_quotas as string | null;
+      let newRenewsAt = `datetime('now', '+30 days')`;
+
+      if (currentUserPlan !== 'FREE' && currentRenewsAt && currentRenewsAt > new Date()) {
+        const currentQuotas = typeof reqData.custom_quotas === 'string' && reqData.custom_quotas.trim().startsWith('{')
+          ? JSON.parse(reqData.custom_quotas)
+          : {};
+
+        const requestedQuotas = newQuotasStr ? JSON.parse(newQuotasStr) : {};
+
+        const combinedQuotas = { ...currentQuotas };
+        for (const key of Object.keys(requestedQuotas)) {
+          combinedQuotas[key] = (combinedQuotas[key] || 0) + (requestedQuotas[key] || 0);
         }
 
-        await dbClient.execute({
-          sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = ${newRenewsAt} WHERE id = ?`,
-          args: [newPlan, newQuotasStr, reqData.user_id as string]
-        });
-        
-        await dbClient.execute({
-          sql: `UPDATE pending_upgrade_requests SET status = 'APPROVED' WHERE id = ?`,
-          args: [requestId]
-        });
-        
-        await sendUpgradeApprovedEmail(
-          reqData.email as string, 
-          reqData.requested_plan as string, 
-          reqData.requested_price_bdt as string
-        );
-      } else {
-        await dbClient.execute({
-          sql: `UPDATE pending_upgrade_requests SET status = 'REJECTED' WHERE id = ?`,
-          args: [requestId]
-        });
-        
-        await sendUpgradeRejectedEmail(
-          reqData.email as string,
-          note || ""
-        );
+        newQuotasStr = JSON.stringify(combinedQuotas);
+        newPlan = 'CUSTOM';
+        newRenewsAt = `datetime('${currentRenewsAt.toISOString()}', '+30 days')`;
       }
-      
-      const auditId = crypto.randomUUID();
-      await dbClient.execute({
-        sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
-        args: [auditId, adminId, `${action}_UPGRADE_REQUEST`, "pending_upgrade_requests", requestId, JSON.stringify({ note })]
+
+      statements.push({
+        sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = ${newRenewsAt} WHERE id = ?`,
+        args: [newPlan, newQuotasStr, reqData.user_id as string]
       });
-      
-      await dbClient.execute("COMMIT");
-      transactionActive = false;
-      return NextResponse.json({ success: true });
-    } catch (e) {
-      console.error("Upgrade request transaction error:", e);
-      if (transactionActive) {
-        try { await dbClient.execute("ROLLBACK"); } catch {}
-      }
-      throw e;
+
+      statements.push({
+        sql: `UPDATE pending_upgrade_requests SET status = 'APPROVED' WHERE id = ?`,
+        args: [requestId]
+      });
+    } else {
+      statements.push({
+        sql: `UPDATE pending_upgrade_requests SET status = 'REJECTED' WHERE id = ?`,
+        args: [requestId]
+      });
     }
+
+    const auditId = crypto.randomUUID();
+    statements.push({
+      sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [auditId, adminId, `${action}_UPGRADE_REQUEST`, "pending_upgrade_requests", requestId, JSON.stringify({ note })]
+    });
+
+    await dbClient.batch(statements);
+
+    if (action === "APPROVE") {
+      await sendUpgradeApprovedEmail(
+        reqData.email as string,
+        reqData.requested_plan as string,
+        reqData.requested_price_bdt as string
+      );
+    } else {
+      await sendUpgradeRejectedEmail(
+        reqData.email as string,
+        note || ""
+      );
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Admin upgrade requests error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

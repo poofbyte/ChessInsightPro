@@ -57,6 +57,11 @@ export async function POST(req: Request) {
     await ensureDbReady();
     const { userId, action, days, plan, expiresAt } = await req.json();
 
+    const VALID_ACTIONS = ["extend", "remove", "set_plan", "set_expiry"];
+    if (!VALID_ACTIONS.includes(action)) {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    }
+
     const userRes = await dbClient.execute({
       sql: `SELECT id, email, plan, plan_renews_at FROM users WHERE id = ?`,
       args: [userId],
@@ -67,74 +72,67 @@ export async function POST(req: Request) {
     }
 
     const user = userRes.rows[0] as any;
+    const statements: ({ sql: string; args: any[] })[] = [];
 
-    try {
-      await dbClient.execute("BEGIN TRANSACTION");
-
-      if (action === "extend") {
-        const currentRenews = user.plan_renews_at
-          ? new Date(user.plan_renews_at)
-          : new Date();
-        if (currentRenews < new Date()) {
-          await dbClient.execute({
-            sql: `UPDATE users SET plan_renews_at = datetime('now', ?) WHERE id = ?`,
-            args: [`+${days} days`, userId],
-          });
-        } else {
-          await dbClient.execute({
-            sql: `UPDATE users SET plan_renews_at = datetime(?, ?) WHERE id = ?`,
-            args: [currentRenews.toISOString(), `+${days} days`, userId],
-          });
-        }
-      } else if (action === "remove") {
-        await dbClient.execute({
-          sql: `UPDATE users SET plan = 'FREE', custom_quotas = NULL, plan_renews_at = NULL WHERE id = ?`,
-          args: [userId],
-        });
-      } else if (action === "set_plan") {
-        if (!plan) {
-          return NextResponse.json({ error: "Plan is required" }, { status: 400 });
-        }
-        const renewExpr = expiresAt
-          ? `'${expiresAt}'`
-          : `datetime('now', '+30 days')`;
-        await dbClient.execute({
-          sql: `UPDATE users SET plan = ?, plan_renews_at = ${renewExpr} WHERE id = ?`,
-          args: [plan, userId],
-        });
-      } else if (action === "set_expiry") {
-        if (!expiresAt) {
-          return NextResponse.json({ error: "Expiry date is required" }, { status: 400 });
-        }
-        await dbClient.execute({
-          sql: `UPDATE users SET plan_renews_at = ? WHERE id = ?`,
-          args: [expiresAt, userId],
+    if (action === "extend") {
+      if (!days || days < 1) {
+        return NextResponse.json({ error: "Days must be a positive number" }, { status: 400 });
+      }
+      const currentRenews = user.plan_renews_at
+        ? new Date(user.plan_renews_at)
+        : new Date();
+      if (currentRenews < new Date()) {
+        statements.push({
+          sql: `UPDATE users SET plan_renews_at = datetime('now', ?) WHERE id = ?`,
+          args: [`+${days} days`, userId],
         });
       } else {
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+        statements.push({
+          sql: `UPDATE users SET plan_renews_at = datetime(?, ?) WHERE id = ?`,
+          args: [currentRenews.toISOString(), `+${days} days`, userId],
+        });
       }
-
-      const auditId = crypto.randomUUID();
-      await dbClient.execute({
-        sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
-        args: [
-          auditId,
-          adminId,
-          `BILLING_${action.toUpperCase()}`,
-          "users",
-          userId,
-          JSON.stringify({ action, days, plan, expiresAt }),
-        ],
+    } else if (action === "remove") {
+      statements.push({
+        sql: `UPDATE users SET plan = 'FREE', custom_quotas = NULL, plan_renews_at = NULL WHERE id = ?`,
+        args: [userId],
       });
-
-      await dbClient.execute("COMMIT");
-      return NextResponse.json({ success: true });
-    } catch (e) {
-      try {
-        await dbClient.execute("ROLLBACK");
-      } catch {}
-      throw e;
+    } else if (action === "set_plan") {
+      if (!plan) {
+        return NextResponse.json({ error: "Plan is required" }, { status: 400 });
+      }
+      const renewExpr = expiresAt
+        ? `'${expiresAt}'`
+        : `datetime('now', '+30 days')`;
+      statements.push({
+        sql: `UPDATE users SET plan = ?, plan_renews_at = ${renewExpr} WHERE id = ?`,
+        args: [plan, userId],
+      });
+    } else if (action === "set_expiry") {
+      if (!expiresAt) {
+        return NextResponse.json({ error: "Expiry date is required" }, { status: 400 });
+      }
+      statements.push({
+        sql: `UPDATE users SET plan_renews_at = ? WHERE id = ?`,
+        args: [expiresAt, userId],
+      });
     }
+
+    const auditId = crypto.randomUUID();
+    statements.push({
+      sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [
+        auditId,
+        adminId,
+        `BILLING_${action.toUpperCase()}`,
+        "users",
+        userId,
+        JSON.stringify({ action, days, plan, expiresAt }),
+      ],
+    });
+
+    await dbClient.batch(statements);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Admin billing action error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
