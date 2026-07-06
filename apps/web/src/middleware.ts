@@ -1,35 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyAccessToken } from "@core/auth";
+
+// NOTE: Auth verification for /api/admin/* routes is handled inside each
+// route handler (Node.js runtime) NOT here. Next.js middleware runs in the
+// Edge Runtime which does NOT support Node.js crypto / jsonwebtoken.
+// Doing JWT verification here would silently fail and return 401 for every request.
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  // Protect /api/admin routes (API calls do send Authorization headers)
-  if (pathname.startsWith("/api/admin")) {
-    const authHeader = req.headers.get("authorization");
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_ACCESS_SECRET || "default_access";
-    const decoded = verifyAccessToken(token, secret);
-    
-    if (!decoded || decoded.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-
-  // Note: /admin PAGE protection is handled client-side in the page component
-  // because browser navigations don't send Authorization headers.
-
   return NextResponse.next();
 }
 
+// Only run middleware where truly needed (e.g. future edge-compatible auth checks)
 export const config = {
-  matcher: [
-    '/api/admin/:path*'
-  ]
+  matcher: [],
 };
