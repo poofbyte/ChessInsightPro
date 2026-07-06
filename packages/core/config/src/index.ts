@@ -1,12 +1,10 @@
-import { Client } from "@libsql/client";
-import crypto from "crypto";
 
 // In-memory cache
 const configCache: Record<string, any> = {};
 let lastFetch = 0;
 const CACHE_TTL = 1000 * 60; // 1 minute
 
-export async function getAllConfig(db: Client) {
+export async function getAllConfig(db: any) {
   if (Date.now() - lastFetch < CACHE_TTL && Object.keys(configCache).length > 0) {
     return configCache;
   }
@@ -16,7 +14,7 @@ export async function getAllConfig(db: Client) {
   // Clear cache
   for (const k in configCache) delete configCache[k];
   
-  result.rows.forEach((row) => {
+  result.rows.forEach((row: any) => {
     const key = row.key as string;
     const value = row.value as string;
     try {
@@ -30,12 +28,12 @@ export async function getAllConfig(db: Client) {
   return configCache;
 }
 
-export async function getConfig(db: Client, key: string, defaultValue: any = null) {
+export async function getConfig(db: any, key: string, defaultValue: any = null) {
   const all = await getAllConfig(db);
   return all[key] !== undefined ? all[key] : defaultValue;
 }
 
-export async function setConfig(db: Client, key: string, value: any, adminUserId: string) {
+export async function setConfig(db: any, key: string, value: any, adminUserId: string) {
   const strValue = typeof value === "object" ? JSON.stringify(value) : String(value);
   
   await db.execute({
@@ -51,7 +49,7 @@ export async function setConfig(db: Client, key: string, value: any, adminUserId
   });
   
   // Write audit log
-  const auditId = crypto.randomUUID();
+  const auditId = globalThis.crypto.randomUUID();
   await db.execute({
     sql: `
       INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details)
