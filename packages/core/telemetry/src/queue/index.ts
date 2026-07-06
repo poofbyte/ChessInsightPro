@@ -87,7 +87,7 @@ export async function flushQueue() {
       }
     }
   } catch (error) {
-    console.error("Failed to flush telemetry queue", error);
+    console.warn("Failed to flush telemetry queue (this is expected if offline or server is restarting)", error);
   } finally {
     isFlushing = false;
   }
