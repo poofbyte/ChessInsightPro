@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store";
@@ -11,8 +11,21 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const message = searchParams.get("message");
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const urlMessage = searchParams.get("message");
+  const [message, setMessage] = useState(urlMessage || (typeof window !== "undefined" ? sessionStorage.getItem("loginMessage") : null));
+
+  useEffect(() => {
+    if (!urlMessage) {
+      const stored = sessionStorage.getItem("loginMessage");
+      if (stored) {
+        setMessage(stored);
+        sessionStorage.removeItem("loginMessage");
+      }
+    }
+  }, [urlMessage]);
+
+  const rawCallbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = rawCallbackUrl.startsWith("/") ? rawCallbackUrl : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

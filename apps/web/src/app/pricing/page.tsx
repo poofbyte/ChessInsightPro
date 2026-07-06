@@ -54,7 +54,8 @@ export default function PricingPage() {
 
   const handleSelectPlan = async (plan: string, customPriceBdt?: number, customQuotas?: any) => {
     if (!user) {
-      router.push(`/login?callbackUrl=/pricing&message=Please log in to upgrade your plan.`);
+      sessionStorage.setItem("loginMessage", "Please log in to upgrade your plan.");
+      router.push("/login?callbackUrl=/pricing");
       return;
     }
     const found = plans.find((p: any) => p.id === plan);

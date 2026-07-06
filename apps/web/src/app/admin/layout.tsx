@@ -15,7 +15,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!accessToken || !user) {
-        router.replace("/login?message=Please+log+in+to+access+the+admin+panel.");
+        sessionStorage.setItem("loginMessage", "Please log in to access the admin panel.");
+        router.replace("/login");
         return;
       }
       if (user.role !== "ADMIN") {
