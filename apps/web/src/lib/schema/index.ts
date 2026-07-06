@@ -12,6 +12,13 @@ export const usersTable: TableDefinition = {
     { name: "signup_ip", type: "TEXT" },
     { name: "is_banned", type: "INTEGER NOT NULL DEFAULT 0" },
     { name: "role", type: "TEXT NOT NULL DEFAULT 'USER'" },
+    { name: "name", type: "TEXT" },
+    { name: "phone", type: "TEXT" },
+    { name: "chess_com_url", type: "TEXT" },
+    { name: "lichess_url", type: "TEXT" },
+    { name: "fide_id_url", type: "TEXT" },
+    { name: "fide_elo", type: "INTEGER" },
+    { name: "bio", type: "TEXT" },
     { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
   ],
 };
