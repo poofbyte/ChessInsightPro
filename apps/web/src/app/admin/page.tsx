@@ -11,7 +11,7 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "requests" | "settings">("dashboard");
   const [stats, setStats] = useState<any>(null);
   const [requests, setRequests] = useState<any[]>([]);
-  const [settings, setSettings] = useState({ payment_instructions: "", verification_fields: "[]" });
+  const [settings, setSettings] = useState({ payment_instructions: "", verification_fields: "[]", upgrade_success_message: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -38,7 +38,8 @@ export default function AdminDashboardPage() {
       if (requestsData.requests) setRequests(requestsData.requests);
       if (settingsData) setSettings({
         payment_instructions: settingsData.payment_instructions || "",
-        verification_fields: settingsData.verification_fields || "[]"
+        verification_fields: settingsData.verification_fields || "[]",
+        upgrade_success_message: settingsData.upgrade_success_message || ""
       });
       setLoading(false);
     }).catch(err => {
@@ -269,6 +270,16 @@ export default function AdminDashboardPage() {
                 placeholder='[{"id":"trxId", "label":"Transaction ID", "required":true}]'
               />
               <p className="text-xs text-slate-500 mt-2">Example: <code>{`[{"id":"trxId", "label":"Transaction ID", "required":true}]`}</code></p>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Upgrade Success Message</p>
+              <textarea
+                value={settings.upgrade_success_message}
+                onChange={e => setSettings({ ...settings, upgrade_success_message: e.target.value })}
+                className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 min-h-[100px]"
+                placeholder="Message shown after user submits an upgrade request"
+              />
             </div>
             
             <button

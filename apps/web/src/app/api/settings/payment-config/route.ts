@@ -15,11 +15,12 @@ export async function GET(req: Request) {
     }
     
     await ensureDbReady();
-    const result = await dbClient.execute(`SELECT key, value FROM system_config WHERE key IN ('payment_instructions', 'verification_fields')`);
+    const result = await dbClient.execute(`SELECT key, value FROM system_config WHERE key IN ('payment_instructions', 'verification_fields', 'upgrade_success_message')`);
     
     const settings: Record<string, any> = {
       payment_instructions: "Please send payment via Mobile Banking.",
-      verification_fields: JSON.stringify([{ id: 'trxId', label: 'Transaction ID', type: 'text', required: true }])
+      verification_fields: JSON.stringify([{ id: 'trxId', label: 'Transaction ID', type: 'text', required: true }]),
+      upgrade_success_message: "Your payment verification is under review. You will receive an email once your account is upgraded."
     };
     
     result.rows.forEach(row => {

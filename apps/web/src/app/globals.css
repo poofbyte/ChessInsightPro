@@ -48,3 +48,31 @@ body {
   box-shadow: var(--board-shadow);
   border-radius: var(--radius);
 }
+
+/* Quill Rich Text Editor Dark Mode */
+.dark .ql-toolbar {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+.dark .ql-container {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+.dark .ql-editor {
+  color: hsl(var(--foreground));
+}
+.dark .ql-stroke {
+  stroke: hsl(var(--foreground));
+}
+.dark .ql-fill {
+  fill: hsl(var(--foreground));
+}
+.dark .ql-picker-options {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+.dark .ql-picker-label {
+  color: hsl(var(--foreground)) !important;
+}
