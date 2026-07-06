@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
 import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X, Eye, ExternalLink } from "lucide-react";
@@ -16,6 +16,16 @@ export default function AdminDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const parsedVerificationDetails = useMemo(() => {
+    if (!selectedRequest?.verification_details) return null;
+    try { return JSON.parse(selectedRequest.verification_details); } catch { return null; }
+  }, [selectedRequest?.verification_details]);
+
+  const parsedRequestedQuotas = useMemo(() => {
+    if (!selectedRequest?.requested_quotas) return null;
+    try { return JSON.parse(selectedRequest.requested_quotas); } catch { return null; }
+  }, [selectedRequest?.requested_quotas]);
 
   // Client-side guard: redirect non-admin users away
   useEffect(() => {
@@ -356,23 +366,18 @@ export default function AdminDashboardPage() {
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Verification Information</p>
                 {selectedRequest.verification_details ? (
                   <div className="bg-black/5 dark:bg-slate-900 border border-border rounded-2xl p-4 space-y-3">
-                    {(() => {
-                      try {
-                        const details = JSON.parse(selectedRequest.verification_details);
-                        return Object.entries(details).map(([key, value]) => (
-                          <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-                            <span className="text-sm font-bold text-slate-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                            <span className="text-sm font-semibold text-foreground">{String(value)}</span>
-                          </div>
-                        ));
-                      } catch {
-                        return (
-                          <pre className="whitespace-pre-wrap text-xs text-slate-500">
-                            {selectedRequest.verification_details}
-                          </pre>
-                        );
-                      }
-                    })()}
+                    {parsedVerificationDetails ? (
+                      Object.entries(parsedVerificationDetails).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                          <span className="text-sm font-bold text-slate-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                          <span className="text-sm font-semibold text-foreground">{String(value)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <pre className="whitespace-pre-wrap text-xs text-slate-500">
+                        {selectedRequest.verification_details}
+                      </pre>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500 italic">No verification information provided.</p>
@@ -383,19 +388,16 @@ export default function AdminDashboardPage() {
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Requested Quotas</p>
                   <div className="bg-black/5 dark:bg-slate-900 border border-border rounded-2xl p-4">
-                    {(() => {
-                      try {
-                        const quotas = JSON.parse(selectedRequest.requested_quotas);
-                        return Object.entries(quotas).map(([key, value]) => (
-                          <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-                            <span className="text-sm font-bold text-slate-500 capitalize">{key}</span>
-                            <span className="text-sm font-semibold text-foreground">{String(value)}</span>
-                          </div>
-                        ));
-                      } catch {
-                        return <pre className="whitespace-pre-wrap text-xs">{selectedRequest.requested_quotas}</pre>;
-                      }
-                    })()}
+                    {parsedRequestedQuotas ? (
+                      Object.entries(parsedRequestedQuotas).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
+                          <span className="text-sm font-bold text-slate-500 capitalize">{key}</span>
+                          <span className="text-sm font-semibold text-foreground">{String(value)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <pre className="whitespace-pre-wrap text-xs">{selectedRequest.requested_quotas}</pre>
+                    )}
                   </div>
                 </div>
               )}

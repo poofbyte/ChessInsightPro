@@ -43,23 +43,23 @@ export async function POST(req: Request) {
     await ensureDbReady();
     const { payment_instructions, verification_fields, upgrade_success_message } = await req.json();
     
-    await dbClient.execute({
-      sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('payment_instructions', ?, ?)
-            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
-      args: [payment_instructions, adminId]
-    });
-    
-    await dbClient.execute({
-      sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('verification_fields', ?, ?)
-            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
-      args: [verification_fields, adminId]
-    });
-    
-    await dbClient.execute({
-      sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('upgrade_success_message', ?, ?)
-            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
-      args: [upgrade_success_message, adminId]
-    });
+    await Promise.all([
+      dbClient.execute({
+        sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('payment_instructions', ?, ?)
+              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
+        args: [payment_instructions, adminId]
+      }),
+      dbClient.execute({
+        sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('verification_fields', ?, ?)
+              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
+        args: [verification_fields, adminId]
+      }),
+      dbClient.execute({
+        sql: `INSERT INTO system_config (key, value, updated_by) VALUES ('upgrade_success_message', ?, ?)
+              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
+        args: [upgrade_success_message, adminId]
+      })
+    ]);
     
     return NextResponse.json({ success: true });
   } catch (error) {

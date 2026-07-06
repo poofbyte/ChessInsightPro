@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import {
   Game, Move, CoachStyle, PlayerProfile,
 } from "@chessinsight/types";
 import { parsePgn, Chess } from "@chessinsight/chess-core";
-import { useChessStore, playMoveSound, BOARD_THEMES } from "./store";
+import { useChessStore, playMoveSound } from "./store";
 import { analyzeGame } from "./pipeline";
 import { db } from "./db";
 import {
@@ -19,16 +19,32 @@ import { getLineWinPercentage } from "@chessinsight/evaluator";
 import { resolvePgnFromUrl } from "../lib/pgn-resolver";
 import { VisualizationFormatter } from "@chessinsight/charts";
 import {
-  Upload, RefreshCw, ChevronLeft, ChevronRight, Compass,
-  Brain, FileText, Globe, Play, Trophy, ShieldAlert, Award
+  Upload, RefreshCw, ChevronLeft, ChevronRight,
+  Brain, Play, ShieldAlert
 } from "lucide-react";
 import { BoardView } from "../components/BoardView";
 
 const GameLineChart = dynamic(() => import("../components/GameLineChart"), { ssr: false });
 
 export default function RootReviewPage() {
-  const store = useChessStore();
-  const { game } = store;
+  const game = useChessStore(s => s.game);
+  const boardFen = useChessStore(s => s.boardFen);
+  const currentMoveIndex = useChessStore(s => s.currentMoveIndex);
+  const evaluation = useChessStore(s => s.evaluation);
+  const isAnalyzing = useChessStore(s => s.isAnalyzing);
+  const analysisProgress = useChessStore(s => s.analysisProgress);
+  const coachStyle = useChessStore(s => s.coachStyle);
+  const activeTab = useChessStore(s => s.activeTab);
+  const boardOrientation = useChessStore(s => s.boardOrientation);
+  const engineVersion = useChessStore(s => s.engineVersion);
+  const setCurrentMoveIndex = useChessStore(s => s.setCurrentMoveIndex);
+  const setIsAnalyzing = useChessStore(s => s.setIsAnalyzing);
+  const setAnalysisProgress = useChessStore(s => s.setAnalysisProgress);
+  const setCoachStyle = useChessStore(s => s.setCoachStyle);
+  const setActiveTab = useChessStore(s => s.setActiveTab);
+  const setGame = useChessStore(s => s.setGame);
+  const reset = useChessStore(s => s.reset);
+  const setEngineVersion = useChessStore(s => s.setEngineVersion);
   const [pgnInput, setPgnInput] = useState("");
   const [historicalGames, setHistoricalGames] = useState<Game[]>([]);
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
@@ -40,17 +56,20 @@ export default function RootReviewPage() {
   const [puzzleMoveIdx, setPuzzleMoveIdx] = useState(0);
   const [puzzleSuccess, setPuzzleSuccess] = useState<boolean | null>(null);
 
-  // Keyboard navigation
+  // Keyboard navigation (ref avoids tearing down listener on every move change)
+  const currentMoveIndexRef = useRef(currentMoveIndex);
+  currentMoveIndexRef.current = currentMoveIndex;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (game && !activePuzzle) {
-        if (e.key === "ArrowRight") store.setCurrentMoveIndex(Math.min(store.currentMoveIndex + 1, game.moves.length));
-        else if (e.key === "ArrowLeft") store.setCurrentMoveIndex(Math.max(0, store.currentMoveIndex - 1));
+        if (e.key === "ArrowRight") setCurrentMoveIndex(Math.min(currentMoveIndexRef.current + 1, game.moves.length));
+        else if (e.key === "ArrowLeft") setCurrentMoveIndex(Math.max(0, currentMoveIndexRef.current - 1));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [game, store.currentMoveIndex, activePuzzle]);
+  }, [game, activePuzzle]);
 
   const loadDatabaseData = useCallback(async () => {
     const games = await db.games.reverse().toArray();
@@ -66,11 +85,11 @@ export default function RootReviewPage() {
 
   useEffect(() => { loadDatabaseData(); }, [loadDatabaseData]);
 
-  const handlePgnAnalyze = async () => {
+  const handlePgnAnalyze = useCallback(async () => {
     if (!pgnInput.trim()) return;
     setErrorMsg("");
-    store.setIsAnalyzing(true);
-    store.setAnalysisProgress(0);
+    setIsAnalyzing(true);
+    setAnalysisProgress(0);
     try {
       const pgnText = await resolvePgnFromUrl(pgnInput);
       const parsed = parsePgn(pgnText);
@@ -90,8 +109,8 @@ export default function RootReviewPage() {
         result: parsed.headers.Result || "*",
         moves: gameMoves,
       };
-      const analysisResult = await analyzeGame(newGame, store.engineVersion, (progress) => {
-        store.setAnalysisProgress(progress);
+      const analysisResult = await analyzeGame(newGame, engineVersion, (progress) => {
+        setAnalysisProgress(progress);
       });
       newGame.moves = newGame.moves.map((move, index) => ({
         ...move,
@@ -118,17 +137,19 @@ export default function RootReviewPage() {
         await db.profiles.put(updatedProf);
       }
       await loadDatabaseData();
-      store.setGame(newGame);
+      setGame(newGame);
       setPgnInput("");
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e.message || "Failed to parse and analyze PGN. Make sure it has a valid format.");
     } finally {
-      store.setIsAnalyzing(false);
+      setIsAnalyzing(false);
     }
-  };
+  }, [pgnInput, engineVersion, profile, loadDatabaseData, setGame, setIsAnalyzing, setAnalysisProgress]);
 
-  const launchPuzzle = (game: Game, moveIndex: number) => {
+  const clearPuzzle = useCallback(() => setActivePuzzle(null), []);
+
+  const launchPuzzle = useCallback((game: Game, moveIndex: number) => {
     const puzzle = BlunderPuzzleGenerator.generatePuzzleFromBlunder(game, moveIndex);
     if (puzzle) {
       setActivePuzzle(puzzle);
@@ -136,9 +157,9 @@ export default function RootReviewPage() {
       setPuzzleMoveIdx(0);
       setPuzzleSuccess(null);
     }
-  };
+  }, []);
 
-  const handlePuzzleMove = (from: string, to: string, promotion?: string) => {
+  const handlePuzzleMove = useCallback((from: string, to: string, promotion?: string) => {
     if (!activePuzzle || !puzzleGame || puzzleSuccess !== null) return false;
     try {
       const uciMove = from + to + (promotion || "");
@@ -158,12 +179,11 @@ export default function RootReviewPage() {
     } catch {
       return false;
     }
-  };
+  }, [activePuzzle, puzzleGame, puzzleMoveIdx, puzzleSuccess]);
 
-  // Evaluation calculation for currently selected move
-  const getEvalState = () => {
-    if (!game || !store.evaluation) return { score: "0.0", percent: 50, isWhiteAhead: true };
-    const pos = store.evaluation.positions[store.currentMoveIndex];
+  const evalState = useMemo(() => {
+    if (!game || !evaluation) return { score: "0.0", percent: 50, isWhiteAhead: true };
+    const pos = evaluation.positions[currentMoveIndex];
     if (!pos || !pos.lines || pos.lines.length === 0) return { score: "0.0", percent: 50, isWhiteAhead: true };
 
     const firstLine = pos.lines[0];
@@ -185,17 +205,21 @@ export default function RootReviewPage() {
       percent: Math.round(winPercent),
       isWhiteAhead: cp >= 0,
     };
-  };
+  }, [game, evaluation, currentMoveIndex]);
 
-  const evalState = getEvalState();
+  const chartsData = useMemo(() =>
+    game && evaluation
+      ? VisualizationFormatter.formatTimeline(game, evaluation)
+      : [],
+    [game, evaluation]
+  );
 
-  const chartsData = game && store.evaluation
-    ? VisualizationFormatter.formatTimeline(game, store.evaluation)
-    : [];
-
-  const currentMetrics = game && store.evaluation
-    ? store.evaluation.positions[store.currentMoveIndex]?.metrics
-    : null;
+  const currentMetrics = useMemo(() =>
+    game && evaluation
+      ? evaluation.positions[currentMoveIndex]?.metrics
+      : null,
+    [game, evaluation, currentMoveIndex]
+  );
 
   return (
     <div className="flex-1 overflow-y-auto p-8 bg-background">
@@ -213,7 +237,7 @@ export default function RootReviewPage() {
                   <span className="text-sm font-semibold">{game.black.name}</span>
                 </div>
                 <button
-                  onClick={() => store.reset()}
+                  onClick={() => reset()}
                   className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-foreground underline transition"
                 >
                   Unload Game
@@ -233,12 +257,12 @@ export default function RootReviewPage() {
                     <BoardView
                       fen={puzzleGame?.fen() || activePuzzle.initialFen}
                       onPieceDrop={handlePuzzleMove}
-                      orientation={store.boardOrientation}
+                      orientation={boardOrientation}
                     />
                   ) : (
                     <BoardView
-                      fen={store.boardFen}
-                      orientation={store.boardOrientation}
+                      fen={boardFen}
+                      orientation={boardOrientation}
                       arePiecesDraggable={false}
                     />
                   )}
@@ -251,20 +275,20 @@ export default function RootReviewPage() {
                   <span className="text-sm font-semibold">{game.white.name}</span>
                 </div>
                 <div className="flex gap-2">
-                  <NavButton
-                    disabled={store.currentMoveIndex === 0}
-                    onClick={() => store.setCurrentMoveIndex(Math.max(0, store.currentMoveIndex - 1))}
+                  <NavButtonMemo
+                    disabled={currentMoveIndex === 0}
+                    onClick={() => setCurrentMoveIndex(Math.max(0, currentMoveIndex - 1))}
                     aria-label="Previous move"
                   >
                     <ChevronLeft className="w-4 h-4 text-foreground" />
-                  </NavButton>
-                  <NavButton
-                    disabled={store.currentMoveIndex === game.moves.length}
-                    onClick={() => store.setCurrentMoveIndex(Math.min(store.currentMoveIndex + 1, game.moves.length))}
+                  </NavButtonMemo>
+                  <NavButtonMemo
+                    disabled={currentMoveIndex === game.moves.length}
+                    onClick={() => setCurrentMoveIndex(Math.min(currentMoveIndex + 1, game.moves.length))}
                     aria-label="Next move"
                   >
                     <ChevronRight className="w-4 h-4 text-foreground" />
-                  </NavButton>
+                  </NavButtonMemo>
                 </div>
               </div>
 
@@ -272,7 +296,7 @@ export default function RootReviewPage() {
                 <BlunderDrillPanel
                   puzzle={activePuzzle}
                   success={puzzleSuccess}
-                  onExit={() => setActivePuzzle(null)}
+                  onExit={clearPuzzle}
                 />
               )}
             </div>
@@ -297,8 +321,8 @@ export default function RootReviewPage() {
                     <span>Virtual Coach Feedback</span>
                   </div>
                   <select
-                    value={store.coachStyle}
-                    onChange={(e) => store.setCoachStyle(e.target.value as CoachStyle)}
+                    value={coachStyle}
+                    onChange={(e) => setCoachStyle(e.target.value as CoachStyle)}
                     className="text-xs bg-black/5 dark:bg-slate-900 border border-border rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-teal-500 font-bold"
                   >
                     {Object.values(CoachStyle).map((s) => (
@@ -307,9 +331,9 @@ export default function RootReviewPage() {
                   </select>
                 </div>
                 <div className="p-4 bg-black/10 dark:bg-slate-950/60 border border-border rounded-2xl min-h-[100px] text-sm text-slate-900 dark:text-slate-200 leading-relaxed font-medium">
-                  {store.currentMoveIndex === 0
+                  {currentMoveIndex === 0
                     ? <p className="italic text-slate-500">Starting position. Use Arrow Keys or buttons to step through moves.</p>
-                    : game.moves[store.currentMoveIndex - 1]?.evaluation?.narratives?.[store.coachStyle]
+                    : game.moves[currentMoveIndex - 1]?.evaluation?.narratives?.[coachStyle]
                       || <p className="italic text-slate-500">Evaluating position parameters...</p>
                   }
                 </div>
@@ -321,18 +345,18 @@ export default function RootReviewPage() {
                   {["Move Log", "Accuracy Chart", "Positional Metrics", "Blunders"].map((tab, i) => (
                     <button
                       key={i}
-                      onClick={() => store.setActiveTab(i)}
-                      className={`py-3.5 transition-all ${store.activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-black/5 dark:bg-slate-900/40" : "text-slate-600 dark:text-slate-400 hover:text-foreground"}`}
+                      onClick={() => setActiveTab(i)}
+                      className={`py-3.5 transition-all ${activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-black/5 dark:bg-slate-900/40" : "text-slate-600 dark:text-slate-400 hover:text-foreground"}`}
                     >
                       {tab}
                     </button>
                   ))}
                 </div>
                 <div className="flex-1 overflow-y-auto p-5">
-                  {store.activeTab === 0 && <MoveLog game={game} currentIndex={store.currentMoveIndex} onSelect={store.setCurrentMoveIndex} />}
-                  {store.activeTab === 1 && <GameLineChart data={chartsData} />}
-                  {store.activeTab === 2 && currentMetrics && <MetricsView metrics={currentMetrics} />}
-                  {store.activeTab === 3 && <PuzzlesTab game={game} onLaunch={launchPuzzle} />}
+                  {activeTab === 0 && <MoveLogMemo game={game} currentIndex={currentMoveIndex} onSelect={setCurrentMoveIndex} />}
+                  {activeTab === 1 && <GameLineChart data={chartsData} />}
+                  {activeTab === 2 && currentMetrics && <MetricsViewMemo metrics={currentMetrics} />}
+                  {activeTab === 3 && <PuzzlesTabMemo game={game} onLaunch={launchPuzzle} />}
                 </div>
               </div>
             </div>
@@ -373,9 +397,9 @@ export default function RootReviewPage() {
                       <button
                         key={v}
                         type="button"
-                        onClick={() => store.setEngineVersion(v)}
+                        onClick={() => setEngineVersion(v)}
                         className={`px-3 py-1.5 text-xs font-black rounded-lg transition ${
-                          store.engineVersion === v
+                          engineVersion === v
                             ? "bg-teal-500 text-black shadow-md shadow-teal-500/10"
                             : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-slate-200"
                         }`}
@@ -400,17 +424,17 @@ export default function RootReviewPage() {
                   </div>
                 )}
 
-                {store.isAnalyzing ? (
+                {isAnalyzing ? (
                   <div className="space-y-3">
                     <div className="flex justify-between text-xs font-bold text-teal-400">
                       <span className="flex items-center gap-1.5">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                         Evaluating position parameters...
                       </span>
-                      <span>{store.analysisProgress}%</span>
+                      <span>{analysisProgress}%</span>
                     </div>
                     <div className="h-2 w-full bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="bg-gradient-to-r from-teal-500 to-emerald-400 h-full transition-all duration-300" style={{ width: `${store.analysisProgress}%` }} />
+                      <div className="bg-gradient-to-r from-teal-500 to-emerald-400 h-full transition-all duration-300" style={{ width: `${analysisProgress}%` }} />
                     </div>
                   </div>
                 ) : (
@@ -431,7 +455,7 @@ export default function RootReviewPage() {
                     {historicalGames.slice(0, 5).map((g) => (
                       <button
                         key={g.id}
-                        onClick={() => store.setGame(g)}
+                        onClick={() => setGame(g)}
                         className="w-full p-4 bg-card/60 hover:bg-black/10 dark:bg-slate-800/40 border border-border hover:border-teal-500/25 rounded-2xl transition text-left flex justify-between items-center group"
                       >
                         <div>
@@ -455,9 +479,9 @@ export default function RootReviewPage() {
   );
 }
 
-// Sub-components
+// Sub-components (wrapped with React.memo to prevent re-renders on parent state changes)
 
-function NavButton({ disabled, onClick, children, "aria-label": ariaLabel }: { disabled: boolean; onClick: () => void; children: React.ReactNode; "aria-label": string }) {
+const NavButtonMemo = React.memo(function NavButton({ disabled, onClick, children, "aria-label": ariaLabel }: { disabled: boolean; onClick: () => void; children: React.ReactNode; "aria-label": string }) {
   return (
     <button
       disabled={disabled}
@@ -468,9 +492,9 @@ function NavButton({ disabled, onClick, children, "aria-label": ariaLabel }: { d
       {children}
     </button>
   );
-}
+});
 
-function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: number; onSelect: (i: number) => void }) {
+const MoveLogMemo = React.memo(function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: number; onSelect: (i: number) => void }) {
   return (
     <div className="grid grid-cols-2 gap-2">
       {game.moves.map((move, idx) => {
@@ -498,9 +522,9 @@ function MoveLog({ game, currentIndex, onSelect }: { game: Game; currentIndex: n
       })}
     </div>
   );
-}
+});
 
-function MetricsView({ metrics }: { metrics: any }) {
+const MetricsViewMemo = React.memo(function MetricsView({ metrics }: { metrics: any }) {
   const bars = [
     { label: "Development Speed", a: metrics.development[0], b: metrics.development[1], max: 8 },
     { label: "Mobility", a: metrics.mobility[0], b: metrics.mobility[1], max: metrics.mobility[0] + metrics.mobility[1] || 1 },
@@ -522,9 +546,9 @@ function MetricsView({ metrics }: { metrics: any }) {
       ))}
     </div>
   );
-}
+});
 
-function PuzzlesTab({ game, onLaunch }: { game: Game; onLaunch: (game: Game, idx: number) => void }) {
+const PuzzlesTabMemo = React.memo(function PuzzlesTab({ game, onLaunch }: { game: Game; onLaunch: (game: Game, idx: number) => void }) {
   const blunders = game.moves.filter((m) => m.evaluation?.classification === "blunder");
   if (blunders.length === 0) return <p className="text-sm text-slate-500 italic text-center py-6">Congrats! You made no blunders this game.</p>;
   return (
@@ -546,9 +570,9 @@ function PuzzlesTab({ game, onLaunch }: { game: Game; onLaunch: (game: Game, idx
       })}
     </div>
   );
-}
+});
 
-function BlunderDrillPanel({ puzzle, success, onExit }: { puzzle: any; success: boolean | null; onExit: () => void }) {
+const BlunderDrillPanel = React.memo(function BlunderDrillPanel({ puzzle, success, onExit }: { puzzle: any; success: boolean | null; onExit: () => void }) {
   return (
     <div className="p-6 bg-teal-950/40 border border-teal-500/30 rounded-2xl flex flex-col gap-3 relative overflow-hidden">
       <div className="absolute right-4 top-4">
@@ -563,4 +587,4 @@ function BlunderDrillPanel({ puzzle, success, onExit }: { puzzle: any; success: 
       {success === false && <div className="p-3 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-sm font-semibold">❌ Incorrect. Try again.</div>}
     </div>
   );
-}
+});
