@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
 import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X, Eye, ExternalLink } from "lucide-react";
@@ -16,6 +16,7 @@ export default function AdminDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const parsedVerificationDetails = useMemo(() => {
     if (!selectedRequest?.verification_details) return null;
@@ -38,27 +39,31 @@ export default function AdminDashboardPage() {
     return () => clearTimeout(timeout);
   }, [accessToken, user, router]);
 
-  useEffect(() => {
+  const fetchData = useCallback(async (refreshStatsOnly?: boolean) => {
     if (!accessToken || user?.role !== "ADMIN") return;
-    
-    Promise.all([
-      fetch("/api/admin/dashboard", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json()),
-      fetch("/api/admin/upgrade-requests", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json()),
-      fetch("/api/admin/settings", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json())
-    ]).then(([dashboardData, requestsData, settingsData]) => {
+    try {
+      const [dashboardData, requestsData, settingsData] = await Promise.all([
+        fetch("/api/admin/dashboard", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json()),
+        refreshStatsOnly ? Promise.resolve(null) : fetch("/api/admin/upgrade-requests", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json()),
+        refreshStatsOnly ? Promise.resolve(null) : fetch("/api/admin/settings", { headers: { Authorization: `Bearer ${accessToken}` } }).then(res => res.json())
+      ]);
       setStats(dashboardData.stats);
-      if (requestsData.requests) setRequests(requestsData.requests);
+      if (requestsData?.requests) setRequests(requestsData.requests);
       if (settingsData) setSettings({
         payment_instructions: settingsData.payment_instructions || "",
         verification_fields: settingsData.verification_fields || "[]",
         upgrade_success_message: settingsData.upgrade_success_message || ""
       });
-      setLoading(false);
-    }).catch(err => {
+    } catch (err) {
       console.error("Admin data load error:", err);
-      setLoading(false);
-    });
+    }
+    setLoading(false);
+    setRefreshing(false);
   }, [accessToken, user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleProcessRequest = async (id: string, action: "APPROVE" | "REJECT") => {
     setProcessingId(id);
@@ -71,6 +76,7 @@ export default function AdminDashboardPage() {
       if (res.ok) {
         setRequests(requests.map(r => r.id === id ? { ...r, status: action === "APPROVE" ? "APPROVED" : "REJECTED" } : r));
         if (selectedRequest?.id === id) setSelectedRequest(null);
+        fetchData(true);
       } else {
         const err = await res.json();
         alert(err.error || "Failed to process request.");
@@ -179,15 +185,47 @@ export default function AdminDashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-card border border-border rounded-2xl p-6">
-                <h2 className="text-lg font-bold mb-4">Paid Subscriptions</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
-                    <span className="font-bold">Pro (Tier 1)</span>
-                    <span className="text-xl font-black text-teal-500">{stats.tier1}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
-                    <span className="font-bold">Elite (Tier 2)</span>
-                    <span className="text-xl font-black text-teal-500">{stats.tier2}</span>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold">Paid Subscriptions</h2>
+                  <button
+                    onClick={() => { setRefreshing(true); fetchData(true); }}
+                    disabled={refreshing}
+                    className="text-xs font-bold text-teal-500 hover:text-teal-400 transition disabled:opacity-40"
+                  >
+                    {refreshing ? "Refreshing..." : "Refresh"}
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {stats.planCounts && Object.entries(stats.planCounts).length > 0
+                    ? Object.entries(stats.planCounts).map(([plan, count]) => (
+                        <div key={plan} className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
+                          <span className="font-bold capitalize">
+                            {plan === "TIER1" ? "Pro (Tier 1)" : plan === "TIER2" ? "Elite (Tier 2)" : plan === "CUSTOM" ? "Custom Plan" : plan}
+                          </span>
+                          <span className="text-xl font-black text-teal-500">{count as number}</span>
+                        </div>
+                      ))
+                    : (
+                      <>
+                        <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
+                          <span className="font-bold">Pro (Tier 1)</span>
+                          <span className="text-xl font-black text-teal-500">{stats.tier1}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
+                          <span className="font-bold">Elite (Tier 2)</span>
+                          <span className="text-xl font-black text-teal-500">{stats.tier2}</span>
+                        </div>
+                        {(stats.custom || 0) > 0 && (
+                          <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-slate-900 rounded-xl">
+                            <span className="font-bold">Custom Plan</span>
+                            <span className="text-xl font-black text-teal-500">{stats.custom}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  <div className="flex items-center justify-between p-4 bg-teal-500/10 border border-teal-500/20 rounded-xl">
+                    <span className="font-bold text-teal-500">Total Paid</span>
+                    <span className="text-xl font-black text-teal-500">{stats.totalPaid || (stats.tier1 + stats.tier2 + (stats.custom || 0))}</span>
                   </div>
                 </div>
               </div>

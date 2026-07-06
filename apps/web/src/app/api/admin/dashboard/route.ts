@@ -19,27 +19,31 @@ export async function GET(req: Request) {
     
     const [
       totalUsersRes,
-      paidTiersRes,
+      paidPlansRes,
       gamesRes,
       puzzlesRes,
       mrrRes
     ] = await Promise.all([
       dbClient.execute(`SELECT count(*) as count FROM users`),
-      dbClient.execute(`SELECT plan, count(*) as count FROM users WHERE plan != 'FREE' GROUP BY plan`),
+      dbClient.execute(`SELECT plan, count(*) as count FROM users WHERE plan != 'FREE' AND plan IS NOT NULL GROUP BY plan`),
       dbClient.execute(`SELECT count(*) as count FROM games`),
       dbClient.execute(`SELECT count(*) as count, avg(times_served) as avg_served FROM generated_puzzles`),
-      // Calculate MRR from active approved upgrade requests that are recent (e.g. this month), or just sum active custom plans. For now, estimate from Tier1/2 + approved custom
-      dbClient.execute(`SELECT sum(requested_price_bdt) as sum FROM pending_upgrade_requests WHERE status = 'APPROVED' AND requested_plan = 'CUSTOM' AND created_at > datetime('now', '-30 days')`)
+      dbClient.execute(`SELECT coalesce(sum(requested_price_bdt), 0) as sum FROM pending_upgrade_requests WHERE status = 'APPROVED' AND created_at > datetime('now', '-30 days')`),
     ]);
 
     const totalUsers = totalUsersRes.rows[0].count;
     
-    let tier1 = 0;
-    let tier2 = 0;
-    paidTiersRes.rows.forEach(r => {
-      if (r.plan === 'TIER1') tier1 = r.count as number;
-      if (r.plan === 'TIER2') tier2 = r.count as number;
+    const planCounts: Record<string, number> = {};
+    let totalPaid = 0;
+    paidPlansRes.rows.forEach(r => {
+      const plan = (r.plan as string).toUpperCase();
+      planCounts[plan] = r.count as number;
+      totalPaid += (r.count as number);
     });
+
+    const tier1 = planCounts["TIER1"] || 0;
+    const tier2 = planCounts["TIER2"] || 0;
+    const custom = planCounts["CUSTOM"] || 0;
     
     const customMrr = (mrrRes.rows[0].sum as number) || 0;
     const estimatedMrr = (tier1 * 100) + (tier2 * 200) + customMrr;
@@ -51,8 +55,11 @@ export async function GET(req: Request) {
     return NextResponse.json({
       stats: {
         totalUsers,
+        totalPaid,
         tier1,
         tier2,
+        custom,
+        planCounts,
         estimatedMrr,
         totalGames,
         totalPuzzles,
