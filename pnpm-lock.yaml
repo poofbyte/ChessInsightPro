@@ -77,6 +77,9 @@ importers:
       '@core/email':
         specifier: workspace:*
         version: link:../../packages/core/email
+      '@core/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/core/intelligence
       '@core/pricing':
         specifier: workspace:*
         version: link:../../packages/core/pricing
@@ -314,6 +317,12 @@ importers:
       '@chessinsight/types':
         specifier: workspace:*
         version: link:../../shared/types
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/core/intelligence:
     devDependencies:
       typescript:
         specifier: ^5.7.2

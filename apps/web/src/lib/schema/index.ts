@@ -174,16 +174,18 @@ export const analyticsEventsTable: TableDefinition = {
   columns: [
     { name: "event_id", type: "TEXT PRIMARY KEY" },
     { name: "version", type: "INTEGER NOT NULL" },
-    { name: "category", type: "TEXT NOT NULL" },
+    { name: "category", type: "TEXT NOT NULL" }, // e.g. "analysis", "learning"
     { name: "event_type", type: "TEXT NOT NULL" },
     { name: "correlation_id", type: "TEXT" },
     { name: "session_id", type: "TEXT NOT NULL" },
     { name: "user_id", type: "TEXT" },
     { name: "priority", type: "TEXT NOT NULL" },
+    { name: "timestamp", type: "INTEGER NOT NULL" }, // Indexed timestamp
+    { name: "platform", type: "TEXT NOT NULL" },     // e.g. "web"
+    { name: "app_version", type: "TEXT NOT NULL" },
     { name: "properties", type: "TEXT" }, // JSON string
     { name: "context", type: "TEXT" },    // JSON string
-    { name: "metadata", type: "TEXT" },   // JSON string
-    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+    { name: "metadata", type: "TEXT" },   // JSON string (remaining metadata)
   ],
 };
 

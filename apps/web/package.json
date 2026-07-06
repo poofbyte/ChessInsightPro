@@ -30,6 +30,7 @@
     "@core/config": "workspace:*",
     "@core/db-sync": "workspace:*",
     "@core/email": "workspace:*",
+    "@core/intelligence": "workspace:*",
     "@core/pricing": "workspace:*",
     "@core/quota": "workspace:*",
     "@core/telemetry": "workspace:*",

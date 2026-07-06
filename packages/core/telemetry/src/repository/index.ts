@@ -24,8 +24,8 @@ export class TursoTelemetryRepository implements TelemetryRepository {
           sql: `
             INSERT INTO analytics_events (
               event_id, version, category, event_type, correlation_id, 
-              session_id, user_id, priority, properties, context, metadata
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              session_id, user_id, priority, timestamp, platform, app_version, properties, context, metadata
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(event_id) DO NOTHING
           `,
           args: [
@@ -37,6 +37,9 @@ export class TursoTelemetryRepository implements TelemetryRepository {
             event.sessionId,
             null, // Extract user_id securely from token in API route if needed
             event.priority,
+            event.metadata.timestamp,
+            event.metadata.platform,
+            event.metadata.appVersion,
             JSON.stringify(event.properties),
             event.context ? JSON.stringify(event.context) : null,
             JSON.stringify(event.metadata),
