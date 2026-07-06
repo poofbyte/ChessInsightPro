@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { hashPassword, checkSignupRateLimit, recordSignupAttempt } from "@core/auth";
 import crypto from "crypto";
+import { sendWelcomeEmail } from "@core/email";
 
 export async function POST(req: Request) {
   try {
@@ -43,6 +44,8 @@ export async function POST(req: Request) {
       sql: `INSERT INTO users (id, email, password_hash, plan, signup_ip) VALUES (?, ?, ?, ?, ?)`,
       args: [userId, email, hashed, "FREE", ip]
     });
+    
+    await sendWelcomeEmail(email);
     
     return NextResponse.json({ success: true, userId });
     

@@ -29,6 +29,7 @@
     "@core/auth": "workspace:*",
     "@core/config": "workspace:*",
     "@core/db-sync": "workspace:*",
+    "@core/email": "workspace:*",
     "@core/pricing": "workspace:*",
     "@core/quota": "workspace:*",
     "@huggingface/inference": "^2.6.4",

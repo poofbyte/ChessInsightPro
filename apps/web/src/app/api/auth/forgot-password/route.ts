@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import crypto from "crypto";
+import { sendPasswordResetEmail } from "@core/email";
 
 export async function POST(req: Request) {
   try {
@@ -32,11 +33,9 @@ export async function POST(req: Request) {
     const hmac = crypto.createHmac("sha256", secret).update(dataToSign).digest("hex");
     const token = Buffer.from(`${dataToSign}|${hmac}`).toString("base64");
 
-    // STUB: Actual email sending goes here!
+    // Send email using @core/email
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
-    console.log(`[STUB EMAIL] Password reset requested for ${email}`);
-    console.log(`[STUB EMAIL] Reset link: ${resetUrl}`);
-    console.log(`[STUB EMAIL] In a production environment, plug in Resend or AWS SES here to actually email the user.`);
+    await sendPasswordResetEmail(email, resetUrl);
 
     return NextResponse.json({ success: true });
   } catch (error) {

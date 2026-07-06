@@ -3,6 +3,7 @@ import { dbClient, ensureDbReady } from "@/lib/db";
 import crypto from "crypto";
 import { verifyAccessToken } from "@core/auth";
 import { headers } from "next/headers";
+import { sendUpgradeApprovedEmail, sendUpgradeRejectedEmail } from "@core/email";
 
 function getAdminUserId(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -45,7 +46,10 @@ export async function POST(req: Request) {
     }
     
     const requestRes = await dbClient.execute({
-      sql: `SELECT user_id, requested_plan, requested_quotas FROM pending_upgrade_requests WHERE id = ? AND status = 'PENDING'`,
+      sql: `SELECT req.user_id, req.requested_plan, req.requested_quotas, req.requested_price_bdt, u.email 
+            FROM pending_upgrade_requests req
+            JOIN users u ON req.user_id = u.id
+            WHERE req.id = ? AND req.status = 'PENDING'`,
       args: [requestId]
     });
     
@@ -67,11 +71,22 @@ export async function POST(req: Request) {
           sql: `UPDATE pending_upgrade_requests SET status = 'APPROVED' WHERE id = ?`,
           args: [requestId]
         });
+        
+        await sendUpgradeApprovedEmail(
+          reqData.email as string, 
+          reqData.requested_plan as string, 
+          reqData.requested_price_bdt as string
+        );
       } else {
         await dbClient.execute({
           sql: `UPDATE pending_upgrade_requests SET status = 'REJECTED' WHERE id = ?`,
           args: [requestId]
         });
+        
+        await sendUpgradeRejectedEmail(
+          reqData.email as string,
+          note
+        );
       }
       
       const auditId = crypto.randomUUID();
