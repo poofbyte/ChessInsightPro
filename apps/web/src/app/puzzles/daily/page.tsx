@@ -386,7 +386,7 @@ export default function DailyPuzzlePage() {
                 </div>
 
                 {hintText && (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-relaxed font-semibold animate-pulse-once">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-xl text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-semibold animate-pulse-once">
                     {hintText}
                   </div>
                 )}
@@ -396,7 +396,7 @@ export default function DailyPuzzlePage() {
                     <button
                       onClick={handleRequestHint}
                       disabled={currentMoveHintLevel >= 3}
-                      className="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-30 disabled:cursor-not-allowed text-amber-300 border border-amber-500/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 disabled:shadow-none"
                     >
                       {currentMoveHintLevel >= 3
                         ? "✓ All hints revealed for this move"
