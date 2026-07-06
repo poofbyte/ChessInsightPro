@@ -184,9 +184,9 @@ export default function PricingPage() {
           <div className="mt-16 p-8 bg-card border border-border rounded-3xl max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-black mb-2">{customPlanCfg.title}</h3>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <div className="text-slate-600 dark:text-slate-400 text-sm">
                 <ReactMarkdown>{customPlanCfg.description || ""}</ReactMarkdown>
-              </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

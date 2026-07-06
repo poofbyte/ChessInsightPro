@@ -172,17 +172,17 @@ export const activityLogsTable: TableDefinition = {
 export const analyticsEventsTable: TableDefinition = {
   name: "analytics_events",
   columns: [
-    { name: "event_id", type: "TEXT PRIMARY KEY" },
-    { name: "version", type: "INTEGER NOT NULL" },
-    { name: "category", type: "TEXT NOT NULL" }, // e.g. "analysis", "learning"
-    { name: "event_type", type: "TEXT NOT NULL" },
+    { name: "event_id", type: "TEXT PRIMARY KEY DEFAULT (hex(randomblob(16)))" },
+    { name: "version", type: "INTEGER NOT NULL DEFAULT 1" },
+    { name: "category", type: "TEXT NOT NULL DEFAULT 'unknown'" }, 
+    { name: "event_type", type: "TEXT NOT NULL DEFAULT 'unknown'" },
     { name: "correlation_id", type: "TEXT" },
-    { name: "session_id", type: "TEXT NOT NULL" },
+    { name: "session_id", type: "TEXT NOT NULL DEFAULT 'unknown'" },
     { name: "user_id", type: "TEXT" },
-    { name: "priority", type: "TEXT NOT NULL" },
-    { name: "timestamp", type: "INTEGER NOT NULL" }, // Indexed timestamp
-    { name: "platform", type: "TEXT NOT NULL" },     // e.g. "web"
-    { name: "app_version", type: "TEXT NOT NULL" },
+    { name: "priority", type: "TEXT NOT NULL DEFAULT 'normal'" },
+    { name: "timestamp", type: "INTEGER NOT NULL DEFAULT 0" }, 
+    { name: "platform", type: "TEXT NOT NULL DEFAULT 'web'" },     
+    { name: "app_version", type: "TEXT NOT NULL DEFAULT '1.0.0'" },
     { name: "properties", type: "TEXT" }, // JSON string
     { name: "context", type: "TEXT" },    // JSON string
     { name: "metadata", type: "TEXT" },   // JSON string (remaining metadata)
