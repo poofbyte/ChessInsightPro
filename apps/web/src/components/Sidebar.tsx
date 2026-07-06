@@ -64,7 +64,7 @@ const NAV_SECTIONS = [
 export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; gamesPlayed?: number }) {
   const pathname = usePathname();
   const { theme, setTheme } = useChessStore();
-  const { accessToken } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
   const [quotas, setQuotas] = useState<any>(null);
 
   useEffect(() => {
@@ -127,79 +127,82 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
         ))}
       </nav>
 
-      {/* ELO Badge */}
-      {estimatedElo !== undefined && (
-        <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-slate-900/60 border border-teal-500/20 text-center">
-          <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
-          <div className="text-2xl font-black mt-0.5 text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400">
-            {estimatedElo}
-          </div>
-          <div className="text-[10px] text-slate-500">{gamesPlayed ?? 0} games</div>
-        </div>
-      )}
-
-      {/* Quota Widget */}
-      {quotas && (
-        <div className="mx-3 mb-2 p-3 rounded-2xl bg-gradient-to-br from-teal-500/10 to-teal-500/5 border border-teal-500/20">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 flex items-center gap-1">
-              <Flame className="w-3 h-3" /> {quotas.plan === 'FREE' ? 'Free Plan' : quotas.plan}
-            </span>
-          </div>
-          
-          <div className="space-y-2 mb-3">
-            <div>
-              <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                <span>Reviews</span>
-                <span className="font-bold text-foreground">
-                  {quotas.limits.reviews.remaining === 'unlimited' ? '∞' : quotas.limits.reviews.remaining} left
-                </span>
+      {/* Profile & Quota Recap */}
+      {(estimatedElo !== undefined || quotas) && (
+        <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-slate-900/60 border border-teal-500/20">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-center">
+              <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
+              <div className="text-xl font-black mt-0.5 text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400">
+                {estimatedElo !== undefined ? estimatedElo : '---'}
               </div>
-              <div className="w-full bg-black/10 dark:bg-slate-800 rounded-full h-1.5">
-                <div 
-                  className="bg-teal-500 h-1.5 rounded-full" 
-                  style={{ width: quotas.limits.reviews.total === undefined ? '100%' : ((quotas.limits.reviews.used / quotas.limits.reviews.total) * 100) + '%' }}
-                ></div>
-              </div>
+              <div className="text-[9px] text-slate-500">{gamesPlayed ?? 0} games</div>
             </div>
             
-            <div>
-              <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                <span>Puzzles</span>
-                <span className="font-bold text-foreground">
-                  {quotas.limits.puzzles.remaining === 'unlimited' ? '∞' : quotas.limits.puzzles.remaining} left
+            {quotas && (
+              <div className="text-right">
+                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                  {quotas.plan === 'FREE' ? 'Free' : quotas.plan} <Flame className="w-3 h-3 text-teal-500" />
                 </span>
+                <div className="text-xl font-black mt-0.5 text-slate-800 dark:text-white">
+                  {quotas.limits.reviews.remaining === 'unlimited' ? '∞' : quotas.limits.reviews.remaining}
+                </div>
+                <div className="text-[9px] text-slate-500">reviews left</div>
               </div>
-              <div className="w-full bg-black/10 dark:bg-slate-800 rounded-full h-1.5">
-                <div 
-                  className="bg-teal-500 h-1.5 rounded-full" 
-                  style={{ width: quotas.limits.puzzles.total === undefined ? '100%' : ((quotas.limits.puzzles.used / quotas.limits.puzzles.total) * 100) + '%' }}
-                ></div>
-              </div>
-            </div>
+            )}
           </div>
           
-          <Link 
-            href="/pricing"
-            className="block w-full py-1.5 text-center bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg transition-colors"
-          >
-            Upgrade Plan
-          </Link>
+          {quotas && (
+            <>
+              <div className="space-y-2 mb-3">
+                <div>
+                  <div className="flex justify-between text-[9px] text-slate-600 dark:text-slate-400 mb-1">
+                    <span>Puzzles</span>
+                    <span className="font-bold text-foreground">
+                      {quotas.limits.puzzles.remaining === 'unlimited' ? '∞' : quotas.limits.puzzles.remaining} left
+                    </span>
+                  </div>
+                  <div className="w-full bg-black/10 dark:bg-slate-800 rounded-full h-1">
+                    <div 
+                      className="bg-teal-500 h-1 rounded-full" 
+                      style={{ width: quotas.limits.puzzles.total === undefined ? '100%' : ((quotas.limits.puzzles.used / quotas.limits.puzzles.total) * 100) + '%' }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <Link 
+                href="/pricing"
+                className="block w-full py-1.5 text-center bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-bold rounded-lg transition-colors border border-teal-500/20"
+              >
+                Upgrade Plan
+              </Link>
+            </>
+          )}
         </div>
       )}
 
       <div className="px-3 pb-4 flex items-center gap-2">
-        <Link
-          href="/pricing"
-          className={`flex items-center justify-center p-2.5 rounded-xl transition-all ${
-            pathname === "/pricing"
-              ? "bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/50"
-              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
-          }`}
-          title="Upgrade to Pro"
-        >
-          <Zap className="w-4 h-4" />
-        </Link>
+        {user ? (
+          <Link
+            href="/profile"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 dark:bg-[#2a2a2a] text-white font-bold text-lg hover:ring-2 hover:ring-teal-500 transition-all shrink-0"
+            title="View Profile"
+          >
+            {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className={`flex items-center justify-center p-2.5 rounded-xl transition-all ${
+              pathname === "/login"
+                ? "bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/50"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+            }`}
+            title="Sign In"
+          >
+            <User className="w-4 h-4" />
+          </Link>
+        )}
         <Link
           href="/settings"
           className={`flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all text-sm ${
