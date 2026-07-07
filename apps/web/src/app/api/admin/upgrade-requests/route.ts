@@ -2,6 +2,7 @@ import { getAdminUserId } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { headers } from "next/headers";
+import crypto from "crypto";
 import { sendUpgradeApprovedEmail, sendUpgradeRejectedEmail } from "@core/email";
 
 

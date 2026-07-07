@@ -1,8 +1,7 @@
 import { getAdminUserId } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-
-
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   try {
@@ -94,12 +93,11 @@ export async function POST(req: Request) {
       if (!plan) {
         return NextResponse.json({ error: "Plan is required" }, { status: 400 });
       }
-      const renewExpr = expiresAt
-        ? `'${expiresAt}'`
-        : `datetime('now', '+30 days')`;
       statements.push({
-        sql: `UPDATE users SET plan = ?, plan_renews_at = ${renewExpr} WHERE id = ?`,
-        args: [plan, userId],
+        sql: expiresAt
+          ? `UPDATE users SET plan = ?, plan_renews_at = ? WHERE id = ?`
+          : `UPDATE users SET plan = ?, plan_renews_at = datetime('now', '+30 days') WHERE id = ?`,
+        args: expiresAt ? [plan, expiresAt, userId] : [plan, userId],
       });
     } else if (action === "set_expiry") {
       if (!expiresAt) {
