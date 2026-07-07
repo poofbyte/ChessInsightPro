@@ -250,7 +250,7 @@ export default function PricingPage() {
 
       {/* Upgrade Modal */}
       {showModal && selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-card border border-border rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
             <button
               onClick={() => setShowModal(false)}
