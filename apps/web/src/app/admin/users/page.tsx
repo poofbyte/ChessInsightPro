@@ -209,7 +209,7 @@ export default function AdminUsersPage() {
 
       {/* User Details Centered Modal */}
       {(selectedUser || isCreating) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 md:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 md:p-8 !m-0">
           <div className="w-full max-w-2xl bg-card shadow-2xl border border-border rounded-2xl flex flex-col max-h-full overflow-hidden animate-in zoom-in-95">
             
             <div className="p-6 border-b border-border flex items-center justify-between shrink-0">
