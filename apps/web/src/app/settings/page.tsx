@@ -14,6 +14,9 @@ export default function SettingsPage() {
   const [content, setContent] = useState({
     subtitle: "Configure engine, board appearance, and coach preferences.",
     engineDesc: "Choose which Stockfish engine version to use for position analysis. Stockfish 18 is stronger and recommended.",
+    legalDesc: "Legal agreements and policies.",
+    contactDesc: "Have a question, bug report, or feature request? Send us a message.",
+    aboutDesc: "ChessInsight Pro is an all-in-one chess improvement platform designed to help players analyze games, study openings, solve puzzles, train tactical vision, and improve consistently. Powered by Stockfish 18 and built with an offline-first architecture, it delivers fast, private, and professional chess analysis directly in your browser.",
   });
 
   useEffect(() => {
@@ -124,7 +127,7 @@ export default function SettingsPage() {
             <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">Contact Us</h2>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
-            Have a question, bug report, or feature request? Send us a message.
+            {content.contactDesc}
           </p>
           <ContactForm />
         </section>
@@ -156,7 +159,7 @@ export default function SettingsPage() {
           </div>
 
           <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-            ChessInsight Pro is an all-in-one chess improvement platform designed to help players analyze games, study openings, solve puzzles, train tactical vision, and improve consistently. Powered by Stockfish 18 and built with an offline-first architecture, it delivers fast, private, and professional chess analysis directly in your browser.
+            {content.aboutDesc}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

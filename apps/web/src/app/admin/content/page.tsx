@@ -47,7 +47,7 @@ const DEFAULT_CONTENT: PageContent = {
   openings: { title: "Chess Openings", description: "", content: "" },
   home: { title: "", subtitle: "", heroText: "" },
   pricing_config: { pageTitle: "", pageSubtitle: "", plans: [], customPlan: { title: "", description: "", minPrice: 0, buttonLabel: "", reviewsLabel: "", sessionsLabel: "", estimatedPriceLabel: "" } },
-  settings_content: { subtitle: "", engineDesc: "", legalDesc: "", aboutDesc: "" },
+  settings_content: { subtitle: "", engineDesc: "", legalDesc: "", contactDesc: "", aboutDesc: "" },
   site_settings: { siteName: "ChessInsight Pro", description: "", maintenanceMode: false },
 };
 
