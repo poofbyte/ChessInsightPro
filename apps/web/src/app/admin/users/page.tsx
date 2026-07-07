@@ -20,6 +20,8 @@ export default function AdminUsersPage() {
   const [banReason, setBanReason] = useState("");
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   const fetchUsers = () => {
     if (!accessToken) return;
@@ -32,6 +34,22 @@ export default function AdminUsersPage() {
         setUsers(data.users || []);
         setLoading(false);
       });
+  };
+
+  const fetchUserActivity = async (userId: string) => {
+    if (!accessToken) return;
+    setLoadingLogs(true);
+    try {
+      const res = await fetch(`/api/admin/activity-logs?userId=${userId}&limit=20`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const data = await res.json();
+      setActivityLogs(data.logs || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingLogs(false);
+    }
   };
 
   useEffect(() => {
@@ -82,6 +100,7 @@ export default function AdminUsersPage() {
     setShowBanConfirm(false);
     setShowDeleteConfirm(false);
     setBanReason(u.ban_reason || "");
+    fetchUserActivity(u.id);
   };
 
   const openCreate = () => {
@@ -311,6 +330,35 @@ export default function AdminUsersPage() {
                     <p className="text-sm">User ID: <span className="font-mono text-xs">{selectedUser.id}</span></p>
                     <p className="text-sm">Signup IP: {selectedUser.signup_ip || "Unknown"}</p>
                     <p className="text-sm">Joined: {new Date(selectedUser.created_at).toLocaleString()}</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-border pb-2">
+                      <h4 className="font-bold text-sm text-slate-500 uppercase">Recent Activity</h4>
+                      <a href={`/admin/activity-logs?userId=${selectedUser.id}`} className="text-xs text-teal-500 hover:underline">View All</a>
+                    </div>
+                    {loadingLogs ? (
+                      <p className="text-sm text-slate-500 text-center py-4">Loading activity...</p>
+                    ) : activityLogs.length === 0 ? (
+                      <p className="text-sm text-slate-500 text-center py-4">No recent activity.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {activityLogs.map((log) => (
+                          <div key={log.id} className="text-sm bg-black/5 dark:bg-slate-800/50 p-3 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-bold text-teal-600 dark:text-teal-400 capitalize">{log.activity_type.replace(/_/g, ' ')}</span>
+                              <span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleDateString()}</span>
+                            </div>
+                            {log.activity_name && <p className="text-slate-600 dark:text-slate-300 font-medium">{log.activity_name}</p>}
+                            {log.details && Object.keys(JSON.parse(log.details)).length > 0 && (
+                              <pre className="text-[10px] mt-1 text-slate-500 overflow-x-auto">
+                                {JSON.stringify(JSON.parse(log.details), null, 2)}
+                              </pre>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
