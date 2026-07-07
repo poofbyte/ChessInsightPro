@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/app/store";
 import { CONTACT_CATEGORIES } from "@/app/api/contact/schema";
-import { Search, Eye, X, Loader2, Send, RefreshCw, ShieldAlert } from "lucide-react";
+import { Search, Eye, X, Loader2, Send, RefreshCw, ShieldAlert, Archive, ArchiveRestore, Reply, CheckCircle } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All" },
@@ -11,6 +11,12 @@ const STATUS_OPTIONS = [
   { value: "read", label: "Read" },
   { value: "replied", label: "Replied" },
   { value: "closed", label: "Closed" },
+] as const;
+
+const ARCHIVE_OPTIONS = [
+  { value: "", label: "Active" },
+  { value: "1", label: "Archived" },
+  { value: "all", label: "All" },
 ] as const;
 
 const STATUS_BADGES: Record<string, string> = {
@@ -48,6 +54,15 @@ function useDebounce(value: string, delay: number) {
   return debounced;
 }
 
+interface ContactReply {
+  id: string;
+  message_id: string;
+  body: string;
+  sent_by: string | null;
+  status: string;
+  created_at: string;
+}
+
 interface ContactMessage {
   id: string;
   name: string;
@@ -57,7 +72,8 @@ interface ContactMessage {
   message: string;
   status: string;
   admin_notes: string | null;
-  screenshot_url: string | null;
+  archived_at: string | null;
+  reply_count: number;
   created_at: string;
 }
 
@@ -68,18 +84,22 @@ export default function AdminContactMessagesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [archiveFilter, setArchiveFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
 
   const [selected, setSelected] = useState<ContactMessage | null>(null);
+  const [replies, setReplies] = useState<ContactReply[]>([]);
+  const [repliesLoading, setRepliesLoading] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [replyBody, setReplyBody] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
   const [sendingReply, setSendingReply] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [actionError, setActionError] = useState("");
   const [actionSuccess, setActionSuccess] = useState("");
 
@@ -91,9 +111,10 @@ export default function AdminContactMessagesPage() {
     setError("");
     try {
       const params = new URLSearchParams();
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (debouncedSearch) params.set("q", debouncedSearch);
       if (statusFilter) params.set("status", statusFilter);
       if (categoryFilter) params.set("category", categoryFilter);
+      if (archiveFilter) params.set("archived", archiveFilter);
       params.set("page", String(page));
 
       const res = await fetch(`/api/admin/contact-messages?${params}`, {
@@ -111,11 +132,27 @@ export default function AdminContactMessagesPage() {
       setError("Failed to load contact messages");
     }
     setLoading(false);
-  }, [accessToken, debouncedSearch, statusFilter, categoryFilter, page]);
+  }, [accessToken, debouncedSearch, statusFilter, categoryFilter, archiveFilter, page]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
-  useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, categoryFilter]);
+  useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, categoryFilter, archiveFilter]);
+
+  const fetchReplies = useCallback(async (messageId: string) => {
+    setRepliesLoading(true);
+    try {
+      const res = await fetch(`/api/admin/contact-messages?replies=${messageId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setReplies(data.replies || []);
+      }
+    } catch {
+      // ignore
+    }
+    setRepliesLoading(false);
+  }, [accessToken]);
 
   const openDetail = (msg: ContactMessage) => {
     setSelected(msg);
@@ -124,6 +161,8 @@ export default function AdminContactMessagesPage() {
     setReplyBody("");
     setActionError("");
     setActionSuccess("");
+    setReplies([]);
+    fetchReplies(msg.id);
   };
 
   const handleUpdateStatus = async () => {
@@ -141,7 +180,8 @@ export default function AdminContactMessagesPage() {
         const data = await res.json();
         throw new Error(data.error || "Failed to update status");
       }
-      setSelected({ ...selected, status: newStatus });
+      const updated = { ...selected, status: newStatus };
+      setSelected(updated);
       setMessages((prev) => prev.map((m) => (m.id === selected.id ? { ...m, status: newStatus } : m)));
       setActionSuccess("Status updated");
     } catch (err: any) {
@@ -159,13 +199,14 @@ export default function AdminContactMessagesPage() {
       const res = await fetch("/api/admin/contact-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ messageId: selected.id, action: "updateNotes", admin_notes: adminNotes }),
+        body: JSON.stringify({ messageId: selected.id, action: "updateNotes", adminNotes }),
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to save notes");
       }
-      setSelected({ ...selected, admin_notes: adminNotes });
+      const updated = { ...selected, admin_notes: adminNotes };
+      setSelected(updated);
       setMessages((prev) => prev.map((m) => (m.id === selected.id ? { ...m, admin_notes: adminNotes } : m)));
       setActionSuccess("Notes saved");
     } catch (err: any) {
@@ -191,10 +232,40 @@ export default function AdminContactMessagesPage() {
       }
       setReplyBody("");
       setActionSuccess("Reply sent");
+      const updated = { ...selected, status: "replied", reply_count: selected.reply_count + 1 };
+      setSelected(updated);
+      setMessages((prev) => prev.map((m) => (m.id === selected.id ? updated : m)));
+      fetchReplies(selected.id);
     } catch (err: any) {
       setActionError(err.message);
     }
     setSendingReply(false);
+  };
+
+  const handleArchive = async () => {
+    if (!selected || !accessToken) return;
+    setArchiving(true);
+    setActionError("");
+    setActionSuccess("");
+    const isArchived = !!selected.archived_at;
+    try {
+      const res = await fetch("/api/admin/contact-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ messageId: selected.id, action: isArchived ? "unarchive" : "archive" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to archive/unarchive");
+      }
+      const updated = { ...selected, archived_at: isArchived ? null : new Date().toISOString() };
+      setSelected(updated);
+      setMessages((prev) => prev.map((m) => (m.id === selected.id ? updated : m)));
+      setActionSuccess(isArchived ? "Unarchived" : "Archived");
+    } catch (err: any) {
+      setActionError(err.message);
+    }
+    setArchiving(false);
   };
 
   return (
@@ -247,9 +318,17 @@ export default function AdminContactMessagesPage() {
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
+        <select
+          value={archiveFilter}
+          onChange={(e) => setArchiveFilter(e.target.value)}
+          className="px-3 py-2 bg-card border border-border rounded-xl text-sm outline-none focus:border-teal-500"
+        >
+          {ARCHIVE_OPTIONS.map((a) => (
+            <option key={a.value} value={a.value}>{a.label}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Desktop table */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -260,15 +339,16 @@ export default function AdminContactMessagesPage() {
                 <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Subject</th>
                 <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Category</th>
                 <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
+                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Replies</th>
                 <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Date</th>
                 <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={7} className="p-8 text-center text-slate-500">Loading...</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-slate-500">Loading...</td></tr>
               ) : messages.length === 0 ? (
-                <tr><td colSpan={7} className="p-8 text-center text-slate-500">No messages found.</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-slate-500">No messages found.</td></tr>
               ) : (
                 messages.map((msg) => (
                   <tr key={msg.id} className="hover:bg-black/5 dark:hover:bg-slate-800/50 transition-colors">
@@ -285,8 +365,9 @@ export default function AdminContactMessagesPage() {
                         {getStatusLabel(msg.status)}
                       </span>
                     </td>
+                    <td className="p-4 text-xs text-slate-500">{msg.reply_count}</td>
                     <td className="p-4 text-xs text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</td>
-                    <td className="p-4">
+                    <td className="p-4 flex items-center gap-2">
                       <button
                         onClick={() => openDetail(msg)}
                         className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-500 rounded-lg transition"
@@ -303,7 +384,6 @@ export default function AdminContactMessagesPage() {
         </div>
       </div>
 
-      {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-500">Loading...</div>
@@ -327,6 +407,9 @@ export default function AdminContactMessagesPage() {
                     {getCategoryLabel(msg.category)}
                   </span>
                   <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</span>
+                  {msg.reply_count > 0 && (
+                    <span className="text-[10px] text-teal-500">{msg.reply_count} replies</span>
+                  )}
                 </div>
                 <button
                   onClick={() => openDetail(msg)}
@@ -366,9 +449,30 @@ export default function AdminContactMessagesPage() {
           <div className="bg-card border border-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-border flex items-center justify-between">
               <h2 className="text-xl font-black">Message Details</h2>
-              <button onClick={() => setSelected(null)} className="p-2 bg-black/5 dark:bg-slate-800 rounded-full hover:bg-black/10 dark:hover:bg-slate-700 transition">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleArchive}
+                  disabled={archiving}
+                  className={`p-2 rounded-full transition flex items-center gap-1.5 text-xs font-bold ${
+                    selected.archived_at
+                      ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                      : "bg-slate-500/10 text-slate-500 hover:bg-slate-500/20"
+                  }`}
+                  title={selected.archived_at ? "Unarchive" : "Archive"}
+                >
+                  {archiving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : selected.archived_at ? (
+                    <ArchiveRestore className="w-3.5 h-3.5" />
+                  ) : (
+                    <Archive className="w-3.5 h-3.5" />
+                  )}
+                  {selected.archived_at ? "Unarchive" : "Archive"}
+                </button>
+                <button onClick={() => setSelected(null)} className="p-2 bg-black/5 dark:bg-slate-800 rounded-full hover:bg-black/10 dark:hover:bg-slate-700 transition">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="p-6 space-y-6">
@@ -376,7 +480,10 @@ export default function AdminContactMessagesPage() {
                 <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-xl">{actionError}</div>
               )}
               {actionSuccess && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl">{actionSuccess}</div>
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  {actionSuccess}
+                </div>
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -410,19 +517,52 @@ export default function AdminContactMessagesPage() {
                 </div>
               </div>
 
+              {selected.archived_at && (
+                <div className="p-3 bg-slate-500/10 border border-slate-500/20 text-slate-400 text-xs font-bold rounded-xl flex items-center gap-2">
+                  <Archive className="w-3.5 h-3.5" />
+                  Archived on {new Date(selected.archived_at).toLocaleString()}
+                </div>
+              )}
+
               <div className="p-4 bg-black/5 dark:bg-slate-900 border border-border rounded-2xl">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Message</p>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{selected.message}</p>
               </div>
 
-              {selected.screenshot_url && (
-                <div className="p-4 bg-black/5 dark:bg-slate-900 border border-border rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Screenshot</p>
-                  <a href={selected.screenshot_url} target="_blank" rel="noopener noreferrer" className="text-teal-500 text-sm hover:underline break-all">
-                    {selected.screenshot_url}
-                  </a>
-                </div>
-              )}
+              {/* Reply History */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                  Replies ({replies.length})
+                </p>
+                {repliesLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Loading replies...
+                  </div>
+                ) : replies.length === 0 ? (
+                  <p className="text-sm text-slate-500 italic">No replies yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {replies.map((reply) => (
+                      <div key={reply.id} className="p-4 bg-teal-500/5 border border-teal-500/10 rounded-2xl">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <Reply className="w-3.5 h-3.5 text-teal-500" />
+                            <span className="text-xs font-bold text-teal-500">Sent</span>
+                            <span className="text-[10px] text-slate-500">
+                              {new Date(reply.created_at).toLocaleString()}
+                            </span>
+                          </div>
+                          <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[9px] font-bold rounded">
+                            {reply.status}
+                          </span>
+                        </div>
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{reply.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="border-t border-border pt-6 space-y-4">
                 <div>

@@ -233,13 +233,23 @@ const contactMessagesTable: TableDefinition = {
     { name: "name", type: "TEXT NOT NULL" },
     { name: "email", type: "TEXT NOT NULL" },
     { name: "subject", type: "TEXT NOT NULL" },
-    { name: "category", type: "TEXT NOT NULL" }, // general_question, bug_report, feature_request, billing, account, other
+    { name: "category", type: "TEXT NOT NULL" },
     { name: "message", type: "TEXT NOT NULL" },
-    { name: "status", type: "TEXT NOT NULL DEFAULT 'new'" }, // new, read, replied, closed
+    { name: "status", type: "TEXT NOT NULL DEFAULT 'new'" },
     { name: "admin_notes", type: "TEXT" },
-    { name: "replied_at", type: "TEXT" },
-    { name: "replied_by", type: "TEXT" },
-    { name: "reply_body", type: "TEXT" },
+    { name: "archived_at", type: "TEXT" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
+const contactRepliesTable: TableDefinition = {
+  name: "contact_replies",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "message_id", type: "TEXT NOT NULL" },
+    { name: "body", type: "TEXT NOT NULL" },
+    { name: "sent_by", type: "TEXT" },
+    { name: "status", type: "TEXT NOT NULL DEFAULT 'sent'" },
     { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
   ],
 };
@@ -263,4 +273,5 @@ export const ALL_TABLES: TableDefinition[] = [
   contentEntriesTable,
   contentRevisionsTable,
   contactMessagesTable,
+  contactRepliesTable,
 ];
