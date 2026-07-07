@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
     
     const result = await dbClient.execute({
-      sql: `SELECT id, password_hash, plan, role FROM users WHERE email = ? AND is_banned = 0`,
+      sql: `SELECT id, password_hash, plan, role, is_banned, ban_reason FROM users WHERE email = ?`,
       args: [email]
     });
     
@@ -24,6 +24,12 @@ export async function POST(req: Request) {
     }
     
     const user = result.rows[0];
+    
+    if (user.is_banned === 1) {
+      return NextResponse.json({ 
+        error: `Account is banned: ${user.ban_reason || "No reason provided"}. Please contact us to get back your account.` 
+      }, { status: 403 });
+    }
     const isValid = await verifyPassword(password, user.password_hash as string);
     
     if (!isValid) {

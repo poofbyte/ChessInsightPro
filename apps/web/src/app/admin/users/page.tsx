@@ -2,16 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/app/store";
-import { UserX, UserCheck, Search } from "lucide-react";
+import { UserX, UserCheck, Search, Plus, X, Edit, Trash2, Ban, ShieldCheck, Mail, Link as LinkIcon, Phone, FileText, Medal, ShieldAlert } from "lucide-react";
 
 export default function AdminUsersPage() {
   const { accessToken } = useAuthStore();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  const [editForm, setEditForm] = useState<any>({});
+  
+  const [showBanConfirm, setShowBanConfirm] = useState(false);
+  const [banReason, setBanReason] = useState("");
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
+  const fetchUsers = () => {
     if (!accessToken) return;
+    setLoading(true);
     fetch("/api/admin/users", {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -20,6 +32,10 @@ export default function AdminUsersPage() {
         setUsers(data.users || []);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchUsers();
   }, [accessToken]);
 
   const filteredUsers = users.filter(u => 
@@ -27,19 +43,89 @@ export default function AdminUsersPage() {
     (u.signup_ip && u.signup_ip.includes(search))
   );
 
+  const handleAction = async (action: string, payload: any) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Action failed");
+      
+      if (action === "DELETE") setSelectedUser(null);
+      if (action === "CREATE") setIsCreating(false);
+      
+      fetchUsers();
+      
+      // Update selectedUser if not deleted
+      if (action !== "DELETE" && action !== "CREATE" && selectedUser) {
+        if (action === "BAN") setSelectedUser({ ...selectedUser, is_banned: 1, ban_reason: payload.reason });
+        if (action === "UNBAN") setSelectedUser({ ...selectedUser, is_banned: 0, ban_reason: null });
+        if (action === "EDIT") {
+          setSelectedUser({ ...selectedUser, ...payload });
+          setIsEditing(false);
+        }
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+  };
+
+  const openUser = (u: any) => {
+    setSelectedUser(u);
+    setIsEditing(false);
+    setShowBanConfirm(false);
+    setShowDeleteConfirm(false);
+    setBanReason(u.ban_reason || "");
+  };
+
+  const openCreate = () => {
+    setIsCreating(true);
+    setEditForm({
+      email: "",
+      password: "",
+      plan: "FREE",
+      role: "USER",
+      name: "",
+      phone: "",
+      bio: "",
+      chess_com_url: "",
+      lichess_url: "",
+      fide_elo: ""
+    });
+  };
+
+  const startEdit = () => {
+    setEditForm({ ...selectedUser });
+    setIsEditing(true);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative h-full">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-black">User Management</h1>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search email or IP..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-4 text-sm outline-none focus:border-teal-500 transition-colors"
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search email or IP..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-4 text-sm outline-none focus:border-teal-500 transition-colors"
+            />
+          </div>
+          <button 
+            onClick={openCreate}
+            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-teal-500/20"
+          >
+            <Plus className="w-4 h-4" /> New User
+          </button>
         </div>
       </div>
 
@@ -66,13 +152,17 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-black/5 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr 
+                    key={u.id} 
+                    onClick={() => openUser(u)}
+                    className="hover:bg-black/5 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  >
                     <td className="p-4 font-medium">{u.email}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${
                         u.plan === 'FREE' ? 'bg-slate-500/10 text-slate-500' :
                         u.plan === 'TIER1' ? 'bg-teal-500/10 text-teal-500' :
-                        'bg-rose-500/10 text-rose-500'
+                        'bg-amber-500/10 text-amber-500'
                       }`}>
                         {u.plan}
                       </span>
@@ -97,6 +187,191 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* User Details Slide-over Modal */}
+      {(selectedUser || isCreating) && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-card h-full shadow-2xl border-l border-border flex flex-col overflow-y-auto animate-in slide-in-from-right">
+            
+            <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-card z-10">
+              <h2 className="text-xl font-bold">
+                {isCreating ? "Create New User" : isEditing ? "Edit User" : "User Details"}
+              </h2>
+              <button 
+                onClick={() => { setSelectedUser(null); setIsCreating(false); }}
+                className="p-2 hover:bg-black/5 dark:hover:bg-slate-800 rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 flex-1">
+              {(isEditing || isCreating) ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                    <input type="email" value={editForm.email || ""} onChange={e => setEditForm({...editForm, email: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  {isCreating && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
+                      <input type="text" value={editForm.password || ""} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" placeholder="Default: defaultPassword123" />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Plan</label>
+                      <select value={editForm.plan || "FREE"} onChange={e => setEditForm({...editForm, plan: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500">
+                        <option value="FREE">FREE</option>
+                        <option value="TIER1">TIER 1 (Pro)</option>
+                        <option value="TIER2">TIER 2 (Elite)</option>
+                        <option value="CUSTOM">CUSTOM</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Role</label>
+                      <select value={editForm.role || "USER"} onChange={e => setEditForm({...editForm, role: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500">
+                        <option value="USER">USER</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Name</label>
+                    <input type="text" value={editForm.name || ""} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
+                    <input type="text" value={editForm.phone || ""} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">FIDE ELO</label>
+                    <input type="number" value={editForm.fide_elo || ""} onChange={e => setEditForm({...editForm, fide_elo: parseInt(e.target.value) || null})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Chess.com URL</label>
+                    <input type="text" value={editForm.chess_com_url || ""} onChange={e => setEditForm({...editForm, chess_com_url: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Lichess URL</label>
+                    <input type="text" value={editForm.lichess_url || ""} onChange={e => setEditForm({...editForm, lichess_url: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Bio</label>
+                    <textarea value={editForm.bio || ""} onChange={e => setEditForm({...editForm, bio: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500 min-h-[100px]"></textarea>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* View Mode */}
+                  <div className="flex items-center gap-4 bg-background p-4 rounded-xl border border-border">
+                    <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-2xl font-black">
+                      {selectedUser.email.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">{selectedUser.name || "No Name"}</h3>
+                      <p className="text-sm text-slate-500 flex items-center gap-1"><Mail className="w-3 h-3" /> {selectedUser.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-background border border-border rounded-xl">
+                      <p className="text-xs font-bold text-slate-500 uppercase">Plan</p>
+                      <p className="font-bold text-lg">{selectedUser.plan}</p>
+                    </div>
+                    <div className="p-4 bg-background border border-border rounded-xl">
+                      <p className="text-xs font-bold text-slate-500 uppercase">Role</p>
+                      <p className="font-bold text-lg">{selectedUser.role}</p>
+                    </div>
+                  </div>
+
+                  {selectedUser.is_banned === 1 && (
+                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-500">
+                      <div className="flex items-center gap-2 font-bold mb-1">
+                        <ShieldAlert className="w-4 h-4" /> Account Banned
+                      </div>
+                      <p className="text-sm">Reason: {selectedUser.ban_reason || "No reason provided."}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-sm text-slate-500 uppercase border-b border-border pb-2">Profile Information</h4>
+                    <p className="text-sm flex items-center gap-2"><Phone className="w-4 h-4 text-slate-400" /> {selectedUser.phone || "Not provided"}</p>
+                    <p className="text-sm flex items-center gap-2"><Medal className="w-4 h-4 text-slate-400" /> FIDE ELO: {selectedUser.fide_elo || "N/A"}</p>
+                    <p className="text-sm flex items-center gap-2"><LinkIcon className="w-4 h-4 text-slate-400" /> Chess.com: {selectedUser.chess_com_url || "N/A"}</p>
+                    <p className="text-sm flex items-center gap-2"><LinkIcon className="w-4 h-4 text-slate-400" /> Lichess: {selectedUser.lichess_url || "N/A"}</p>
+                    <div className="text-sm flex items-start gap-2">
+                      <FileText className="w-4 h-4 text-slate-400 mt-1 shrink-0" /> 
+                      <span className="text-slate-600 dark:text-slate-300">{selectedUser.bio || "No bio"}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-sm text-slate-500 uppercase border-b border-border pb-2">System Metadata</h4>
+                    <p className="text-sm">User ID: <span className="font-mono text-xs">{selectedUser.id}</span></p>
+                    <p className="text-sm">Signup IP: {selectedUser.signup_ip || "Unknown"}</p>
+                    <p className="text-sm">Joined: {new Date(selectedUser.created_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-border bg-black/5 dark:bg-slate-900 sticky bottom-0">
+              {isCreating ? (
+                <div className="flex gap-3">
+                  <button onClick={() => setIsCreating(false)} className="flex-1 py-2 rounded-lg font-bold text-sm border border-border hover:bg-black/5 dark:hover:bg-slate-800 transition">Cancel</button>
+                  <button onClick={() => handleAction("CREATE", editForm)} className="flex-1 py-2 rounded-lg font-bold text-sm bg-teal-500 hover:bg-teal-600 text-white transition">Create User</button>
+                </div>
+              ) : isEditing ? (
+                <div className="flex gap-3">
+                  <button onClick={() => setIsEditing(false)} className="flex-1 py-2 rounded-lg font-bold text-sm border border-border hover:bg-black/5 dark:hover:bg-slate-800 transition">Cancel</button>
+                  <button onClick={() => handleAction("EDIT", { userId: selectedUser.id, ...editForm })} className="flex-1 py-2 rounded-lg font-bold text-sm bg-teal-500 hover:bg-teal-600 text-white transition">Save Changes</button>
+                </div>
+              ) : showBanConfirm ? (
+                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                  <h4 className="font-bold text-rose-500 flex items-center gap-2"><Ban className="w-4 h-4" /> Ban User</h4>
+                  <input type="text" placeholder="Reason for banning (shown to user)..." value={banReason} onChange={e => setBanReason(e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-500" />
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowBanConfirm(false)} className="flex-1 py-2 rounded-lg font-bold text-sm border border-border hover:bg-black/5 transition">Cancel</button>
+                    <button onClick={() => handleAction("BAN", { userId: selectedUser.id, reason: banReason })} className="flex-1 py-2 rounded-lg font-bold text-sm bg-rose-500 hover:bg-rose-600 text-white transition">Confirm Ban</button>
+                  </div>
+                </div>
+              ) : showDeleteConfirm ? (
+                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-500 text-sm">
+                    <strong>Warning:</strong> This will permanently delete this user and all their games, profiles, and data. This cannot be undone.
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 rounded-lg font-bold text-sm border border-border hover:bg-black/5 transition">Cancel</button>
+                    <button onClick={() => handleAction("DELETE", { userId: selectedUser.id })} className="flex-1 py-2 rounded-lg font-bold text-sm bg-rose-500 hover:bg-rose-600 text-white transition">Delete Forever</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={startEdit} className="flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-sm bg-blue-500 hover:bg-blue-600 text-white transition">
+                    <Edit className="w-4 h-4" /> Edit
+                  </button>
+                  
+                  {selectedUser.is_banned ? (
+                    <button onClick={() => handleAction("UNBAN", { userId: selectedUser.id })} className="flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition">
+                      <ShieldCheck className="w-4 h-4" /> Unban
+                    </button>
+                  ) : (
+                    <button onClick={() => setShowBanConfirm(true)} className="flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-sm border border-border hover:bg-rose-500/10 hover:text-rose-500 transition">
+                      <Ban className="w-4 h-4" /> Ban
+                    </button>
+                  )}
+                  
+                  <button onClick={() => setShowDeleteConfirm(true)} className="col-span-2 flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-sm border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white transition mt-2">
+                    <Trash2 className="w-4 h-4" /> Hard Delete User
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

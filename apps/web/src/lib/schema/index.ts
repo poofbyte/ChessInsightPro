@@ -11,6 +11,7 @@ export const usersTable: TableDefinition = {
     { name: "plan_renews_at", type: "TEXT" },
     { name: "signup_ip", type: "TEXT" },
     { name: "is_banned", type: "INTEGER NOT NULL DEFAULT 0" },
+    { name: "ban_reason", type: "TEXT" },
     { name: "role", type: "TEXT NOT NULL DEFAULT 'USER'" },
     { name: "name", type: "TEXT" },
     { name: "phone", type: "TEXT" },
