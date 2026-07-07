@@ -1,23 +1,20 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
+import { getConfig } from "@core/config";
 
 export async function GET() {
   try {
     await ensureDbReady();
-    const result = await dbClient.execute(`SELECT key, value FROM system_config WHERE key LIKE 'content_%'`);
-
-    const content: Record<string, any> = {};
-    for (const row of result.rows as any[]) {
-      try {
-        content[row.key.replace("content_", "")] = JSON.parse(row.value);
-      } catch {
-        content[row.key.replace("content_", "")] = row.value;
-      }
-    }
-
-    return NextResponse.json(content);
+    const settingsContent = await getConfig(dbClient, "settings_content", {
+      subtitle: "Configure engine, board appearance, and coach preferences.",
+      engineDesc: "Choose which Stockfish engine version to use for position analysis. Stockfish 18 is stronger and recommended.",
+      legalDesc: "Legal agreements and policies.",
+      aboutDesc: "All analysis runs locally in your browser. No account or internet required for core features."
+    });
+    
+    return NextResponse.json(settingsContent);
   } catch (error) {
-    console.error("Content fetch error:", error);
+    console.error("Settings content fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

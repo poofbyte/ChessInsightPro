@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
 import { Settings, Cpu, Palette, CheckCircle } from "lucide-react";
 import { BoardView } from "../../components/BoardView";
@@ -8,6 +10,20 @@ const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
 
 export default function SettingsPage() {
   const store = useChessStore();
+  const [content, setContent] = useState({
+    subtitle: "Configure engine, board appearance, and coach preferences.",
+    engineDesc: "Choose which Stockfish engine version to use for position analysis. Stockfish 18 is stronger and recommended.",
+    aboutDesc: "All analysis runs locally in your browser. No account or internet required for core features."
+  });
+
+  useEffect(() => {
+    fetch("/api/settings/content")
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setContent(prev => ({ ...prev, ...data }));
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto p-8 bg-background">
@@ -19,7 +35,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Settings</h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Configure engine, board appearance, and coach preferences.</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">{content.subtitle}</p>
           </div>
         </div>
 
@@ -30,7 +46,7 @@ export default function SettingsPage() {
             <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">Analysis Engine</h2>
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
-            Choose which Stockfish engine version to use for position analysis. Stockfish 18 is stronger and recommended.
+            {content.engineDesc}
           </p>
           <div className="flex gap-2">
             {(["17", "18"] as const).map((v) => (
@@ -114,7 +130,7 @@ export default function SettingsPage() {
           <p>Version: 2.0.0</p>
           <p>Engine: Stockfish {store.engineVersion} (WebAssembly)</p>
           <p>Storage: IndexedDB (offline-first)</p>
-          <p className="pt-2 text-slate-500">All analysis runs locally in your browser. No account or internet required for core features.</p>
+          <p className="pt-2 text-slate-500">{content.aboutDesc}</p>
         </section>
       </div>
     </div>

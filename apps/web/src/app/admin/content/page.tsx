@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/app/store";
 import dynamic from "next/dynamic";
 import { Save, X, ShieldAlert, Plus, Trash2, GripVertical } from "lucide-react";
+import { PricingTab } from "@/components/admin/PricingTab";
+import { SettingsTab } from "@/components/admin/SettingsTab";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -31,6 +33,8 @@ interface PageContent {
   terms?: { title: string; terms: GlossaryTerm[] };
   openings?: { title: string; description: string; content: string };
   home?: { title: string; subtitle: string; heroText: string };
+  pricing_config?: any;
+  settings_content?: any;
   [key: string]: any;
 }
 
@@ -40,6 +44,8 @@ const DEFAULT_CONTENT: PageContent = {
   terms: { title: "Chess Glossary", terms: [] },
   openings: { title: "Chess Openings", description: "", content: "" },
   home: { title: "", subtitle: "", heroText: "" },
+  pricing_config: { pageTitle: "", pageSubtitle: "", plans: [], customPlan: { title: "", description: "", minPrice: 0, buttonLabel: "", reviewsLabel: "", sessionsLabel: "", estimatedPriceLabel: "" } },
+  settings_content: { subtitle: "", engineDesc: "", legalDesc: "", aboutDesc: "" },
 };
 
 export default function AdminContentPage() {
@@ -93,6 +99,8 @@ export default function AdminContentPage() {
     { id: "terms", label: "Glossary" },
     { id: "openings", label: "Openings" },
     { id: "home", label: "Home Page" },
+    { id: "pricing", label: "Pricing" },
+    { id: "settings", label: "Settings" },
   ];
 
   if (loading) return <div className="p-8 text-slate-500">Loading content editor...</div>;
@@ -376,6 +384,20 @@ export default function AdminContentPage() {
               />
             </div>
           </div>
+        )}
+
+        {activeTab === "pricing" && (
+          <PricingTab 
+            config={content.pricing_config} 
+            updateConfig={(upd) => updateSection("pricing_config", { ...content.pricing_config, ...upd })} 
+          />
+        )}
+
+        {activeTab === "settings" && (
+          <SettingsTab 
+            config={content.settings_content} 
+            updateConfig={(upd) => updateSection("settings_content", { ...content.settings_content, ...upd })} 
+          />
         )}
       </div>
     </div>

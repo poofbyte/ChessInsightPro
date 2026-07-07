@@ -1,7 +1,7 @@
 import { getAdminUserId } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-
+import { getAllConfig, setConfig } from "@core/config";
 
 
 export async function GET(req: Request) {
@@ -10,18 +10,8 @@ export async function GET(req: Request) {
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     await ensureDbReady();
-    const result = await dbClient.execute(`SELECT key, value, updated_at, updated_by FROM system_config WHERE key LIKE 'content_%' ORDER BY key`);
-
-    const content: Record<string, any> = {};
-    for (const row of result.rows as any[]) {
-      try {
-        content[row.key.replace("content_", "")] = JSON.parse(row.value);
-      } catch {
-        content[row.key.replace("content_", "")] = row.value;
-      }
-    }
-
-    return NextResponse.json(content);
+    const config = await getAllConfig(dbClient);
+    return NextResponse.json(config);
   } catch (error) {
     console.error("Admin content fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -37,12 +27,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     for (const [key, value] of Object.entries(body)) {
-      const configKey = `content_${key}`;
-      await dbClient.execute({
-        sql: `INSERT INTO system_config (key, value, updated_by) VALUES (?, ?, ?)
-              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = datetime('now')`,
-        args: [configKey, JSON.stringify(value), adminId],
-      });
+      await setConfig(dbClient, key, value, adminId);
     }
 
     return NextResponse.json({ success: true });

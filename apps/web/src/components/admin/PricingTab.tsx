@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/app/store";
-import { useRouter } from "next/navigation";
 import { Save, Plus, Trash2 } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
 
-interface PricingConfig {
+export interface PricingConfig {
   pageTitle: string;
   pageSubtitle: string;
   plans: PlanConfig[];
   customPlan: CustomPlanConfig;
 }
 
-interface PlanConfig {
+export interface PlanConfig {
   id: string;
   name: string;
   price: number;
@@ -33,7 +30,7 @@ interface PlanConfig {
   };
 }
 
-interface CustomPlanConfig {
+export interface CustomPlanConfig {
   title: string;
   description: string;
   minPrice: number;
@@ -43,53 +40,13 @@ interface CustomPlanConfig {
   estimatedPriceLabel: string;
 }
 
-export default function AdminPricingPage() {
-  const { accessToken } = useAuthStore();
-  const router = useRouter();
-  const [config, setConfig] = useState<PricingConfig | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (!accessToken) return;
-    fetch("/api/admin/pricing-config", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setConfig(data);
-        setLoading(false);
-      });
-  }, [accessToken]);
-
-  const handleSave = async () => {
-    if (!config) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/pricing-config", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(config),
-      });
-      if (res.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setSaving(false);
-  };
+export function PricingTab({ config, updateConfig }: { config: PricingConfig, updateConfig: (val: Partial<PricingConfig>) => void }) {
 
   const updatePlan = (index: number, upd: Partial<PlanConfig>) => {
     if (!config) return;
     const plans = [...config.plans];
     plans[index] = { ...plans[index], ...upd };
-    setConfig({ ...config, plans });
+    updateConfig({ plans });
   };
 
   const addFeature = (planIndex: number) => {
@@ -99,7 +56,7 @@ export default function AdminPricingPage() {
       ...plans[planIndex],
       features: [...plans[planIndex].features, { text: "" }],
     };
-    setConfig({ ...config, plans });
+    updateConfig({ plans });
   };
 
   const updateFeature = (planIndex: number, featIndex: number, text: string) => {
@@ -108,7 +65,7 @@ export default function AdminPricingPage() {
     const features = [...plans[planIndex].features];
     features[featIndex] = { text };
     plans[planIndex] = { ...plans[planIndex], features };
-    setConfig({ ...config, plans });
+    updateConfig({ plans });
   };
 
   const removeFeature = (planIndex: number, featIndex: number) => {
@@ -118,35 +75,13 @@ export default function AdminPricingPage() {
       ...plans[planIndex],
       features: plans[planIndex].features.filter((_, i) => i !== featIndex),
     };
-    setConfig({ ...config, plans });
+    updateConfig({ plans });
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!config) {
-    return <div className="p-8 text-slate-500">Failed to load pricing config.</div>;
-  }
+  if (!config) return null;
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">Pricing Configuration</h1>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-2.5 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white font-bold rounded-xl transition"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
-        </button>
-      </div>
-
       {/* Page Header */}
       <section className="bg-card border border-border rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-bold">Page Header</h2>
@@ -154,7 +89,7 @@ export default function AdminPricingPage() {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Title</p>
           <input
             value={config.pageTitle}
-            onChange={(e) => setConfig({ ...config, pageTitle: e.target.value })}
+            onChange={(e) => updateConfig({ pageTitle: e.target.value })}
             className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
           />
         </div>
@@ -162,7 +97,7 @@ export default function AdminPricingPage() {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Subtitle</p>
           <input
             value={config.pageSubtitle}
-            onChange={(e) => setConfig({ ...config, pageSubtitle: e.target.value })}
+            onChange={(e) => updateConfig({ pageSubtitle: e.target.value })}
             className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
           />
         </div>
@@ -346,7 +281,7 @@ export default function AdminPricingPage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Title</p>
             <input
               value={config.customPlan.title}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, title: e.target.value } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, title: e.target.value } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -355,7 +290,7 @@ export default function AdminPricingPage() {
             <input
               type="number"
               value={config.customPlan.minPrice}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, minPrice: parseInt(e.target.value) || 0 } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, minPrice: parseInt(e.target.value) || 0 } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -363,7 +298,7 @@ export default function AdminPricingPage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Button Label</p>
             <input
               value={config.customPlan.buttonLabel}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, buttonLabel: e.target.value } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, buttonLabel: e.target.value } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -371,7 +306,7 @@ export default function AdminPricingPage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Reviews Label</p>
             <input
               value={config.customPlan.reviewsLabel}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, reviewsLabel: e.target.value } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, reviewsLabel: e.target.value } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -379,7 +314,7 @@ export default function AdminPricingPage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Sessions Label</p>
             <input
               value={config.customPlan.sessionsLabel}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, sessionsLabel: e.target.value } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, sessionsLabel: e.target.value } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -387,7 +322,7 @@ export default function AdminPricingPage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Est. Price Label</p>
             <input
               value={config.customPlan.estimatedPriceLabel}
-              onChange={(e) => setConfig({ ...config, customPlan: { ...config.customPlan, estimatedPriceLabel: e.target.value } })}
+              onChange={(e) => updateConfig({ customPlan: { ...config.customPlan, estimatedPriceLabel: e.target.value } })}
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             />
           </div>
@@ -396,23 +331,13 @@ export default function AdminPricingPage() {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Description (rich text)</p>
           <RichTextEditor
             value={config.customPlan.description}
-            onChange={(val) => setConfig({ ...config, customPlan: { ...config.customPlan, description: val } })}
+            onChange={(val) => updateConfig({ customPlan: { ...config.customPlan, description: val } })}
             placeholder="Custom plan section description..."
             className="bg-white dark:bg-slate-900 rounded-xl"
           />
         </div>
       </section>
 
-      <div className="flex justify-end pb-8">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-8 py-3 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
-        </button>
-      </div>
     </div>
   );
 }
