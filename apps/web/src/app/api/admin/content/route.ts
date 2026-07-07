@@ -4,6 +4,8 @@ import { dbClient, ensureDbReady } from "@/lib/db";
 import { getAllConfig, setConfig } from "@core/config";
 
 
+import { contentService } from "@/lib/content";
+
 export async function GET(req: Request) {
   try {
     const adminId = getAdminUserId(req);
@@ -11,7 +13,14 @@ export async function GET(req: Request) {
 
     await ensureDbReady();
     const config = await getAllConfig(dbClient);
-    return NextResponse.json(config);
+    
+    // Fetch CMS content
+    const rules = await contentService.getPublishedContent("rules") || [];
+    const lessons = await contentService.getPublishedContent("lessons") || [];
+    const terms = await contentService.getPublishedContent("terms") || [];
+    const site_settings = await contentService.getPublishedContent("site-settings") || {};
+
+    return NextResponse.json({ ...config, rules, lessons, terms, site_settings });
   } catch (error) {
     console.error("Admin content fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -26,8 +35,15 @@ export async function POST(req: Request) {
     await ensureDbReady();
     const body = await req.json();
 
+    const cmsKeys = ["rules", "lessons", "terms", "site_settings"];
+
     for (const [key, value] of Object.entries(body)) {
-      await setConfig(dbClient, key, value, adminId);
+      if (cmsKeys.includes(key)) {
+        const slug = key === "site_settings" ? "site-settings" : key;
+        await contentService.publishContent(slug, key, value, adminId, "Admin Update");
+      } else {
+        await setConfig(dbClient, key, value, adminId);
+      }
     }
 
     return NextResponse.json({ success: true });

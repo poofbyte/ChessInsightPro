@@ -1,5 +1,30 @@
 import { TableDefinition } from "@core/db-sync";
 
+const contentEntriesTable: TableDefinition = {
+  name: "content_entries",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "slug", type: "TEXT UNIQUE NOT NULL" },
+    { name: "content_type", type: "TEXT NOT NULL" }, // 'lesson', 'rule', 'term', 'opening', 'page', 'settings'
+    { name: "status", type: "TEXT NOT NULL DEFAULT 'published'" }, // 'draft', 'published', 'archived'
+    { name: "published_version_id", type: "TEXT" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+    { name: "updated_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
+const contentRevisionsTable: TableDefinition = {
+  name: "content_revisions",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "entry_id", type: "TEXT NOT NULL" },
+    { name: "data", type: "TEXT NOT NULL" }, // JSON
+    { name: "change_summary", type: "TEXT" },
+    { name: "author_id", type: "TEXT" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 const usersTable: TableDefinition = {
   name: "users",
   columns: [
@@ -217,4 +242,6 @@ export const ALL_TABLES: TableDefinition[] = [
   adminAuditLogTable,
   activityLogsTable,
   analyticsEventsTable,
+  contentEntriesTable,
+  contentRevisionsTable,
 ];

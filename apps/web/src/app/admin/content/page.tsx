@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Save, X, ShieldAlert, Plus, Trash2, GripVertical } from "lucide-react";
 import { PricingTab } from "@/components/admin/PricingTab";
 import { SettingsTab } from "@/components/admin/SettingsTab";
+import { SiteSettingsTab } from "@/components/admin/SiteSettingsTab";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -35,6 +36,7 @@ interface PageContent {
   home?: { title: string; subtitle: string; heroText: string };
   pricing_config?: any;
   settings_content?: any;
+  site_settings?: any;
   [key: string]: any;
 }
 
@@ -46,6 +48,7 @@ const DEFAULT_CONTENT: PageContent = {
   home: { title: "", subtitle: "", heroText: "" },
   pricing_config: { pageTitle: "", pageSubtitle: "", plans: [], customPlan: { title: "", description: "", minPrice: 0, buttonLabel: "", reviewsLabel: "", sessionsLabel: "", estimatedPriceLabel: "" } },
   settings_content: { subtitle: "", engineDesc: "", legalDesc: "", aboutDesc: "" },
+  site_settings: { siteName: "ChessInsight Pro", description: "", maintenanceMode: false },
 };
 
 export default function AdminContentPage() {
@@ -101,6 +104,7 @@ export default function AdminContentPage() {
     { id: "home", label: "Home Page" },
     { id: "pricing", label: "Pricing" },
     { id: "settings", label: "Settings" },
+    { id: "site_settings", label: "Site Settings" },
   ];
 
   if (loading) return <div className="p-8 text-slate-500">Loading content editor...</div>;
@@ -397,6 +401,13 @@ export default function AdminContentPage() {
           <SettingsTab 
             config={content.settings_content} 
             updateConfig={(upd) => updateSection("settings_content", { ...content.settings_content, ...upd })} 
+          />
+        )}
+
+        {activeTab === "site_settings" && (
+          <SiteSettingsTab 
+            config={content.site_settings} 
+            updateConfig={(upd) => updateSection("site_settings", { ...content.site_settings, ...upd })} 
           />
         )}
       </div>
