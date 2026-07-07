@@ -40,6 +40,18 @@ export const SiteSettingsSchema = z.object({
   siteName: z.string().min(1),
   description: z.string(),
   primaryColor: z.string().optional(),
+  
+  // SEO fields
+  seoTitle: z.string().optional(),
+  seoKeywords: z.string().optional(),
+  ogImage: z.string().optional(),
+  
+  // Management / Organization
+  supportEmail: z.string().optional(),
+  companyName: z.string().optional(),
+  companyAddress: z.string().optional(),
+  analyticsId: z.string().optional(),
+
   socialLinks: z.record(z.string(), z.string()).optional(),
   maintenanceMode: z.boolean().default(false),
 });
