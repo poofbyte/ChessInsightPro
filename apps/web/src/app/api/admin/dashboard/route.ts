@@ -22,13 +22,17 @@ export async function GET(req: Request) {
       paidPlansRes,
       gamesRes,
       puzzlesRes,
-      mrrRes
+      mrrRes,
+      signupsSeriesRes,
+      gamesSeriesRes
     ] = await Promise.all([
       dbClient.execute(`SELECT count(*) as count FROM users`),
       dbClient.execute(`SELECT plan, count(*) as count FROM users WHERE plan != 'FREE' AND plan IS NOT NULL GROUP BY plan`),
       dbClient.execute(`SELECT count(*) as count FROM games`),
       dbClient.execute(`SELECT count(*) as count, avg(times_served) as avg_served FROM generated_puzzles`),
       dbClient.execute(`SELECT coalesce(sum(requested_price_bdt), 0) as sum FROM pending_upgrade_requests WHERE status = 'APPROVED' AND created_at > datetime('now', '-30 days')`),
+      dbClient.execute(`SELECT date(created_at) as date, count(*) as count FROM users WHERE created_at > datetime('now', '-7 days') GROUP BY date(created_at) ORDER BY date ASC`),
+      dbClient.execute(`SELECT date(created_at) as date, count(*) as count FROM games WHERE created_at > datetime('now', '-7 days') GROUP BY date(created_at) ORDER BY date ASC`)
     ]);
 
     const totalUsers = totalUsersRes.rows[0].count;
@@ -52,6 +56,27 @@ export async function GET(req: Request) {
     const totalPuzzles = puzzlesRes.rows[0].count;
     const avgPuzzleServed = puzzlesRes.rows[0].avg_served || 0;
 
+    // Build chart data
+    const chartDataMap: Record<string, { date: string; signups: number; games: number }> = {};
+    
+    // Initialize last 7 days with 0
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split("T")[0];
+      chartDataMap[dateStr] = { date: dateStr, signups: 0, games: 0 };
+    }
+
+    signupsSeriesRes.rows.forEach(r => {
+      const date = r.date as string;
+      if (chartDataMap[date]) chartDataMap[date].signups = r.count as number;
+    });
+
+    gamesSeriesRes.rows.forEach(r => {
+      const date = r.date as string;
+      if (chartDataMap[date]) chartDataMap[date].games = r.count as number;
+    });
+
     return NextResponse.json({
       stats: {
         totalUsers,
@@ -63,7 +88,8 @@ export async function GET(req: Request) {
         estimatedMrr,
         totalGames,
         totalPuzzles,
-        avgPuzzleServed: Number(avgPuzzleServed).toFixed(2)
+        avgPuzzleServed: Number(avgPuzzleServed).toFixed(2),
+        chartData: Object.values(chartDataMap)
       }
     });
   } catch (error) {

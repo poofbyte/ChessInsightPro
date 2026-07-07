@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
 import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X, Eye, ExternalLink } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function AdminDashboardPage() {
   const { accessToken, user } = useAuthStore();
@@ -182,6 +183,34 @@ export default function AdminDashboardPage() {
                 <p className="text-3xl font-black text-foreground">{stats.totalPuzzles}</p>
               </div>
             </div>
+
+            {stats.chartData && (
+              <div className="bg-card border border-border rounded-2xl p-6">
+                <h2 className="text-lg font-bold mb-6">Activity Overview (Last 7 Days)</h2>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={stats.chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorSignups" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorGames" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px' }} />
+                      <Area type="monotone" dataKey="signups" name="New Signups" stroke="#14b8a6" fillOpacity={1} fill="url(#colorSignups)" />
+                      <Area type="monotone" dataKey="games" name="Games Analyzed" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorGames)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-card border border-border rounded-2xl p-6">
