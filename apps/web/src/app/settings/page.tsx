@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
-import { Settings, Cpu, Palette, CheckCircle, MessageSquare } from "lucide-react";
+import { Settings, Cpu, Palette, CheckCircle, MessageSquare, ExternalLink, Globe, Github, Bug, Brain } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { BoardView } from "../../components/BoardView";
 
@@ -14,7 +14,6 @@ export default function SettingsPage() {
   const [content, setContent] = useState({
     subtitle: "Configure engine, board appearance, and coach preferences.",
     engineDesc: "Choose which Stockfish engine version to use for position analysis. Stockfish 18 is stronger and recommended.",
-    aboutDesc: "All analysis runs locally in your browser. No account or internet required for core features."
   });
 
   useEffect(() => {
@@ -78,7 +77,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Live preview */}
-          <div className="rounded-2xl overflow-hidden border border-slate-700 max-w-[240px] mx-auto shadow-xl">
+          <div className="rounded-2xl overflow-hidden border border-border max-w-[240px] mx-auto shadow-xl">
             <BoardView
               fen={PREVIEW_FEN}
               arePiecesDraggable={false}
@@ -87,26 +86,34 @@ export default function SettingsPage() {
           </div>
 
           {/* Theme grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {(Object.entries(BOARD_THEMES) as [BoardThemeId, typeof BOARD_THEMES[BoardThemeId]][]).map(([id, theme]) => (
-              <button
-                key={id}
-                onClick={() => store.setBoardTheme(id)}
-                className={`p-3 border rounded-xl flex items-center gap-3 transition ${
-                  store.boardTheme === id
-                    ? "border-purple-500 bg-purple-500/10"
-                    : "border-slate-700 bg-black/5 dark:bg-slate-900/40 hover:border-slate-600"
-                }`}
-              >
-                {/* Color swatch */}
-                <div className="flex rounded-lg overflow-hidden w-10 h-10 shrink-0 shadow">
-                  <div className="w-1/2 h-full" style={{ backgroundColor: theme.dark }} />
-                  <div className="w-1/2 h-full" style={{ backgroundColor: theme.light }} />
-                </div>
-                <span className="text-sm font-semibold text-slate-900 dark:text-slate-200 flex-1 text-left">{theme.label}</span>
-                {store.boardTheme === id && <CheckCircle className="w-4 h-4 text-purple-400 shrink-0" />}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {(Object.entries(BOARD_THEMES) as [BoardThemeId, typeof BOARD_THEMES[BoardThemeId]][]).map(([id, theme]) => {
+              const isSelected = store.boardTheme === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => store.setBoardTheme(id)}
+                  className={`group flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-background ${
+                    isSelected
+                      ? "border-purple-500 bg-purple-500/10 shadow-sm shadow-purple-500/10"
+                      : "border-border bg-black/5 dark:bg-slate-900/40 hover:border-slate-400 dark:hover:border-slate-600 hover:bg-black/10 dark:hover:bg-slate-800/60"
+                  }`}
+                  aria-pressed={isSelected}
+                  aria-label={`${theme.label} board theme${isSelected ? " (active)" : ""}`}
+                >
+                  <div className="flex rounded-lg overflow-hidden w-10 h-10 shrink-0 shadow-sm ring-1 ring-black/5">
+                    <div className="w-1/2 h-full" style={{ backgroundColor: theme.dark }} />
+                    <div className="w-1/2 h-full" style={{ backgroundColor: theme.light }} />
+                  </div>
+                  <span className={`text-sm flex-1 text-left ${
+                    isSelected ? "font-bold text-foreground" : "font-semibold text-slate-700 dark:text-slate-300"
+                  }`}>
+                    {theme.label}
+                  </span>
+                  {isSelected && <CheckCircle className="w-4 h-4 text-purple-500 shrink-0" />}
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -138,12 +145,52 @@ export default function SettingsPage() {
         </section>
 
         {/* About */}
-        <section className="p-6 bg-card border border-border rounded-2xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-          <p className="font-black text-slate-700 dark:text-slate-300 text-sm mb-3">About ChessInsight Pro</p>
-          <p>Version: 2.0.0</p>
-          <p>Engine: Stockfish {store.engineVersion} (WebAssembly)</p>
-          <p>Storage: IndexedDB (offline-first)</p>
-          <p className="pt-2 text-slate-500">{content.aboutDesc}</p>
+        <section className="p-6 bg-card border border-border rounded-2xl space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
+              <Brain className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">About ChessInsight Pro</h2>
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            ChessInsight Pro is an all-in-one chess improvement platform designed to help players analyze games, study openings, solve puzzles, train tactical vision, and improve consistently. Powered by Stockfish 18 and built with an offline-first architecture, it delivers fast, private, and professional chess analysis directly in your browser.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Version</p>
+              <p className="text-sm font-bold text-foreground">2.0.0</p>
+            </div>
+            <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Engine</p>
+              <p className="text-sm font-bold text-foreground">Stockfish {store.engineVersion} (WASM)</p>
+            </div>
+            <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Storage</p>
+              <p className="text-sm font-bold text-foreground">IndexedDB (offline-first)</p>
+            </div>
+            <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Platforms</p>
+              <p className="text-sm font-bold text-foreground">Web · Mobile · Tablet</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <a href="https://chessinsight.pro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
+              <Globe className="w-3.5 h-3.5" /> Website <ExternalLink className="w-3 h-3" />
+            </a>
+            <a href="https://github.com/anomalyco/ChessInsightPro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
+              <Github className="w-3.5 h-3.5" /> GitHub <ExternalLink className="w-3 h-3" />
+            </a>
+            <a href="/contact-to-upgrade" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
+              <Bug className="w-3.5 h-3.5" /> Report a Bug
+            </a>
+          </div>
+
+          <p className="text-[10px] text-slate-500">&copy; {new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
         </section>
       </div>
     </div>

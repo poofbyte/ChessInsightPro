@@ -34,7 +34,7 @@ export function BoardView({
   customArrows,
 }: Props) {
   const { boardTheme } = useChessStore();
-  const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.teal;
+  const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.classicLight;
   const containerRef = useRef<HTMLDivElement>(null);
   const [measuredWidth, setMeasuredWidth] = useState<number | undefined>(boardWidth);
 

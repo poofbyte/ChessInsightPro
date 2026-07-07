@@ -17,7 +17,7 @@ type Phase = "idle" | "playing" | "done";
 export default function CoordinatesPage() {
   useEffect(() => { logActivity("page_view", "Learn - Coordinates"); }, []);
   const { boardTheme, boardOrientation } = useChessStore();
-  const theme = BOARD_THEMES[boardTheme];
+  const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.classicLight;
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [mode, setMode] = useState<Mode>("find-square");

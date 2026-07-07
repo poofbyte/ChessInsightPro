@@ -24,12 +24,11 @@ export const useAuthStore = create<AuthStore>()(
   )
 );
 
-export type BoardThemeId = "slate" | "teal" | "green" | "walnut" | "purple" | "ice" | "classicLight";
+export type BoardThemeId = "slate" | "teal" | "walnut" | "purple" | "ice" | "classicLight";
 
 export const BOARD_THEMES: Record<BoardThemeId, { label: string; dark: string; light: string }> = {
   slate:  { label: "Classic Slate",    dark: "#2d3748", light: "#4a5568" },
   teal:   { label: "Ocean Teal",       dark: "#2b3447", light: "#3f4b66" },
-  green:  { label: "Tournament Green", dark: "#769656", light: "#eeeed2" },
   walnut: { label: "Dark Walnut",      dark: "#5d3a1a", light: "#c8a47a" },
   purple: { label: "Royal Purple",     dark: "#4a2c6e", light: "#9b72cf" },
   ice:    { label: "Arctic Ice",       dark: "#2c4a6e", light: "#a8d8ea" },
@@ -147,7 +146,6 @@ export const useChessStore = create<ChessStore>()(
     }),
     {
       name: "chess-insight-settings",
-      // Only persist user preferences, not volatile game state
       partialize: (s) => ({
         engineVersion: s.engineVersion,
         boardTheme: s.boardTheme,
@@ -155,6 +153,12 @@ export const useChessStore = create<ChessStore>()(
         boardOrientation: s.boardOrientation,
         theme: s.theme,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Migrate removed "green" (Tournament Green) to "classicLight"
+        if (state && (state as any).boardTheme === "green") {
+          (state as any).boardTheme = "classicLight";
+        }
+      },
     }
   )
 );
