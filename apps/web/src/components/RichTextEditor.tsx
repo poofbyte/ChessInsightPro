@@ -36,7 +36,11 @@ export default function RichTextEditor({
       <ReactQuill
         theme="snow"
         value={value}
-        onChange={onChange}
+        onChange={(content) => {
+          if (content !== value) {
+            onChange(content);
+          }
+        }}
         modules={modules}
         formats={formats}
         placeholder={placeholder}
