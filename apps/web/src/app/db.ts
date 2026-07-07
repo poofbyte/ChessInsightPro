@@ -1,7 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import { Game, PlayerProfile, ConceptProgress } from "@chessinsight/types";
 
-export class ChessInsightDb extends Dexie {
+class ChessInsightDb extends Dexie {
   games!: Table<Game>;
   profiles!: Table<PlayerProfile>;
   learning!: Table<ConceptProgress>;
@@ -17,4 +17,3 @@ export class ChessInsightDb extends Dexie {
 }
 
 export const db = new ChessInsightDb();
-export default db;

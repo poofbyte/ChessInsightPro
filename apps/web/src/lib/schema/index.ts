@@ -1,6 +1,6 @@
 import { TableDefinition } from "@core/db-sync";
 
-export const usersTable: TableDefinition = {
+const usersTable: TableDefinition = {
   name: "users",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -24,7 +24,7 @@ export const usersTable: TableDefinition = {
   ],
 };
 
-export const sessionsTable: TableDefinition = {
+const sessionsTable: TableDefinition = {
   name: "sessions",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -37,7 +37,7 @@ export const sessionsTable: TableDefinition = {
   ],
 };
 
-export const gamesTable: TableDefinition = {
+const gamesTable: TableDefinition = {
   name: "games",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -49,7 +49,7 @@ export const gamesTable: TableDefinition = {
   ],
 };
 
-export const profilesTable: TableDefinition = {
+const profilesTable: TableDefinition = {
   name: "profiles",
   columns: [
     { name: "user_id", type: "TEXT PRIMARY KEY" },
@@ -60,7 +60,7 @@ export const profilesTable: TableDefinition = {
   ],
 };
 
-export const learningCardsTable: TableDefinition = {
+const learningCardsTable: TableDefinition = {
   name: "learning_cards",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -72,7 +72,7 @@ export const learningCardsTable: TableDefinition = {
   ],
 };
 
-export const puzzleAttemptsTable: TableDefinition = {
+const puzzleAttemptsTable: TableDefinition = {
   name: "puzzle_attempts",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -86,7 +86,7 @@ export const puzzleAttemptsTable: TableDefinition = {
   ],
 };
 
-export const usageEventsTable: TableDefinition = {
+const usageEventsTable: TableDefinition = {
   name: "usage_events",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -97,7 +97,7 @@ export const usageEventsTable: TableDefinition = {
   ],
 };
 
-export const signupAttemptsTable: TableDefinition = {
+const signupAttemptsTable: TableDefinition = {
   name: "signup_attempts",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -106,7 +106,7 @@ export const signupAttemptsTable: TableDefinition = {
   ],
 };
 
-export const loginAttemptsTable: TableDefinition = {
+const loginAttemptsTable: TableDefinition = {
   name: "login_attempts",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -117,7 +117,7 @@ export const loginAttemptsTable: TableDefinition = {
   ],
 };
 
-export const generatedPuzzlesTable: TableDefinition = {
+const generatedPuzzlesTable: TableDefinition = {
   name: "generated_puzzles",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -131,7 +131,7 @@ export const generatedPuzzlesTable: TableDefinition = {
   ],
 };
 
-export const pendingUpgradeRequestsTable: TableDefinition = {
+const pendingUpgradeRequestsTable: TableDefinition = {
   name: "pending_upgrade_requests",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -145,7 +145,7 @@ export const pendingUpgradeRequestsTable: TableDefinition = {
   ],
 };
 
-export const systemConfigTable: TableDefinition = {
+const systemConfigTable: TableDefinition = {
   name: "system_config",
   columns: [
     { name: "key", type: "TEXT PRIMARY KEY" },
@@ -155,7 +155,7 @@ export const systemConfigTable: TableDefinition = {
   ],
 };
 
-export const adminAuditLogTable: TableDefinition = {
+const adminAuditLogTable: TableDefinition = {
   name: "admin_audit_log",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -168,7 +168,7 @@ export const adminAuditLogTable: TableDefinition = {
   ],
 };
 
-export const activityLogsTable: TableDefinition = {
+const activityLogsTable: TableDefinition = {
   name: "activity_logs",
   columns: [
     { name: "id", type: "TEXT PRIMARY KEY" },
@@ -181,7 +181,7 @@ export const activityLogsTable: TableDefinition = {
   ],
 };
 
-export const analyticsEventsTable: TableDefinition = {
+const analyticsEventsTable: TableDefinition = {
   name: "analytics_events",
   columns: [
     { name: "event_id", type: "TEXT PRIMARY KEY DEFAULT (hex(randomblob(16)))" },

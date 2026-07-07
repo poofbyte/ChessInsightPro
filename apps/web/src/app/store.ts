@@ -1,13 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Game, GameEval, CoachStyle } from "@chessinsight/types";
-
-export interface User {
-  id: string;
-  email: string;
-  plan: string;
-  role?: "USER" | "ADMIN";
-}
+import { Game, GameEval, CoachStyle, User } from "@chessinsight/types";
 
 interface AuthStore {
   accessToken: string | null;

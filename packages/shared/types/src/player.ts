@@ -1,5 +1,12 @@
 import { TacticalMotif } from "./analysis";
 
+export interface User {
+  id: string;
+  email: string;
+  plan: string;
+  role?: "USER" | "ADMIN";
+}
+
 export interface HistoricAccuracy {
   accuracyTrend: number[];
   averageCplTrend: number[];
