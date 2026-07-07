@@ -4,16 +4,19 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
 import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Zap, Timer, X, CheckCircle, Trophy } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const DURATION = 180; // 3 minutes
 const MAX_STRIKES = 3;
 
 export default function PuzzleRushPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   const [phase, setPhase] = useState<"idle" | "playing" | "done">("idle");
   const [puzzle, setPuzzle] = useState<LocalPuzzle | null>(null);
   const [chess, setChess] = useState<Chess | null>(null);
@@ -258,7 +261,7 @@ export default function PuzzleRushPage() {
               <h2 className="text-3xl font-black mb-2">Ready to Rush?</h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto">3 minutes. 3 strikes. Score as high as you can.</p>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-orange-500 text-white font-black text-lg rounded-2xl hover:bg-orange-600 transition shadow-lg shadow-orange-500/20">
+            <button onClick={() => { if (!accessToken) { setShowSignUp(true); return; } startGame(); }} className="px-10 py-4 bg-orange-500 text-white font-black text-lg rounded-2xl hover:bg-orange-600 transition shadow-lg shadow-orange-500/20">
               Start Rush!
             </button>
           </div>
@@ -413,6 +416,7 @@ export default function PuzzleRushPage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Puzzle Rush" />
     </div>
   );
 }

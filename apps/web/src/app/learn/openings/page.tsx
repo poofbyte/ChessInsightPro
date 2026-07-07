@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Map, ChevronRight, TrendingUp } from "lucide-react";
+import { useAuthStore } from "@/app/store";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const OPENINGS = [
   {
@@ -75,7 +77,10 @@ const OPENINGS = [
 ];
 
 export default function OpeningsPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Openings"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [selected, setSelected] = useState<typeof OPENINGS[0] | null>(null);
   const [filter, setFilter] = useState("All");
 
@@ -181,6 +186,7 @@ export default function OpeningsPage() {
           </div>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="openings" />
     </div>
   );
 }

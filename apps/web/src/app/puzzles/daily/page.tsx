@@ -5,9 +5,10 @@ import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
 import { Puzzle, Star, ChevronRight, Loader2, RotateCcw } from "lucide-react";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 interface DailyPuzzle {
   id: string;
@@ -47,6 +48,8 @@ function saveToHistory(record: SolvedRecord) {
 }
 
 export default function DailyPuzzlePage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   const [puzzle, setPuzzle] = useState<DailyPuzzle | null>(null);
   const [chess, setChess] = useState<Chess | null>(null);
   const [loading, setLoading] = useState(true);
@@ -212,6 +215,11 @@ export default function DailyPuzzlePage() {
 
   // Fetch daily puzzle
   useEffect(() => {
+    if (!accessToken) {
+      setShowSignUp(true);
+      setLoading(false);
+      return;
+    }
     fetch("https://lichess.org/api/puzzle/daily")
       .then((r) => r.json())
       .then((data) => {
@@ -233,7 +241,7 @@ export default function DailyPuzzlePage() {
         setError("Unable to load today's puzzle. Check your connection.");
         setLoading(false);
       });
-  }, []);
+  }, [accessToken]);
 
   const handleMove = (from: string, to: string) => {
     if (!puzzle || !chess || status === "done") return false;
@@ -484,6 +492,7 @@ export default function DailyPuzzlePage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="daily puzzle" />
     </div>
   );
 }

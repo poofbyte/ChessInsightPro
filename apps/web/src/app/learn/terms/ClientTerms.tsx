@@ -4,9 +4,14 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { AlignLeft, Search } from "lucide-react";
 import { Term } from "@core/content";
+import { useAuthStore } from "@/app/store";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 export function ClientTerms({ terms }: { terms: Term[] }) {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Terms"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
@@ -79,6 +84,7 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
           )}
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="chess glossary" />
     </div>
   );
 }

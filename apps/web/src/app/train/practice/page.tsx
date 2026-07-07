@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { Dumbbell, RefreshCw, Brain, MessageSquare } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const SCENARIOS = [
   { id: "middlegame-1", label: "Open Position Battle", fen: "r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9", desc: "Practice dynamic middlegame play in a sharp position." },
@@ -26,7 +27,10 @@ const TIPS = [
 type Phase = "setup" | "playing";
 
 export default function PracticePage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Train - Practice"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [phase, setPhase] = useState<Phase>("setup");
   const [chess, setChess] = useState<Chess | null>(null);
   const [fen, setFen] = useState("start");
@@ -166,6 +170,7 @@ export default function PracticePage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="practice" />
     </div>
   );
 }

@@ -4,13 +4,17 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { BarChart2, RefreshCw, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function SandboxPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Train - Sandbox"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   // Store FEN as the single source of truth — reconstruct Chess from it each time
   const [fen, setFen] = useState(INITIAL_FEN);
   const [history, setHistory] = useState<string[]>([INITIAL_FEN]);
@@ -178,6 +182,7 @@ export default function SandboxPage() {
           </div>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="analysis board" />
     </div>
   );
 }

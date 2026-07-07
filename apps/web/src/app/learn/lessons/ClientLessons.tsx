@@ -5,9 +5,14 @@ import { logActivity } from "@/lib/activity-log";
 import { GraduationCap, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
 import { BoardView } from "@/components/BoardView";
 import { Lesson } from "@core/content";
+import { useAuthStore } from "@/app/store";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Lessons"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   
@@ -114,6 +119,7 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
           </div>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="lessons" />
     </div>
   );
 }

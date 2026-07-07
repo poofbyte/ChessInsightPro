@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound, useChessStore } from "../../store";
+import { playMoveSound, useChessStore, useAuthStore } from "../../store";
 import { Bot, Brain, RefreshCw, MessageSquare } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const BOT_LEVELS = [
   { id: "beginner",    label: "Beginner",    elo: 600,  delay: 2000, depth: 1, description: "Perfect for learning the rules." },
@@ -25,7 +26,10 @@ const COACH_TIPS = [
 ];
 
 export default function PlayCoachPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Play Coach"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [selectedLevel, setSelectedLevel] = useState(BOT_LEVELS[0]);
   const [phase, setPhase] = useState<"setup" | "playing">("setup");
   const [chess, setChess] = useState<Chess | null>(null);
@@ -215,6 +219,7 @@ export default function PlayCoachPage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Play & Coach" />
     </div>
   );
 }

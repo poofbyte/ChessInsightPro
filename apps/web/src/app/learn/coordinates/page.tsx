@@ -3,8 +3,9 @@
 import { useState, useCallback, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { Target, Trophy, Timer, RotateCcw } from "lucide-react";
-import { useChessStore, BOARD_THEMES } from "../../store";
+import { useChessStore, BOARD_THEMES, useAuthStore } from "../../store";
 import { BoardView } from "../../../components/BoardView";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
@@ -15,7 +16,10 @@ type Mode = "find-square" | "name-square";
 type Phase = "idle" | "playing" | "done";
 
 export default function CoordinatesPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Coordinates"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const { boardTheme, boardOrientation } = useChessStore();
   const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.classicLight;
 
@@ -173,6 +177,7 @@ export default function CoordinatesPage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="coordinate trainer" />
     </div>
   );
 }

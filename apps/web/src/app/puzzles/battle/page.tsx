@@ -4,15 +4,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
 import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Swords, Shield, Trophy, Zap } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const BATTLE_DURATION = 180;
 
 export default function PuzzleBattlePage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   const [phase, setPhase] = useState<"idle" | "playing" | "done">("idle");
   const [puzzle, setPuzzle] = useState<LocalPuzzle | null>(null);
   const [chess, setChess] = useState<Chess | null>(null);
@@ -285,7 +288,7 @@ export default function PuzzleBattlePage() {
                 <span>Magnus (2500)</span>
               </div>
             </div>
-            <button onClick={startGame} className="px-10 py-4 bg-blue-500 text-white font-black text-lg rounded-2xl hover:bg-blue-600 transition shadow-lg shadow-blue-500/20">
+            <button onClick={() => { if (!accessToken) { setShowSignUp(true); return; } startGame(); }} className="px-10 py-4 bg-blue-500 text-white font-black text-lg rounded-2xl hover:bg-blue-600 transition shadow-lg shadow-blue-500/20">
               Start Battle!
             </button>
           </div>
@@ -415,6 +418,7 @@ export default function PuzzleBattlePage() {
           </div>
         )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Puzzle Battle" />
     </div>
   );
 }

@@ -4,13 +4,16 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
 import { PUZZLE_DB, PUZZLE_THEMES, LocalPuzzle, getPuzzlesByTheme } from "../../../lib/puzzle-db";
 import { Grid3X3, Filter, ChevronRight, CheckCircle, RotateCcw } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 export default function CustomPuzzlesPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("All");
   const [ratingFilter, setRatingFilter] = useState<"all" | "easy" | "medium" | "hard">("all");
   const [activePuzzle, setActivePuzzle] = useState<LocalPuzzle | null>(null);
@@ -310,7 +313,7 @@ export default function CustomPuzzlesPage() {
                 ))}
               </div>
               <button 
-                  onClick={() => launchPuzzle()}
+                  onClick={() => { if (!accessToken) { setShowSignUp(true); return; } launchPuzzle(); }}
                   className="w-full mt-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition"
                 >
                   Start Random Puzzle from Filter
@@ -323,10 +326,10 @@ export default function CustomPuzzlesPage() {
                 <p className="text-center text-slate-500 italic text-sm py-8">No puzzles match your filter.</p>
               ) : (
                 filtered.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => launchPuzzle(p)}
-                    className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${activePuzzle?.id === p.id ? "border-purple-500 bg-purple-500/10" : "border-border bg-card hover:border-slate-600"}`}
+                    <button
+                      key={p.id}
+                      onClick={() => { if (!accessToken) { setShowSignUp(true); return; } launchPuzzle(p); }}
+                      className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${activePuzzle?.id === p.id ? "border-purple-500 bg-purple-500/10" : "border-border bg-card hover:border-slate-600"}`}
                   >
                     <div>
                       <span className="text-sm font-bold text-foreground">{p.theme}</span>
@@ -458,6 +461,7 @@ export default function CustomPuzzlesPage() {
           </div>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="custom puzzles" />
     </div>
   );
 }

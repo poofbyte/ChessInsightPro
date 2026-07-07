@@ -7,11 +7,14 @@ import { RecommendationEngine } from "@chessinsight/recommendations";
 import { SpacedRepetitionManager } from "@chessinsight/learning";
 import { AlertTriangle, Award, BookOpen, Target, TrendingUp, User, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "@/app/store";
+import SignUpPrompt from "@/components/SignUpPrompt";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, clearAuth } = useAuthStore();
+  const { user, clearAuth, accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [leitnerCards, setLeitnerCards] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"analytics" | "account">("analytics");
@@ -321,6 +324,7 @@ export default function ProfilePage() {
         </div>
       )}
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="profile" />
     </div>
   );
 }

@@ -5,9 +5,14 @@ import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "@/components/BoardView";
 import { ScrollText, ChevronLeft, ChevronRight } from "lucide-react";
 import { Rule } from "@core/content";
+import { useAuthStore } from "@/app/store";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 export function ClientRules({ rules }: { rules: Rule[] }) {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Rules"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [idx, setIdx] = useState(0);
   
   if (!rules || rules.length === 0) return <div className="p-8 text-slate-500">No rules configured.</div>;
@@ -80,6 +85,7 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
           </button>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="rules" />
     </div>
   );
 }

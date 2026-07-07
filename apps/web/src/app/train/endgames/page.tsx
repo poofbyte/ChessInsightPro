@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { BoardView } from "../../../components/BoardView";
 import { Chess } from "@chessinsight/chess-core";
-import { playMoveSound } from "../../store";
+import { playMoveSound, useAuthStore } from "../../store";
 import { Trophy, ChevronRight, RotateCcw, CheckCircle, BookOpen } from "lucide-react";
+import SignUpPrompt from "@/components/SignUpPrompt";
 
 const ENDGAMES = [
   {
@@ -91,7 +92,10 @@ const ENDGAMES = [
 ];
 
 export default function EndgamesPage() {
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
   useEffect(() => { logActivity("page_view", "Train - Endgames"); }, []);
+  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
   const [selected, setSelected] = useState<typeof ENDGAMES[0] | null>(null);
   const [chess, setChess] = useState<Chess | null>(null);
   const [category, setCategory] = useState("All");
@@ -193,6 +197,7 @@ export default function EndgamesPage() {
           </div>
         </div>
       </div>
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="endgames" />
     </div>
   );
 }

@@ -24,6 +24,8 @@ import {
   Brain, Play, ShieldAlert
 } from "lucide-react";
 import { BoardView } from "../components/BoardView";
+import { useAuthStore } from "./store";
+import SignUpPrompt from "../components/SignUpPrompt";
 
 const GameLineChart = dynamic(() => import("../components/GameLineChart"), { ssr: false });
 
@@ -50,6 +52,9 @@ export default function RootReviewPage() {
   const [historicalGames, setHistoricalGames] = useState<Game[]>([]);
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const { accessToken } = useAuthStore();
+  const [showSignUp, setShowSignUp] = useState(false);
 
   // Puzzle state
   const [activePuzzle, setActivePuzzle] = useState<any | null>(null);
@@ -443,7 +448,10 @@ export default function RootReviewPage() {
                   </div>
                 ) : (
                   <button
-                    onClick={handlePgnAnalyze}
+                    onClick={() => {
+                      if (!accessToken) setShowSignUp(true);
+                      else handlePgnAnalyze();
+                    }}
                     className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-black font-black text-sm rounded-2xl transition shadow-lg shadow-teal-500/10"
                   >
                     Start Game Review
@@ -479,6 +487,8 @@ export default function RootReviewPage() {
           </div>
         )}
       </div>
+
+      <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="game reviews" />
     </div>
   );
 }
