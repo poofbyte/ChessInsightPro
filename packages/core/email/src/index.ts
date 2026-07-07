@@ -10,7 +10,7 @@ function getResend() {
   return new Resend(apiKey);
 }
 
-const DEFAULT_SENDER = process.env.RESEND_FROM_EMAIL || "ChessInsight Pro <noreply@chessinsight.com>";
+const DEFAULT_SENDER = process.env.RESEND_FROM_EMAIL || "ChessInsight Pro <onboarding@resend.dev>";
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   const resend = getResend();
@@ -36,13 +36,17 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendPasswordResetEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendPasswordResetEmail failed:", error);
     return { success: false, error };
@@ -71,13 +75,17 @@ export async function sendWelcomeEmail(to: string) {
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendWelcomeEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendWelcomeEmail failed:", error);
     return { success: false, error };
@@ -106,13 +114,17 @@ export async function sendUpgradeApprovedEmail(to: string, plan: string, price: 
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendUpgradeApprovedEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendUpgradeApprovedEmail failed:", error);
     return { success: false, error };
@@ -138,13 +150,17 @@ export async function sendUpgradeRejectedEmail(to: string, reason?: string) {
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendUpgradeRejectedEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendUpgradeRejectedEmail failed:", error);
     return { success: false, error };
@@ -182,14 +198,18 @@ export async function sendContactConfirmationEmail(to: string, name: string) {
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html,
       text,
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendContactConfirmationEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendContactConfirmationEmail failed:", error);
     return { success: false, error };
@@ -227,14 +247,18 @@ export async function sendContactReplyEmail(to: string, name: string, replyBody:
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to,
       subject,
       html,
       text,
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendContactReplyEmail failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendContactReplyEmail failed:", error);
     return { success: false, error };
@@ -265,13 +289,17 @@ export async function sendAdminUpgradeRequestNotification(userEmail: string, pla
   }
 
   try {
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: DEFAULT_SENDER,
       to: adminEmail,
       subject,
       html
     });
-    return { success: true, data };
+    if (result.error) {
+      console.error("[Email Error] sendAdminUpgradeRequestNotification failed:", result.error);
+      return { success: false, error: result.error };
+    }
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("[Email Error] sendAdminUpgradeRequestNotification failed:", error);
     return { success: false, error };

@@ -120,14 +120,15 @@ export async function POST(req: Request) {
 
       auditAction = "CONTACT_REPLIED";
 
-      sendContactReplyEmail(
+      const emailResult = await sendContactReplyEmail(
         msg.email as string,
         msg.name as string,
         replyBody.trim(),
         msg.subject as string
-      ).catch((err) => {
-        console.error("[Admin Contact] Failed to send reply email:", err);
-      });
+      );
+      if (!emailResult.success) {
+        console.error("[Admin Contact] Failed to send reply email:", emailResult.error);
+      }
     } else if (action === "archive") {
       await dbClient.execute({
         sql: `UPDATE contact_messages SET archived_at = datetime('now') WHERE id = ?`,
