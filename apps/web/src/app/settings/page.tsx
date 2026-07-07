@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
-import { Settings, Cpu, Palette, CheckCircle, MessageSquare, ExternalLink, Globe, Github, Bug, Brain } from "lucide-react";
+import { Settings, Cpu, Palette, CheckCircle, MessageSquare, Brain } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { BoardView } from "../../components/BoardView";
 
@@ -181,17 +181,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <a href="https://chessinsight.pro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
-              <Globe className="w-3.5 h-3.5" /> Website <ExternalLink className="w-3 h-3" />
-            </a>
-            <a href="https://github.com/anomalyco/ChessInsightPro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
-              <Github className="w-3.5 h-3.5" /> GitHub <ExternalLink className="w-3 h-3" />
-            </a>
-            <a href="/contact-to-upgrade" className="inline-flex items-center gap-1.5 px-3 py-2 bg-black/5 dark:bg-slate-900/60 hover:bg-teal-500/10 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-500 rounded-xl border border-border transition">
-              <Bug className="w-3.5 h-3.5" /> Report a Bug
-            </a>
-          </div>
+
 
           <p className="text-[10px] text-slate-500">&copy; {new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
         </section>
