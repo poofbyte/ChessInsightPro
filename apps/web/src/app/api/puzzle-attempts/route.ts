@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { PuzzleRatingService } from "@/lib/rating";
-import { consumeQuota } from "@core/quota";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
@@ -50,18 +50,21 @@ export async function POST(req: Request) {
       });
     }
 
+    // Atomically consume quota for the session
+    const hasRush = attempts.some(a => a.mode === "rush");
+    if (hasRush) {
+      statements.push({
+        sql: `INSERT INTO usage_events (id, user_id, event_type) VALUES (?, ?, ?)`,
+        args: [crypto.randomUUID(), authResult.userId, "practiceRushPuzzle"]
+      });
+    }
+
     if (statements.length > 0) {
       statements.push({
         sql: `UPDATE profiles SET elo = ? WHERE user_id = ?`,
         args: [currentElo, authResult.userId]
       });
       await dbClient.batch(statements, "write");
-    }
-
-    // Atomically consume quota for the session
-    const hasRush = attempts.some(a => a.mode === "rush");
-    if (hasRush) {
-      await consumeQuota(dbClient as any, authResult.userId, "practiceRushPuzzle");
     }
     
     return NextResponse.json({ success: true, updatedElo: currentElo });

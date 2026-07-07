@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
-import { consumeQuota } from "@core/quota";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   try {
@@ -38,14 +38,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const games = Array.isArray(body) ? body : [body];
     
+    const statements: any[] = [];
+    
     for (const game of games) {
       if (!game.id || !game.pgn) continue;
       
       const headersJson = game.headers ? JSON.stringify(game.headers) : null;
       const analysisJson = game.analysis ? JSON.stringify(game.analysis) : null;
       
-      // Upsert
-      await dbClient.execute({
+      statements.push({
         sql: `INSERT INTO games (id, user_id, pgn, headers, analysis) 
               VALUES (?, ?, ?, ?, ?)
               ON CONFLICT(id) DO UPDATE SET 
@@ -56,8 +57,12 @@ export async function POST(req: Request) {
       });
     }
 
-    if (games.length > 0) {
-      await consumeQuota(dbClient as any, authResult.userId, "review");
+    if (statements.length > 0) {
+      statements.push({
+        sql: `INSERT INTO usage_events (id, user_id, event_type) VALUES (?, ?, ?)`,
+        args: [crypto.randomUUID(), authResult.userId, "review"]
+      });
+      await dbClient.batch(statements, "write");
     }
     
     return NextResponse.json({ success: true });

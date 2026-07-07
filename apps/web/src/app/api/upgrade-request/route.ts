@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import { sendAdminUpgradeRequestNotification } from "@core/email";
 import { getAllConfig } from "@core/config";
+import { calculateCustomPrice } from "@core/pricing";
 
 export async function POST(req: Request) {
   try {
@@ -37,9 +38,16 @@ export async function POST(req: Request) {
     // Security: Calculate price server-side
     const config = await getAllConfig(dbClient as any);
     const pricingConfig = config.pricing_config || { plans: [] };
-    const foundPlan = pricingConfig.plans.find((p: any) => p.id.toUpperCase() === normalizedPlan);
     
-    const price = foundPlan ? Number(foundPlan.priceBdt) || 0 : 0;
+    let price = 0;
+    if (normalizedPlan === "CUSTOM") {
+      if (customQuotas) {
+        price = Math.round(calculateCustomPrice(customQuotas.reviews || 0, customQuotas.sessions || 0));
+      }
+    } else {
+      const foundPlan = pricingConfig.plans.find((p: any) => p.id.toUpperCase() === normalizedPlan);
+      price = foundPlan ? Number(foundPlan.priceBdt) || 0 : 0;
+    }
     
     const requestId = crypto.randomUUID();
     
