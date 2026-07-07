@@ -19,7 +19,7 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
   });
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-violet-500/15 border border-violet-500/20">

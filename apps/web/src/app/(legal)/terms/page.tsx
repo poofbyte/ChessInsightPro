@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-3xl mx-auto space-y-8 py-12">
         <div>
           <h1 className="text-4xl font-black mb-4">Terms of Service</h1>

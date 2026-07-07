@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                let theme = 'dark';
+                let theme = 'light';
                 const stored = localStorage.getItem('chess-insight-settings');
                 if (stored) {
                   const state = JSON.parse(stored).state;

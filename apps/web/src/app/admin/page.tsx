@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-7xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-black">Admin Panel</h1>
@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 border-b border-border pb-px">
+        <div className="flex gap-2 overflow-x-auto border-b border-border pb-px">
           {[
             { id: "dashboard", label: "Dashboard", icon: TrendingUp },
             { id: "requests", label: "Upgrade Requests", icon: ListCollapse },
@@ -408,7 +408,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">User</p>
                   <p className="font-bold">{selectedRequest.user_email}</p>
@@ -479,7 +479,7 @@ export default function AdminDashboardPage() {
               )}
 
               {selectedRequest.status === "PENDING" && (
-                <div className="flex gap-4 pt-4 border-t border-border">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-border">
                   <button
                     onClick={() => handleProcessRequest(selectedRequest.id, "APPROVE")}
                     disabled={processingId === selectedRequest.id}

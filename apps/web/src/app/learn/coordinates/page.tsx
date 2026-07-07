@@ -67,7 +67,7 @@ export default function CoordinatesPage() {
   const accuracy = score + errors > 0 ? Math.round((score / (score + errors)) * 100) : 0;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/20">
@@ -103,8 +103,8 @@ export default function CoordinatesPage() {
         )}
 
         {phase === "playing" && (
-          <div className="grid grid-cols-12 gap-8">
-            <div className="col-span-7">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7">
               <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen="start"
@@ -118,7 +118,7 @@ export default function CoordinatesPage() {
                 />
               </div>
             </div>
-            <div className="col-span-5 flex flex-col gap-4">
+            <div className="lg:col-span-5 flex flex-col gap-4">
               {/* Target */}
               <div className="p-6 bg-card border border-border rounded-2xl text-center">
                 <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Click this square</p>
@@ -153,7 +153,7 @@ export default function CoordinatesPage() {
               <h2 className="text-4xl font-black mb-2">Round Complete!</h2>
               <p className="text-slate-600 dark:text-slate-400 text-lg">{score} correct in 30 seconds</p>
             </div>
-            <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-sm">
               <div className="p-4 bg-card border border-border rounded-xl text-center">
                 <div className="text-2xl font-black text-emerald-400">{score}</div>
                 <div className="text-xs text-slate-500">Correct</div>

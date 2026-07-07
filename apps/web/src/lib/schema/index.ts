@@ -226,6 +226,24 @@ const analyticsEventsTable: TableDefinition = {
   ],
 };
 
+const contactMessagesTable: TableDefinition = {
+  name: "contact_messages",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "name", type: "TEXT NOT NULL" },
+    { name: "email", type: "TEXT NOT NULL" },
+    { name: "subject", type: "TEXT NOT NULL" },
+    { name: "category", type: "TEXT NOT NULL" }, // general_question, bug_report, feature_request, billing, account, other
+    { name: "message", type: "TEXT NOT NULL" },
+    { name: "status", type: "TEXT NOT NULL DEFAULT 'new'" }, // new, read, replied, closed
+    { name: "admin_notes", type: "TEXT" },
+    { name: "replied_at", type: "TEXT" },
+    { name: "replied_by", type: "TEXT" },
+    { name: "reply_body", type: "TEXT" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 export const ALL_TABLES: TableDefinition[] = [
   usersTable,
   sessionsTable,
@@ -244,4 +262,5 @@ export const ALL_TABLES: TableDefinition[] = [
   analyticsEventsTable,
   contentEntriesTable,
   contentRevisionsTable,
+  contactMessagesTable,
 ];

@@ -151,6 +151,96 @@ export async function sendUpgradeRejectedEmail(to: string, reason?: string) {
   }
 }
 
+export async function sendContactConfirmationEmail(to: string, name: string) {
+  const resend = getResend();
+
+  const subject = "We received your message - ChessInsight Pro";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #0f172a; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: #14b8a6; margin: 0; font-size: 24px;">ChessInsight Pro</h1>
+      </div>
+      <div style="padding: 32px 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none;">
+        <h2 style="color: #0f172a; margin-top: 0;">Thank you for contacting us, ${name}!</h2>
+        <p style="color: #334155; line-height: 1.6;">We've received your message and will get back to you as soon as possible. Our team typically responds within 24-48 hours.</p>
+        <p style="color: #334155; line-height: 1.6;">If you have an urgent matter, please reply directly to this email and we'll prioritize your request.</p>
+        <div style="margin: 32px 0; padding: 16px; background-color: #f8fafc; border-radius: 6px; border-left: 4px solid #14b8a6;">
+          <p style="color: #64748b; font-size: 14px; margin: 0;">This is an automated confirmation. Please do not reply to this email directly unless requested.</p>
+        </div>
+      </div>
+      <div style="background-color: #f8fafc; padding: 16px 24px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  const text = `Thank you for contacting us, ${name}! We've received your message and will get back to you as soon as possible.`;
+
+  if (!resend) {
+    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
+    console.log(`[STUB EMAIL] Content: ${text}`);
+    return { success: true, stub: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: DEFAULT_SENDER,
+      to,
+      subject,
+      html,
+      text,
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("[Email Error] sendContactConfirmationEmail failed:", error);
+    return { success: false, error };
+  }
+}
+
+export async function sendContactReplyEmail(to: string, name: string, replyBody: string, originalSubject: string) {
+  const resend = getResend();
+
+  const subject = `Re: ${originalSubject} - ChessInsight Pro`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #0f172a; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: #14b8a6; margin: 0; font-size: 24px;">ChessInsight Pro</h1>
+      </div>
+      <div style="padding: 32px 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none;">
+        <h2 style="color: #0f172a; margin-top: 0;">Hello ${name},</h2>
+        <p style="color: #334155; line-height: 1.6;">Our team has replied to your message regarding <strong>${originalSubject}</strong>:</p>
+        <div style="margin: 24px 0; padding: 20px; background-color: #f8fafc; border-radius: 6px; border-left: 4px solid #14b8a6;">
+          <p style="color: #0f172a; line-height: 1.6; white-space: pre-wrap; margin: 0;">${replyBody}</p>
+        </div>
+        <p style="color: #334155; line-height: 1.6;">If you have any further questions, feel free to reply to this email.</p>
+      </div>
+      <div style="background-color: #f8fafc; padding: 16px 24px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  const text = `Hello ${name},\n\nOur team has replied to your message regarding "${originalSubject}":\n\n${replyBody}\n\nIf you have any further questions, feel free to reply to this email.`;
+
+  if (!resend) {
+    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
+    console.log(`[STUB EMAIL] Content: ${text}`);
+    return { success: true, stub: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: DEFAULT_SENDER,
+      to,
+      subject,
+      html,
+      text,
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("[Email Error] sendContactReplyEmail failed:", error);
+    return { success: false, error };
+  }
+}
+
 export async function sendAdminUpgradeRequestNotification(userEmail: string, plan: string, price: number | string, quotas: any) {
   const resend = getResend();
   

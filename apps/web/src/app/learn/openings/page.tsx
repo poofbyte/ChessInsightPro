@@ -83,7 +83,7 @@ export default function OpeningsPage() {
   const filtered = filter === "All" ? OPENINGS : OPENINGS.filter((o) => o.category === filter);
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/20">
@@ -95,9 +95,9 @@ export default function OpeningsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* List */}
-          <div className="col-span-5 flex flex-col gap-4">
+          <div className="lg:col-span-5 flex flex-col gap-4">
             <div className="flex gap-2">
               {categories.map((c) => (
                 <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filter === c ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
@@ -124,7 +124,7 @@ export default function OpeningsPage() {
           </div>
 
           {/* Detail */}
-          <div className="col-span-7">
+          <div className="lg:col-span-7">
             {selected ? (
               <div className="space-y-5">
                 <div className="aspect-square rounded-2xl overflow-hidden border border-border max-w-[400px]">

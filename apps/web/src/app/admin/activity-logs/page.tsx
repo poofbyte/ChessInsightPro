@@ -214,7 +214,7 @@ export default function AdminActivityLogsPage() {
               </button>
             </div>
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">User</p>
                   <p className="text-sm font-bold mt-1">{selectedLog.email}</p>

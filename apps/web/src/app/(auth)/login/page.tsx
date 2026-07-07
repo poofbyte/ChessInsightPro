@@ -61,7 +61,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-card border border-border rounded-3xl shadow-2xl">
+    <div className="w-full max-w-md p-4 md:p-8 bg-card border border-border rounded-3xl shadow-2xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-black mb-2">Welcome Back</h1>
         <p className="text-slate-600 dark:text-slate-400 text-sm">Log in to continue your training.</p>
@@ -138,7 +138,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex-1 flex items-center justify-center p-8 bg-background">
+    <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-background">
       <Suspense fallback={<div className="text-slate-500">Loading...</div>}>
         <LoginForm />
       </Suspense>

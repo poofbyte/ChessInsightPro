@@ -15,7 +15,7 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
   const rule = rules[idx];
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/20">
@@ -41,13 +41,13 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
         </div>
 
         {/* Content */}
-        <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-6">
             <div className="aspect-square rounded-2xl overflow-hidden border border-border">
               <BoardView fen={rule.fen} arePiecesDraggable={false} />
             </div>
           </div>
-          <div className="col-span-6 flex flex-col gap-5 justify-center">
+          <div className="lg:col-span-6 flex flex-col gap-5 justify-center">
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{rule.icon}</span>

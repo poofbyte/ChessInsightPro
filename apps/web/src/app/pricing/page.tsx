@@ -108,7 +108,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background relative">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background relative">
       <div className="max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-black">{pageTitle}</h1>
@@ -343,7 +343,7 @@ export default function PricingPage() {
                     ))}
                   </div>
 
-                  <div className="flex gap-4 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <button
                       onClick={() => setModalStep(1)}
                       className="px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground font-bold rounded-xl transition"

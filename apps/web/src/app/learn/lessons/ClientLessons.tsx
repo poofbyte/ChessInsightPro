@@ -17,7 +17,7 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
   const slide = lesson.slides[slideIdx];
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
@@ -29,7 +29,7 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sidebar / Lesson List */}
           <div className="col-span-12 md:col-span-4 space-y-4">
             {lessons.map((l, i) => {
@@ -73,12 +73,12 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
               </div>
 
               {/* Content */}
-              <div className="flex-1 flex min-h-0">
-                <div className="w-1/2 p-6 flex flex-col justify-center border-r border-border">
+              <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+                <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center border-r border-border">
                   <h3 className="text-2xl font-black mb-4">{slide.title}</h3>
                   <p className="text-slate-300 leading-relaxed text-lg">{slide.body}</p>
                 </div>
-                <div className="w-1/2 p-6 flex items-center justify-center bg-black/40">
+                <div className="w-full lg:w-1/2 p-6 flex items-center justify-center bg-black/40">
                   <div className="w-full aspect-square border border-border rounded-xl overflow-hidden shadow-2xl">
                     <BoardView fen={slide.fen} arePiecesDraggable={false} />
                   </div>

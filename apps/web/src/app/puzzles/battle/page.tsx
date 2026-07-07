@@ -247,7 +247,7 @@ export default function PuzzleBattlePage() {
   const userWins = userScore > botScore;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/20">
@@ -292,8 +292,8 @@ export default function PuzzleBattlePage() {
         )}
 
         {phase === "playing" && puzzle && chess && (
-          <div className="grid grid-cols-12 gap-8">
-            <div className="col-span-7">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7">
               <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen={chess.fen()}
@@ -303,7 +303,7 @@ export default function PuzzleBattlePage() {
                 />
               </div>
             </div>
-            <div className="col-span-5 flex flex-col gap-4">
+            <div className="lg:col-span-5 flex flex-col gap-4">
               {/* Timer */}
               <div className="text-center p-4 bg-card border border-border rounded-2xl">
                 <div className={`text-4xl font-black tabular-nums ${timeLeft <= 30 ? "text-rose-400 animate-pulse" : "text-foreground"}`}>

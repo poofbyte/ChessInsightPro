@@ -95,8 +95,8 @@ export const useChessStore = create<ChessStore>()(
       activeTab: 0,
       boardOrientation: "white",
       engineVersion: "18",
-      boardTheme: "teal",
-      theme: "dark",
+      boardTheme: "classicLight",
+      theme: "light",
 
       setGame: (game) => set({
         game,

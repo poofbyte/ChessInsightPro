@@ -226,14 +226,14 @@ export default function RootReviewPage() {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-[1600px] mx-auto space-y-6">
         
         {game ? (
           /* ACTIVE GAME REVIEW STATE */
-          <div className="grid grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
             {/* Left: Board, Eval, and Controls */}
-            <div className="col-span-7 flex flex-col gap-4">
+            <div className="lg:col-span-7 flex flex-col gap-4">
               
               <div className="flex justify-between items-center bg-card/60 border border-border p-4 rounded-2xl">
                 <div className="flex items-center gap-2">
@@ -306,7 +306,7 @@ export default function RootReviewPage() {
             </div>
 
             {/* Right: Analysis & Feedback Panel */}
-            <div className="col-span-5 flex flex-col gap-4">
+            <div className="lg:col-span-5 flex flex-col gap-4">
               {/* Eval score */}
               <div className="p-5 bg-card/80 border border-border rounded-2xl text-center shadow-lg">
                 <span className={`text-4xl font-black tracking-tight ${evalState.isWhiteAhead ? "text-foreground" : "text-slate-600 dark:text-slate-400"}`}>
@@ -367,10 +367,10 @@ export default function RootReviewPage() {
           </div>
         ) : (
           /* EMPTY STATE - UPLOAD / RESOLVE GAME */
-          <div className="grid grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
             
             {/* Left Column: Visual Starting Board */}
-            <div className="col-span-6 flex flex-col gap-4">
+            <div className="lg:col-span-6 flex flex-col gap-4">
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Board Preview</h2>
               <div className="w-full aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                 <BoardView fen="start" arePiecesDraggable={false} />
@@ -378,7 +378,7 @@ export default function RootReviewPage() {
             </div>
 
             {/* Right Column: Paste Box and Previous reviews list */}
-            <div className="col-span-6 flex flex-col gap-6">
+            <div className="lg:col-span-6 flex flex-col gap-6">
               
               {/* Main uploader card */}
               <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl space-y-6">

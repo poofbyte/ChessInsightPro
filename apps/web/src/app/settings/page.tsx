@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
-import { Settings, Cpu, Palette, CheckCircle } from "lucide-react";
+import { Settings, Cpu, Palette, CheckCircle, MessageSquare } from "lucide-react";
+import ContactForm from "@/components/ContactForm";
 import { BoardView } from "../../components/BoardView";
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
@@ -107,6 +108,18 @@ export default function SettingsPage() {
               </button>
             ))}
           </div>
+        </section>
+
+        {/* Contact Us */}
+        <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-teal-400" />
+            <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">Contact Us</h2>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
+            Have a question, bug report, or feature request? Send us a message.
+          </p>
+          <ContactForm />
         </section>
 
         {/* Legal */}

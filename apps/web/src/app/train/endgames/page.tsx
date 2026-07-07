@@ -121,7 +121,7 @@ export default function EndgamesPage() {
     d === "Intermediate" ? "text-amber-400 bg-amber-500/10" : "text-rose-400 bg-rose-500/10";
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-yellow-500/15 border border-yellow-500/20">
@@ -133,9 +133,9 @@ export default function EndgamesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* List */}
-          <div className="col-span-5 flex flex-col gap-4">
+          <div className="lg:col-span-5 flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
               {categories.map((c) => (
                 <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
@@ -158,7 +158,7 @@ export default function EndgamesPage() {
           </div>
 
           {/* Board + Info */}
-          <div className="col-span-7 flex flex-col gap-4">
+          <div className="lg:col-span-7 flex flex-col gap-4">
             {selected && chess ? (
               <>
                 <div className="aspect-square rounded-2xl overflow-hidden border border-border">
