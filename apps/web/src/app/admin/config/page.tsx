@@ -63,7 +63,10 @@ export default function AdminConfigPage() {
           <p className="text-slate-500">Loading configuration...</p>
         ) : (
           <div className="space-y-6">
-            {Object.entries(config).map(([key, value]) => (
+            {Object.keys(config).length === 0 ? (
+              <p className="text-slate-500 italic">No configurations found. Add one below.</p>
+            ) : (
+              Object.entries(config).map(([key, value]) => (
               <div key={key} className="flex items-start gap-4 p-4 bg-black/5 dark:bg-slate-900 rounded-2xl border border-border">
                 <div className="flex-1 space-y-2">
                   <label className="font-bold font-mono text-teal-500">{key}</label>
