@@ -18,9 +18,10 @@ export async function GET(req: Request) {
     const rules = await contentService.getPublishedContent("rules") || [];
     const lessons = await contentService.getPublishedContent("lessons") || [];
     const terms = await contentService.getPublishedContent("terms") || [];
+    const openings = await contentService.getPublishedContent("openings") || {};
     const site_settings = await contentService.getPublishedContent("site-settings") || {};
 
-    return NextResponse.json({ ...config, rules, lessons, terms, site_settings });
+    return NextResponse.json({ ...config, rules, lessons, terms, openings, site_settings });
   } catch (error) {
     console.error("Admin content fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
     await ensureDbReady();
     const body = await req.json();
 
-    const cmsKeys = ["rules", "lessons", "terms", "site_settings"];
+    const cmsKeys = ["rules", "lessons", "terms", "openings", "site_settings"];
 
     for (const [key, value] of Object.entries(body)) {
       if (cmsKeys.includes(key)) {

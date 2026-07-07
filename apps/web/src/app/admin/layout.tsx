@@ -34,7 +34,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/upgrade-requests", label: "Billing Queue", icon: <CreditCard className="w-5 h-5" /> },
     { href: "/admin/puzzles", label: "Puzzles", icon: <Puzzle className="w-5 h-5" /> },
     { href: "/admin/billing", label: "Billing", icon: <ReceiptText className="w-5 h-5" /> },
-    { href: "/admin/pricing", label: "Pricing", icon: <DollarSign className="w-5 h-5" /> },
     { href: "/admin/config", label: "System Config", icon: <Settings className="w-5 h-5" /> },
     { href: "/admin/activity-logs", label: "Activity Logs", icon: <ClipboardList className="w-5 h-5" /> },
     { href: "/admin/content", label: "Content", icon: <BookOpenText className="w-5 h-5" /> },
