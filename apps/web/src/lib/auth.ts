@@ -17,3 +17,12 @@ export function requireAuth(req: Request): { userId: string } | NextResponse {
   
   return decoded;
 }
+
+export function getAdminUserId(req: Request): string | null {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.split(" ")[1];
+  const decoded = verifyAccessToken(token, process.env.JWT_ACCESS_SECRET || "default_access");
+  if (!decoded || decoded.role !== "ADMIN") return null;
+  return decoded.userId;
+}

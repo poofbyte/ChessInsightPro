@@ -43,7 +43,10 @@ export async function GET(req: Request) {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const offset = (page - 1) * limit;
 
-    const countResult = await dbClient.execute(`SELECT COUNT(*) as total FROM activity_logs a JOIN users u ON a.user_id = u.id ${where}`);
+    const countResult = await dbClient.execute({
+      sql: `SELECT COUNT(*) as total FROM activity_logs a JOIN users u ON a.user_id = u.id ${where}`,
+      args
+    });
     const total = (countResult.rows[0] as any).total;
 
     const result = await dbClient.execute({
@@ -71,3 +74,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

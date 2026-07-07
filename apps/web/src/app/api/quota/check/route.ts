@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
-import { checkAndConsumeQuota, EventType } from "@core/quota";
+import { checkQuota, EventType } from "@core/quota";
 import { getAllConfig } from "@core/config";
 
 function resolveQuotaLimits(pricingConfig: any, planId: string) {
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
       plans[p.id.toUpperCase()] = p.quotaLimits || {};
     }
 
-    const result = await checkAndConsumeQuota(dbClient as any, userId, feature, plans, plan);
+    const result = await checkQuota(dbClient as any, userId, feature, plans, plan);
 
     return NextResponse.json({ allowed: result.allowed, plan });
   } catch (error) {

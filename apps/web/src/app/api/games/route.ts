@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { consumeQuota } from "@core/quota";
 
 export async function GET(req: Request) {
   try {
@@ -53,6 +54,10 @@ export async function POST(req: Request) {
                 analysis = excluded.analysis`,
         args: [game.id, authResult.userId, game.pgn, headersJson, analysisJson]
       });
+    }
+
+    if (games.length > 0) {
+      await consumeQuota(dbClient as any, authResult.userId, "review");
     }
     
     return NextResponse.json({ success: true });

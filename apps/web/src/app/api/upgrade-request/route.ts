@@ -3,6 +3,7 @@ import { dbClient, ensureDbReady } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { sendAdminUpgradeRequestNotification } from "@core/email";
+import { getAllConfig } from "@core/config";
 
 export async function POST(req: Request) {
   try {
@@ -29,10 +30,16 @@ export async function POST(req: Request) {
     const userEmail = sessionRes.rows[0].email as string;
     
     // Parse body
-    const { plan, customPriceBdt, customQuotas, verificationDetails } = await req.json();
+    const { plan, customQuotas, verificationDetails } = await req.json();
     
     const normalizedPlan = (plan || "").toUpperCase();
-    const price = Number(customPriceBdt) || 0;
+    
+    // Security: Calculate price server-side
+    const config = await getAllConfig(dbClient as any);
+    const pricingConfig = config.pricing_config || { plans: [] };
+    const foundPlan = pricingConfig.plans.find((p: any) => p.id.toUpperCase() === normalizedPlan);
+    
+    const price = foundPlan ? Number(foundPlan.priceBdt) || 0 : 0;
     
     const requestId = crypto.randomUUID();
     

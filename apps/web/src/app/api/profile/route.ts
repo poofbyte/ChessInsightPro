@@ -39,18 +39,22 @@ export async function PUT(req: Request) {
     if (authResult instanceof NextResponse) return authResult;
     
     const body = await req.json();
+    
+    if (body.elo !== undefined || body.estimatedElo !== undefined) {
+      return NextResponse.json({ error: "The 'elo' field is protected and managed server-side." }, { status: 400 });
+    }
+
     const accuracyHistoryStr = body.accuracyHistory ? JSON.stringify(body.accuracyHistory) : null;
     const weaknessesStr = body.weaknesses ? JSON.stringify(body.weaknesses) : null;
     
     await dbClient.execute({
-      sql: `INSERT INTO profiles (user_id, elo, accuracy_history, weaknesses, updated_at) 
-            VALUES (?, ?, ?, ?, datetime('now'))
+      sql: `INSERT INTO profiles (user_id, accuracy_history, weaknesses, updated_at) 
+            VALUES (?, ?, ?, datetime('now'))
             ON CONFLICT(user_id) DO UPDATE SET 
-              elo = excluded.elo, 
               accuracy_history = excluded.accuracy_history, 
               weaknesses = excluded.weaknesses,
               updated_at = excluded.updated_at`,
-      args: [authResult.userId, body.elo || 1200, accuracyHistoryStr, weaknessesStr]
+      args: [authResult.userId, accuracyHistoryStr, weaknessesStr]
     });
     
     return NextResponse.json({ success: true });

@@ -18,7 +18,7 @@ export interface QuotaResult {
   remaining?: number;
 }
 
-export async function checkAndConsumeQuota(
+export async function checkQuota(
   client: Client,
   userId: string,
   eventType: EventType,
@@ -36,7 +36,7 @@ export async function checkAndConsumeQuota(
     : (eventType === "review" ? plan.reviewsPerMonth : plan.practiceRushPuzzlePerMonth);
 
   if (limit === undefined) {
-    return { allowed: true }; // Unlimited if not specified
+    return { allowed: true }; 
   }
 
   const timeFilter = isDaily ? `datetime('now', 'start of day')` : `datetime('now', 'start of month')`;
@@ -59,14 +59,24 @@ export async function checkAndConsumeQuota(
     };
   }
 
-  // Consume
+  return {
+    allowed: true,
+    remaining: limit - count
+  };
+}
+
+export async function consumeQuota(
+  client: Client,
+  userId: string,
+  eventType: EventType
+): Promise<void> {
   await client.execute({
     sql: `INSERT INTO usage_events (id, user_id, event_type) VALUES (?, ?, ?)`,
     args: [crypto.randomUUID(), userId, eventType]
   });
+}
 
-  return {
-    allowed: true,
-    remaining: limit - count - 1
-  };
+// Ensure old method crashes if not updated
+export async function checkAndConsumeQuota(): Promise<any> {
+  throw new Error("checkAndConsumeQuota is deprecated. Use checkQuota and consumeQuota separately.");
 }

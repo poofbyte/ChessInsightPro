@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { verifyPassword, generateTokens } from "@core/auth";
+import { verifyPassword, generateTokens, checkLoginRateLimit, recordLoginAttempt } from "@core/auth";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
@@ -14,12 +14,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
     }
     
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+
+    // 1. Check Rate Limits
+    const rateLimit = await checkLoginRateLimit(dbClient as any, ip, email);
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: rateLimit.reason }, { status: 429 });
+    }
+    
     const result = await dbClient.execute({
       sql: `SELECT id, password_hash, plan, role, is_banned, ban_reason FROM users WHERE email = ?`,
       args: [email]
     });
     
     if (result.rows.length === 0) {
+      await recordLoginAttempt(dbClient as any, ip, email, false);
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
     
@@ -33,8 +42,11 @@ export async function POST(req: Request) {
     const isValid = await verifyPassword(password, user.password_hash as string);
     
     if (!isValid) {
+      await recordLoginAttempt(dbClient as any, ip, email, false);
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
+
+    await recordLoginAttempt(dbClient as any, ip, email, true);
     
     // Generate tokens
     const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
@@ -48,7 +60,6 @@ export async function POST(req: Request) {
     const sessionId = crypto.randomUUID();
     
     const userAgent = req.headers.get("user-agent") || "";
-    const ip = req.headers.get("x-forwarded-for") || "";
     
     await dbClient.execute({
       sql: `INSERT INTO sessions (id, user_id, refresh_token_hash, expires_at, user_agent, ip) VALUES (?, ?, ?, datetime('now', '+30 days'), ?, ?)`,

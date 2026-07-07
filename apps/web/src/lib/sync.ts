@@ -23,7 +23,8 @@ export async function syncDataWithServer(token: string) {
     // 2. Sync Profile
     const localProfile = await db.profiles.toCollection().first();
     if (localProfile) {
-      await fetch("/api/profile", { method: "PUT", headers, body: JSON.stringify(localProfile) });
+      const { elo, estimatedElo, ...profilePayload } = localProfile as any;
+      await fetch("/api/profile", { method: "PUT", headers, body: JSON.stringify(profilePayload) });
     }
     const serverProfileRes = await fetch("/api/profile", { headers });
     if (serverProfileRes.ok) {

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { PuzzleRatingService } from "@/lib/rating";
+import { consumeQuota } from "@core/quota";
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +13,27 @@ export async function POST(req: Request) {
     const body = await req.json();
     const attempts = Array.isArray(body) ? body : [body];
     
+    // Fetch current Elo
+    const userRes = await dbClient.execute({
+      sql: `SELECT elo FROM profiles WHERE user_id = ?`,
+      args: [authResult.userId]
+    });
+    let currentElo = userRes.rows.length > 0 ? (userRes.rows[0].elo as number) : 1200;
+
+    const statements: any[] = [];
+    
     for (const attempt of attempts) {
       if (!attempt.id || !attempt.puzzleId) continue;
       
-      await dbClient.execute({
+      const hintsUsed = attempt.hintsUsed || 0;
+      const mistakes = attempt.mistakes || 0;
+      // We assume logged attempts are solved unless explicitly stated otherwise.
+      const isSolved = attempt.isSolved !== false; 
+      
+      const eloChange = PuzzleRatingService.calculateEloChange(isSolved, hintsUsed, mistakes);
+      currentElo = PuzzleRatingService.calculateNewElo(currentElo, eloChange);
+      
+      statements.push({
         sql: `INSERT INTO puzzle_attempts (id, user_id, puzzle_id, mode, hints_used, mistakes, elo_change, solved_at) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(id) DO NOTHING`,
@@ -23,15 +42,29 @@ export async function POST(req: Request) {
           authResult.userId, 
           attempt.puzzleId, 
           attempt.mode || "unknown", 
-          attempt.hintsUsed || 0, 
-          attempt.mistakes || 0, 
-          attempt.eloChange || 0, 
+          hintsUsed, 
+          mistakes, 
+          eloChange, 
           attempt.solvedAt || new Date().toISOString()
         ]
       });
     }
+
+    if (statements.length > 0) {
+      statements.push({
+        sql: `UPDATE profiles SET elo = ? WHERE user_id = ?`,
+        args: [currentElo, authResult.userId]
+      });
+      await dbClient.batch(statements, "write");
+    }
+
+    // Atomically consume quota for the session
+    const hasRush = attempts.some(a => a.mode === "rush");
+    if (hasRush) {
+      await consumeQuota(dbClient as any, authResult.userId, "practiceRushPuzzle");
+    }
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, updatedElo: currentElo });
   } catch (error) {
     console.error("POST puzzle-attempts error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

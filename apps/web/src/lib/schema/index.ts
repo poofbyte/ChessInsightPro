@@ -106,6 +106,17 @@ export const signupAttemptsTable: TableDefinition = {
   ],
 };
 
+export const loginAttemptsTable: TableDefinition = {
+  name: "login_attempts",
+  columns: [
+    { name: "id", type: "TEXT PRIMARY KEY" },
+    { name: "ip", type: "TEXT NOT NULL" },
+    { name: "email", type: "TEXT" },
+    { name: "success", type: "INTEGER NOT NULL DEFAULT 0" },
+    { name: "created_at", type: "TEXT NOT NULL DEFAULT (datetime('now'))" },
+  ],
+};
+
 export const generatedPuzzlesTable: TableDefinition = {
   name: "generated_puzzles",
   columns: [
@@ -199,6 +210,7 @@ export const ALL_TABLES: TableDefinition[] = [
   puzzleAttemptsTable,
   usageEventsTable,
   signupAttemptsTable,
+  loginAttemptsTable,
   generatedPuzzlesTable,
   pendingUpgradeRequestsTable,
   systemConfigTable,
