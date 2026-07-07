@@ -225,8 +225,7 @@ export const getIsPieceSacrifice = (
         nonCapturingMovesTemp--;
         if (nonCapturingMovesTemp < 0) break;
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       return false;
     }
   }
