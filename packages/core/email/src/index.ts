@@ -1,20 +1,56 @@
-import { Resend } from 'resend';
+import nodemailer from "nodemailer";
 
-// Helper to get Resend instance safely
-function getResend() {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn("[Email] RESEND_API_KEY is not set. Emails will not be actually sent, only logged.");
+let transporter: nodemailer.Transporter | null = null;
+
+function getTransporter() {
+  if (transporter) return transporter;
+
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!user || !pass) {
+    console.warn("[Email] SMTP_USER or SMTP_PASS not set. Emails will not be actually sent, only logged.");
     return null;
   }
-  return new Resend(apiKey);
+
+  transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+
+  return transporter;
 }
 
-const DEFAULT_SENDER = process.env.RESEND_FROM_EMAIL || "ChessInsight Pro <onboarding@resend.dev>";
+const DEFAULT_FROM = process.env.EMAIL_FROM || process.env.SMTP_USER || "noreply@chessinsight.pro";
+
+async function sendMail({ to, subject, html, text }: { to: string; subject: string; html: string; text?: string }) {
+  const t = getTransporter();
+  if (!t) {
+    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
+    if (text) console.log(`[STUB EMAIL] Content: ${text}`);
+    return { success: true, stub: true };
+  }
+
+  try {
+    const info = await t.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject,
+      html,
+      text,
+    });
+    return { success: true, data: { messageId: info.messageId } };
+  } catch (error) {
+    console.error("[Email Error] sendMail failed:", error);
+    return { success: false, error };
+  }
+}
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  const resend = getResend();
-  
   const subject = "Reset your ChessInsight Pro password";
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -28,34 +64,10 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
       <p style="color: #64748b; font-size: 12px; margin-top: 40px;">This link will expire in 1 hour.</p>
     </div>
   `;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    console.log(`[STUB EMAIL] Content: Reset URL is ${resetUrl}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html
-    });
-    if (result.error) {
-      console.error("[Email Error] sendPasswordResetEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendPasswordResetEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html });
 }
 
 export async function sendWelcomeEmail(to: string) {
-  const resend = getResend();
-  
   const subject = "Welcome to ChessInsight Pro!";
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -68,33 +80,10 @@ export async function sendWelcomeEmail(to: string) {
       </div>
     </div>
   `;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html
-    });
-    if (result.error) {
-      console.error("[Email Error] sendWelcomeEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendWelcomeEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html });
 }
 
 export async function sendUpgradeApprovedEmail(to: string, plan: string, price: string | number) {
-  const resend = getResend();
-  
   const subject = "Your ChessInsight Pro Upgrade is Approved! 🎉";
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -107,33 +96,10 @@ export async function sendUpgradeApprovedEmail(to: string, plan: string, price: 
       <p>Thank you for supporting ChessInsight Pro!</p>
     </div>
   `;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html
-    });
-    if (result.error) {
-      console.error("[Email Error] sendUpgradeApprovedEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendUpgradeApprovedEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html });
 }
 
 export async function sendUpgradeRejectedEmail(to: string, reason?: string) {
-  const resend = getResend();
-  
   const subject = "Update regarding your ChessInsight Pro Upgrade";
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -143,33 +109,10 @@ export async function sendUpgradeRejectedEmail(to: string, reason?: string) {
       <p>If you believe this is a mistake, or if you need help completing your payment, please reply directly to this email or contact our support team.</p>
     </div>
   `;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html
-    });
-    if (result.error) {
-      console.error("[Email Error] sendUpgradeRejectedEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendUpgradeRejectedEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html });
 }
 
 export async function sendContactConfirmationEmail(to: string, name: string) {
-  const resend = getResend();
-
   const subject = "We received your message - ChessInsight Pro";
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -190,35 +133,10 @@ export async function sendContactConfirmationEmail(to: string, name: string) {
     </div>
   `;
   const text = `Thank you for contacting us, ${name}! We've received your message and will get back to you as soon as possible.`;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    console.log(`[STUB EMAIL] Content: ${text}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html,
-      text,
-    });
-    if (result.error) {
-      console.error("[Email Error] sendContactConfirmationEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendContactConfirmationEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html, text });
 }
 
 export async function sendContactReplyEmail(to: string, name: string, replyBody: string, originalSubject: string) {
-  const resend = getResend();
-
   const subject = `Re: ${originalSubject} - ChessInsight Pro`;
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -239,35 +157,10 @@ export async function sendContactReplyEmail(to: string, name: string, replyBody:
     </div>
   `;
   const text = `Hello ${name},\n\nOur team has replied to your message regarding "${originalSubject}":\n\n${replyBody}\n\nIf you have any further questions, feel free to reply to this email.`;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${to} | Subject: ${subject}`);
-    console.log(`[STUB EMAIL] Content: ${text}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to,
-      subject,
-      html,
-      text,
-    });
-    if (result.error) {
-      console.error("[Email Error] sendContactReplyEmail failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendContactReplyEmail failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to, subject, html, text });
 }
 
 export async function sendAdminUpgradeRequestNotification(userEmail: string, plan: string, price: number | string, quotas: any) {
-  const resend = getResend();
-  
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "hiranmayroy183@gmail.com";
   const subject = `[Admin] New Upgrade Request from ${userEmail}`;
   const html = `
@@ -282,26 +175,5 @@ export async function sendAdminUpgradeRequestNotification(userEmail: string, pla
       </div>
     </div>
   `;
-
-  if (!resend) {
-    console.log(`[STUB EMAIL] To: ${adminEmail} | Subject: ${subject}`);
-    return { success: true, stub: true };
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: DEFAULT_SENDER,
-      to: adminEmail,
-      subject,
-      html
-    });
-    if (result.error) {
-      console.error("[Email Error] sendAdminUpgradeRequestNotification failed:", result.error);
-      return { success: false, error: result.error };
-    }
-    return { success: true, data: result.data };
-  } catch (error) {
-    console.error("[Email Error] sendAdminUpgradeRequestNotification failed:", error);
-    return { success: false, error };
-  }
+  return sendMail({ to: adminEmail, subject, html });
 }
