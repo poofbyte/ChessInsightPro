@@ -34,13 +34,11 @@ export async function ensureDbReady() {
         if (adminEmail && adminPassword) {
           const adminCheck = await dbClient.execute(`SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1`);
           if (adminCheck.rows.length === 0) {
-            console.log("Bootstrapping first ADMIN user...");
             const hashed = await hashPassword(adminPassword);
             await dbClient.execute({
               sql: `INSERT INTO users (id, email, password_hash, plan, role) VALUES (?, ?, ?, ?, ?)`,
               args: [crypto.randomUUID(), adminEmail, hashed, "FREE", "ADMIN"]
             });
-            console.log("Admin user bootstrapped successfully.");
           }
         }
 

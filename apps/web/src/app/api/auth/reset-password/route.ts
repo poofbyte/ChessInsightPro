@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { hashPassword, getAccessSecret } from "@core/auth";
+import { hashPassword, getPasswordResetSecret } from "@core/auth";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid token or password" }, { status: 400 });
     }
 
-    const secret = getAccessSecret();
+    const secret = getPasswordResetSecret();
     
     // Decode token
     let decodedStr: string;

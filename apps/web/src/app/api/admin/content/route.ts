@@ -36,18 +36,32 @@ export async function POST(req: Request) {
     await ensureDbReady();
     const body = await req.json();
 
+    if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
+      return NextResponse.json({ error: "Request body must be a non-empty object" }, { status: 400 });
+    }
+
+    const results: string[] = [];
+    const errors: string[] = [];
     const cmsKeys = ["rules", "lessons", "terms", "openings", "site_settings"];
 
     for (const [key, value] of Object.entries(body)) {
-      if (cmsKeys.includes(key)) {
-        const slug = key === "site_settings" ? "site-settings" : key;
-        await contentService.publishContent(slug, key, value, adminId, "Admin Update");
-      } else {
-        await setConfig(dbClient, key, value, adminId);
+      try {
+        if (cmsKeys.includes(key)) {
+          const slug = key === "site_settings" ? "site-settings" : key;
+          await contentService.publishContent(slug, key, value, adminId, "Admin Update");
+          results.push(`CMS content "${key}" saved`);
+        } else {
+          await setConfig(dbClient, key, value, adminId);
+          results.push(`Config key "${key}" saved`);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        console.error(`Failed to save key "${key}":`, msg);
+        errors.push(`Key "${key}" failed: ${msg}`);
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: errors.length === 0, results, errors });
   } catch (error) {
     console.error("Admin content save error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -15,6 +15,13 @@ export function getRefreshSecret(): string {
   return secret;
 }
 
+export function getPasswordResetSecret(): string {
+  const secret = process.env.JWT_PASSWORD_RESET_SECRET;
+  if (secret) return secret;
+  console.warn("JWT_PASSWORD_RESET_SECRET not set, falling back to JWT_ACCESS_SECRET for password reset HMAC");
+  return getAccessSecret();
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, 10);
 }

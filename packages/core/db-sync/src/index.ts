@@ -55,12 +55,16 @@ export async function ensureSchema(client: Client, tables: TableDefinition[]) {
         .filter(name => existingColumns.has(name))
         .join(", ");
 
-      await client.execute(`ALTER TABLE ${safeTable} RENAME TO ${backupName}`);
-      await client.execute(`CREATE TABLE ${safeTable} (${colDefs})`);
+      const statements: { sql: string; args: any[] }[] = [
+        { sql: `ALTER TABLE ${safeTable} RENAME TO ${backupName}`, args: [] },
+        { sql: `CREATE TABLE ${safeTable} (${colDefs})`, args: [] },
+      ];
 
       if (commonCols.length > 0) {
-        await client.execute(`INSERT INTO ${safeTable} (${commonCols}) SELECT ${commonCols} FROM ${backupName}`);
+        statements.push({ sql: `INSERT INTO ${safeTable} (${commonCols}) SELECT ${commonCols} FROM ${backupName}`, args: [] });
       }
+
+      await client.batch(statements);
 
       console.log(`Migration for ${safeTable} complete. Old data preserved in ${backupName}`);
     }
