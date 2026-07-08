@@ -59,6 +59,8 @@ export default function CoordinatesPage() {
     setPhase("playing");
   };
 
+  const [nameInput, setNameInput] = useState("");
+
   const handleSquareClick = useCallback((square: string) => {
     if (phase !== "playing" || mode !== "find-square") return;
     if (square === target) {
@@ -75,6 +77,26 @@ export default function CoordinatesPage() {
       setTimeout(() => setFlash(null), 300);
     }
   }, [phase, mode, target]);
+
+  const handleNameSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (phase !== "playing" || mode !== "name-square" || !nameInput.trim()) return;
+    const guess = nameInput.trim().toLowerCase();
+    if (guess === target) {
+      setFlash("correct");
+      setScore((s) => s + 1);
+      setTarget(getRandomSquare());
+      setTimeout(() => setFlash(null), 300);
+      const audio = new Audio("/sounds/move.webm");
+      audio.volume = 0.4;
+      audio.play().catch(() => {});
+    } else {
+      setFlash("wrong");
+      setErrors((e) => e + 1);
+      setTimeout(() => setFlash(null), 300);
+    }
+    setNameInput("");
+  }, [phase, mode, target, nameInput]);
 
   const accuracy = score + errors > 0 ? Math.round((score / (score + errors)) * 100) : 0;
 
@@ -133,8 +155,28 @@ export default function CoordinatesPage() {
             <div className="lg:col-span-5 flex flex-col gap-4">
               {/* Target */}
               <div className="p-6 bg-card border border-border rounded-2xl text-center">
-                <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Click this square</p>
-                <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400 font-mono">{target}</div>
+                {mode === "find-square" ? (
+                  <>
+                    <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Click this square</p>
+                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400 font-mono">{target}</div>
+                  </>
+                ) : (
+                  <form onSubmit={handleNameSubmit} className="space-y-3">
+                    <p className="text-xs text-slate-500 uppercase tracking-widest">Type the highlighted square</p>
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="e.g. e4"
+                      maxLength={2}
+                      autoFocus
+                      className="w-full text-center text-3xl font-black font-mono py-3 bg-transparent border border-border rounded-xl focus:outline-none focus:border-rose-500 transition-colors placeholder:text-slate-600"
+                    />
+                    <button type="submit" className="w-full py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-400 transition text-sm">
+                      Submit
+                    </button>
+                  </form>
+                )}
               </div>
               {/* Timer */}
               <div className={`p-5 bg-card border border-border rounded-2xl text-center ${timeLeft <= 10 ? "border-rose-500/50" : ""}`}>
