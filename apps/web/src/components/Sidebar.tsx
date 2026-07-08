@@ -9,7 +9,8 @@ import {
   Puzzle, Zap, Swords, Grid3X3,
   GraduationCap, Bot, Map, AlignLeft, ScrollText, Target,
   BarChart2, Trophy, Dumbbell, Sun, Moon,
-  User, LogIn, UserPlus, CreditCard, Flame
+  User, LogIn, UserPlus, CreditCard, Flame,
+  LayoutDashboard, Users, FileText, ReceiptText, BookOpenText, ClipboardList, MessageSquare, ArrowLeft
 } from "lucide-react";
 import { useChessStore } from "../app/store";
 import { useAuthStore } from "../app/store";
@@ -61,7 +62,24 @@ const NAV_SECTIONS = [
   },
 ];
 
-export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; gamesPlayed?: number }) {
+const ADMIN_SECTIONS = [
+  {
+    section: "Admin Panel",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/users", label: "Users", icon: Users },
+      { href: "/admin/upgrade-requests", label: "Billing Queue", icon: CreditCard },
+      { href: "/admin/puzzles", label: "Puzzles", icon: Puzzle },
+      { href: "/admin/billing", label: "Billing", icon: ReceiptText },
+      { href: "/admin/contact-messages", label: "Contact Messages", icon: MessageSquare },
+      { href: "/admin/activity-logs", label: "Activity Logs", icon: ClipboardList },
+      { href: "/admin/content", label: "Content", icon: BookOpenText },
+      { href: "/admin/audit-log", label: "Audit Log", icon: FileText },
+    ],
+  },
+];
+
+export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estimatedElo?: number; gamesPlayed?: number; isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { theme, setTheme } = useChessStore();
   const { accessToken, user } = useAuthStore();
@@ -86,8 +104,21 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
     pathname === href || (href !== "/" && pathname.startsWith(href));
 
   return (
-    <aside className="w-60 shrink-0 border-r border-border bg-background flex flex-col h-full">
-      {/* Logo */}
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-50 w-72 lg:w-60 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shrink-0 border-r border-border bg-background flex flex-col h-full ${
+          isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+        }`}
+      >
+        {/* Logo */}
       <Link href="/" className="p-5 flex items-center gap-3 border-b border-border hover:bg-black/5 dark:hover:bg-black/10 dark:bg-slate-800/20 transition">
         <div className="p-2 rounded-lg bg-teal-500/20 text-teal-400">
           <Brain className="w-5 h-5 animate-pulse" />
@@ -100,8 +131,9 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-5">
-        {NAV_SECTIONS.map((group, gi) => {
+        {(pathname.startsWith("/admin") ? ADMIN_SECTIONS : NAV_SECTIONS).map((group, gi) => {
           const visibleItems = group.items.filter(item => {
+            if (pathname.startsWith("/admin")) return true;
             if (accessToken) {
               return item.href !== "/login" && item.href !== "/signup";
             } else {
@@ -123,6 +155,7 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
                   <Link
                   key={href}
                   href={href}
+                  onClick={onClose}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm ${
                     isActive(href)
                       ? "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-l-[3px] border-teal-500 pl-[9px] font-semibold"
@@ -138,7 +171,8 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
           );
         })}
         
-        {user?.role === "ADMIN" && (
+        
+        {!pathname.startsWith("/admin") && user?.role === "ADMIN" && (
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
               Administration
@@ -146,6 +180,7 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
             <div className="space-y-0.5">
               <Link
                 href="/admin"
+                onClick={onClose}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm ${
                   isActive("/admin")
                     ? "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-l-[3px] border-teal-500 pl-[9px] font-semibold"
@@ -158,10 +193,25 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
             </div>
           </div>
         )}
+
+        {pathname.startsWith("/admin") && (
+          <div>
+            <div className="space-y-0.5 mt-4 border-t border-border pt-4">
+              <Link
+                href="/"
+                onClick={onClose}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 font-medium"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Back to App</span>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Profile & Quota Recap */}
-      {(estimatedElo !== undefined || quotas) && (
+      {!pathname.startsWith("/admin") && (estimatedElo !== undefined || quotas) && (
         <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-slate-900/60 border border-teal-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
@@ -256,5 +306,6 @@ export function Sidebar({ estimatedElo, gamesPlayed }: { estimatedElo?: number; 
         </button>
       </div>
     </aside>
+    </>
   );
 }

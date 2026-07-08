@@ -9,6 +9,8 @@ import { AlertTriangle, Award, BookOpen, Target, TrendingUp, User, LogOut, Setti
 import { useAuthStore } from "@/app/store";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import { useRouter } from "next/navigation";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -84,25 +86,27 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex-1 flex items-center justify-center text-slate-500 text-sm italic">
-        No profile data yet. Analyze a game to build your player profile.
-      </div>
+      <PageContainer className="items-center justify-center">
+        <div className="text-slate-500 text-sm italic">
+          No profile data yet. Analyze a game to build your player profile.
+        </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-4xl" className="space-y-8">
         {/* Profile header */}
-        <div className="p-6 bg-gradient-to-r from-[#11182c] to-[#0a0f1d] border border-border rounded-2xl flex items-center gap-6">
-          <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20">
+        <div className="p-6 bg-gradient-to-r from-[#11182c] to-[#0a0f1d] border border-border rounded-2xl flex flex-col md:flex-row items-center text-center md:text-left gap-6">
+          <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 shrink-0">
             <Award className="w-10 h-10 text-teal-400" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-black text-white">Player Analytics</h1>
             <p className="text-slate-300 text-sm mt-1">Weakness profiling and personalized study plan based on your game history.</p>
           </div>
-          <div className="ml-auto text-right">
+          <div className="md:ml-auto md:text-right w-full md:w-auto">
             <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Estimated ELO</p>
             <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">
               {profile.estimatedElo}
@@ -323,9 +327,9 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-      </div>
+      </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="profile" />
-    </div>
+    </PageContainer>
   );
 }
 

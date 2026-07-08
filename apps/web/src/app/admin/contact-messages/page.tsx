@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/app/store";
 import { CONTACT_CATEGORIES } from "@/app/api/contact/schema";
 import { Search, Eye, X, Loader2, Send, RefreshCw, ShieldAlert, Archive, ArchiveRestore, Reply, CheckCircle } from "lucide-react";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All" },
@@ -329,100 +330,71 @@ export default function AdminContactMessagesPage() {
         </select>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden hidden md:block">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-black/5 dark:bg-slate-900 border-b border-border">
-              <tr>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Name</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Email</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Subject</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Category</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Replies</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Date</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr><td colSpan={8} className="p-8 text-center text-slate-500">Loading...</td></tr>
-              ) : messages.length === 0 ? (
-                <tr><td colSpan={8} className="p-8 text-center text-slate-500">No messages found.</td></tr>
-              ) : (
-                messages.map((msg) => (
-                  <tr key={msg.id} className="hover:bg-black/5 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="p-4 font-medium">{msg.name}</td>
-                    <td className="p-4 text-slate-500 text-xs">{msg.email}</td>
-                    <td className="p-4 font-medium max-w-[200px] truncate">{msg.subject}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${CATEGORY_COLORS[msg.category] || "bg-slate-500/10 text-slate-500"}`}>
-                        {getCategoryLabel(msg.category)}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${STATUS_BADGES[msg.status] || "bg-slate-500/10 text-slate-500"}`}>
-                        {getStatusLabel(msg.status)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs text-slate-500">{msg.reply_count}</td>
-                    <td className="p-4 text-xs text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</td>
-                    <td className="p-4 flex items-center gap-2">
-                      <button
-                        onClick={() => openDetail(msg)}
-                        className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-500 rounded-lg transition"
-                        title="View message"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ResponsiveTable
+        headers={["Name", "Email", "Subject", "Category", "Status", "Replies", "Date", "Actions"]}
+        data={messages}
+        keyExtractor={(msg) => msg.id}
+        renderRow={(msg, isMobile) => {
+          const categoryBadge = (
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${CATEGORY_COLORS[msg.category] || "bg-slate-500/10 text-slate-500"}`}>
+              {getCategoryLabel(msg.category)}
+            </span>
+          );
+          
+          const statusBadge = (
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${STATUS_BADGES[msg.status] || "bg-slate-500/10 text-slate-500"}`}>
+              {getStatusLabel(msg.status)}
+            </span>
+          );
+          
+          const actionBtn = (
+            <button
+              onClick={() => openDetail(msg)}
+              className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-500 rounded-lg transition"
+              title="View message"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+          );
 
-      <div className="space-y-3 md:hidden">
-        {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
-        ) : messages.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">No messages found.</div>
-        ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-sm truncate">{msg.subject}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{msg.name} &middot; {msg.email}</p>
+          if (isMobile) {
+            return (
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm truncate">{msg.subject}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{msg.name} &middot; {msg.email}</p>
+                  </div>
+                  <div className="shrink-0">{statusBadge}</div>
                 </div>
-                <span className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold ${STATUS_BADGES[msg.status] || "bg-slate-500/10 text-slate-500"}`}>
-                  {getStatusLabel(msg.status)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${CATEGORY_COLORS[msg.category] || "bg-slate-500/10 text-slate-500"}`}>
-                    {getCategoryLabel(msg.category)}
-                  </span>
-                  <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</span>
-                  {msg.reply_count > 0 && (
-                    <span className="text-[10px] text-teal-500">{msg.reply_count} replies</span>
-                  )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {categoryBadge}
+                    <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</span>
+                    {msg.reply_count > 0 && (
+                      <span className="text-[10px] text-teal-500">{msg.reply_count} replies</span>
+                    )}
+                  </div>
+                  {actionBtn}
                 </div>
-                <button
-                  onClick={() => openDetail(msg)}
-                  className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-500 rounded-lg transition"
-                  title="View message"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                </button>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            );
+          }
+
+          return (
+            <>
+              <td className="p-4 font-medium">{msg.name}</td>
+              <td className="p-4 text-slate-500 text-xs">{msg.email}</td>
+              <td className="p-4 font-medium max-w-[200px] truncate">{msg.subject}</td>
+              <td className="p-4">{categoryBadge}</td>
+              <td className="p-4">{statusBadge}</td>
+              <td className="p-4 text-xs text-slate-500">{msg.reply_count}</td>
+              <td className="p-4 text-xs text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</td>
+              <td className="p-4 flex items-center gap-2">{actionBtn}</td>
+            </>
+          );
+        }}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">

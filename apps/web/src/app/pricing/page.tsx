@@ -6,6 +6,8 @@ import { Check, Star, X } from "lucide-react";
 import { calculateCustomPrice } from "@core/pricing";
 import { useAuthStore } from "@/app/store";
 import ReactMarkdown from "react-markdown";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -108,8 +110,8 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background relative">
-      <div className="max-w-6xl mx-auto space-y-12">
+    <PageContainer className="relative">
+      <ContentContainer maxWidth="max-w-6xl" className="space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-black">{pageTitle}</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
@@ -246,7 +248,7 @@ export default function PricingPage() {
             </div>
           </div>
         )}
-      </div>
+      </ContentContainer>
 
       {/* Upgrade Modal */}
       {showModal && selectedPlan && (
@@ -364,6 +366,6 @@ export default function PricingPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

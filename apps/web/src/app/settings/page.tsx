@@ -6,6 +6,8 @@ import { useChessStore, BOARD_THEMES, BoardThemeId } from "../store";
 import { Settings, Cpu, Palette, CheckCircle, MessageSquare, Brain } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { BoardView } from "../../components/BoardView";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
 
@@ -29,8 +31,8 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-background">
-      <div className="max-w-2xl mx-auto space-y-8">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-2xl" className="space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-2xl bg-black/10 dark:bg-slate-800 border border-slate-700">
@@ -51,7 +53,7 @@ export default function SettingsPage() {
           <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
             {content.engineDesc}
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             {(["17", "18"] as const).map((v) => (
               <button
                 key={v}
@@ -135,7 +137,7 @@ export default function SettingsPage() {
         {/* Legal */}
         <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
           <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider">Legal</h2>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <a href="/privacy" className="flex-1 p-4 bg-black/5 dark:bg-slate-900 rounded-xl text-center hover:bg-teal-500/10 hover:border-teal-500/30 border border-transparent transition">
               <p className="font-bold text-sm text-foreground">Privacy Policy</p>
               <p className="text-[10px] text-slate-500 mt-1">How we handle your data</p>
@@ -185,7 +187,7 @@ export default function SettingsPage() {
 
           <p className="text-[10px] text-slate-500">&copy; {new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
         </section>
-      </div>
-    </div>
+      </ContentContainer>
+    </PageContainer>
   );
 }

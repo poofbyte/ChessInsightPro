@@ -6,6 +6,8 @@ import { BoardView } from "../../../components/BoardView";
 import { Map, ChevronRight, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/app/store";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
 
 const OPENINGS = [
   {
@@ -88,8 +90,8 @@ export default function OpeningsPage() {
   const filtered = filter === "All" ? OPENINGS : OPENINGS.filter((o) => o.category === filter);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-6xl mx-auto">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-6xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/20">
             <Map className="w-6 h-6 text-emerald-400" />
@@ -185,8 +187,8 @@ export default function OpeningsPage() {
             )}
           </div>
         </div>
-      </div>
+      </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="openings" />
-    </div>
+    </PageContainer>
   );
 }

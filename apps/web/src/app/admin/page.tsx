@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store";
 import { Users, Gamepad2, Puzzle, TrendingUp, Settings, ListCollapse, Check, X, Eye, ExternalLink } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 export default function AdminDashboardPage() {
   const { accessToken, user } = useAuthStore();
@@ -277,77 +278,90 @@ export default function AdminDashboardPage() {
         )}
 
         {activeTab === "requests" && (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-black/5 dark:bg-slate-900 text-slate-500 uppercase text-[10px] font-black tracking-widest">
-                  <tr>
-                    <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Requested Plan</th>
-                    <th className="px-6 py-4">Price</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {requests.map((r: any) => (
-                    <tr
-                      key={r.id}
-                      className={`transition-colors ${
-                        r.status === "PENDING"
-                          ? "cursor-pointer hover:bg-teal-500/5"
-                          : "opacity-60"
-                      }`}
-                      onClick={() => r.status === "PENDING" && setSelectedRequest(r)}
-                    >
-                      <td className="px-6 py-4 font-bold">{r.user_email}</td>
-                      <td className="px-6 py-4">
-                        {r.requested_plan === "TIER1" ? "Pro" : r.requested_plan === "TIER2" ? "Elite" : "Custom"}
-                      </td>
-                      <td className="px-6 py-4 font-bold">{r.requested_price_bdt} BDT</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${
-                          r.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' :
-                          r.status === 'APPROVED' ? 'bg-teal-500/10 text-teal-500' :
-                          'bg-rose-500/10 text-rose-500'
-                        }`}>
-                          {r.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {r.status === "PENDING" ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-teal-500 font-bold flex items-center gap-1">
-                              <Eye className="w-3 h-3" /> Review
-                            </span>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "APPROVE"); }}
-                              disabled={processingId === r.id}
-                              className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 rounded-lg disabled:opacity-40"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "REJECT"); }}
-                              disabled={processingId === r.id}
-                              className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 rounded-lg disabled:opacity-40"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-500 italic">Processed</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {requests.length === 0 && (
-                    <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">No upgrade requests found.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ResponsiveTable
+            headers={["User", "Requested Plan", "Price", "Status", "Actions"]}
+            data={requests}
+            keyExtractor={(r) => r.id}
+            renderRow={(r, isMobile) => {
+              const statusBadge = (
+                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${
+                  r.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' :
+                  r.status === 'APPROVED' ? 'bg-teal-500/10 text-teal-500' :
+                  'bg-rose-500/10 text-rose-500'
+                }`}>
+                  {r.status}
+                </span>
+              );
+
+              const actions = r.status === "PENDING" ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-teal-500 font-bold flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> Review
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "APPROVE"); }}
+                    disabled={processingId === r.id}
+                    className="p-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 rounded-lg disabled:opacity-40"
+                  >
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleProcessRequest(r.id, "REJECT"); }}
+                    disabled={processingId === r.id}
+                    className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 rounded-lg disabled:opacity-40"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <span className="text-[10px] text-slate-500 italic">Processed</span>
+              );
+
+              if (isMobile) {
+                return (
+                  <div 
+                    className={`flex flex-col gap-3 w-full ${r.status === "PENDING" ? "cursor-pointer" : "opacity-60"}`}
+                    onClick={() => r.status === "PENDING" && setSelectedRequest(r)}
+                  >
+                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                      <span className="font-bold text-sm">{r.user_email}</span>
+                      {statusBadge}
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Plan:</span>
+                      <span className="font-bold">{r.requested_plan === "TIER1" ? "Pro" : r.requested_plan === "TIER2" ? "Elite" : "Custom"}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Price:</span>
+                      <span className="font-bold text-teal-500">{r.requested_price_bdt} BDT</span>
+                    </div>
+                    <div className="flex justify-end pt-2 border-t border-border/50 mt-1">
+                      {actions}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <tr
+                  className={`transition-colors ${
+                    r.status === "PENDING"
+                      ? "cursor-pointer hover:bg-teal-500/5"
+                      : "opacity-60"
+                  }`}
+                  onClick={() => r.status === "PENDING" && setSelectedRequest(r)}
+                >
+                  <td className="p-4 font-bold">{r.user_email}</td>
+                  <td className="p-4">
+                    {r.requested_plan === "TIER1" ? "Pro" : r.requested_plan === "TIER2" ? "Elite" : "Custom"}
+                  </td>
+                  <td className="p-4 font-bold">{r.requested_price_bdt} BDT</td>
+                  <td className="p-4">{statusBadge}</td>
+                  <td className="p-4">{actions}</td>
+                </tr>
+              );
+            }}
+          />
         )}
 
         {activeTab === "settings" && (

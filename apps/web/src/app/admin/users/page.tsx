@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/app/store";
 import { UserX, UserCheck, Search, Plus, X, Edit, Trash2, Ban, ShieldCheck, Mail, Link as LinkIcon, Phone, FileText, Medal, ShieldAlert } from "lucide-react";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 export default function AdminUsersPage() {
   const { accessToken } = useAuthStore();
@@ -126,10 +127,10 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 relative h-full">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">User Management</h1>
-        <div className="flex items-center gap-4">
-          <div className="relative w-64">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-black">User Management</h1>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
@@ -141,71 +142,74 @@ export default function AdminUsersPage() {
           </div>
           <button 
             onClick={openCreate}
-            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-teal-500/20"
+            className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-teal-500/20 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" /> New User
           </button>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-black/5 dark:bg-slate-900 border-b border-border">
-              <tr>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Email</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Plan</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Role</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Joined</th>
-                <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500">Loading users...</td>
-                </tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500">No users found.</td>
-                </tr>
-              ) : (
-                filteredUsers.map((u) => (
-                  <tr 
-                    key={u.id} 
-                    onClick={() => openUser(u)}
-                    className="hover:bg-black/5 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                  >
-                    <td className="p-4 font-medium">{u.email}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                        u.plan === 'FREE' ? 'bg-slate-500/10 text-slate-500' :
-                        u.plan === 'TIER1' ? 'bg-teal-500/10 text-teal-500' :
-                        'bg-amber-500/10 text-amber-500'
-                      }`}>
-                        {u.plan}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs font-bold">{u.role}</td>
-                    <td className="p-4 text-slate-500">{new Date(u.created_at).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      {u.is_banned ? (
-                        <span className="flex items-center gap-1 text-rose-500 text-xs font-bold">
-                          <UserX className="w-3 h-3" /> Banned
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-emerald-500 text-xs font-bold">
-                          <UserCheck className="w-3 h-3" /> Active
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ResponsiveTable
+        headers={["Email", "Plan", "Role", "Joined", "Status"]}
+        data={filteredUsers}
+        keyExtractor={(u) => u.id}
+        renderRow={(u, isMobile) => {
+          const planClass = u.plan === 'FREE' ? 'bg-slate-500/10 text-slate-500' :
+            u.plan === 'TIER1' ? 'bg-teal-500/10 text-teal-500' :
+            'bg-amber-500/10 text-amber-500';
+            
+          const statusNode = u.is_banned ? (
+            <span className="flex items-center gap-1 text-rose-500 text-xs font-bold">
+              <UserX className="w-3 h-3" /> Banned
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-emerald-500 text-xs font-bold">
+              <UserCheck className="w-3 h-3" /> Active
+            </span>
+          );
+
+          if (isMobile) {
+            return (
+              <div 
+                className="flex flex-col gap-2 cursor-pointer"
+                onClick={() => openUser(u)}
+              >
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <span className="font-medium text-sm truncate pr-2">{u.email}</span>
+                  {statusNode}
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Plan:</span>
+                  <span className={`px-2 py-1 rounded-md font-bold ${planClass}`}>{u.plan}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Role:</span>
+                  <span className="font-bold">{u.role}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-slate-500 pt-1">
+                  <span>Joined {new Date(u.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <>
+              <td className="p-4 font-medium cursor-pointer" onClick={() => openUser(u)}>{u.email}</td>
+              <td className="p-4 cursor-pointer" onClick={() => openUser(u)}>
+                <span className={`px-2 py-1 rounded-md text-xs font-bold ${planClass}`}>
+                  {u.plan}
+                </span>
+              </td>
+              <td className="p-4 text-xs font-bold cursor-pointer" onClick={() => openUser(u)}>{u.role}</td>
+              <td className="p-4 text-slate-500 cursor-pointer" onClick={() => openUser(u)}>{new Date(u.created_at).toLocaleDateString()}</td>
+              <td className="p-4 cursor-pointer" onClick={() => openUser(u)}>
+                {statusNode}
+              </td>
+            </>
+          );
+        }}
+      />
 
       {/* User Details Centered Modal */}
       {(selectedUser || isCreating) && (
@@ -237,7 +241,7 @@ export default function AdminUsersPage() {
                       <input type="text" value={editForm.password || ""} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500" placeholder="Default: defaultPassword123" />
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Plan</label>
                       <select value={editForm.plan || "FREE"} onChange={e => setEditForm({...editForm, plan: e.target.value})} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500">
@@ -293,7 +297,7 @@ export default function AdminUsersPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 bg-background border border-border rounded-xl">
                       <p className="text-xs font-bold text-slate-500 uppercase">Plan</p>
                       <p className="font-bold text-lg">{selectedUser.plan}</p>

@@ -6,6 +6,8 @@ import { Target, Trophy, Timer, RotateCcw } from "lucide-react";
 import { useChessStore, BOARD_THEMES, useAuthStore } from "../../store";
 import { BoardView } from "../../../components/BoardView";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
@@ -71,8 +73,8 @@ export default function CoordinatesPage() {
   const accuracy = score + errors > 0 ? Math.round((score / (score + errors)) * 100) : 0;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-5xl mx-auto">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/20">
             <Target className="w-6 h-6 text-rose-400" />
@@ -176,8 +178,8 @@ export default function CoordinatesPage() {
             </button>
           </div>
         )}
-      </div>
+      </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="coordinate trainer" />
-    </div>
+    </PageContainer>
   );
 }

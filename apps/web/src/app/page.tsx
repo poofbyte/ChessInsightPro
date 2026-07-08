@@ -26,6 +26,8 @@ import {
 import { BoardView } from "../components/BoardView";
 import { useAuthStore } from "./store";
 import SignUpPrompt from "../components/SignUpPrompt";
+import { PageContainer } from "../components/layout/PageContainer";
+import { ContentContainer } from "../components/layout/ContentContainer";
 
 const GameLineChart = dynamic(() => import("../components/GameLineChart"), { ssr: false });
 
@@ -231,8 +233,8 @@ export default function RootReviewPage() {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-[1600px]" className="space-y-6">
         
         {game ? (
           /* ACTIVE GAME REVIEW STATE */
@@ -253,15 +255,9 @@ export default function RootReviewPage() {
                 </button>
               </div>
 
-              <div className="flex gap-4">
-                {/* Eval Bar */}
-                <div className="w-6 bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden flex flex-col border border-slate-700/50 shrink-0">
-                  <div className="bg-white transition-all duration-500 ease-out" style={{ height: `${evalState.percent}%` }} />
-                  <div className="bg-[#1b1f2b] flex-1" />
-                </div>
-
-                {/* Board Box */}
-                <div className="flex-1 aspect-square max-w-[640px] rounded-3xl overflow-hidden border border-border shadow-2xl">
+              <div className="flex flex-col md:flex-row gap-4 max-w-[640px] w-full mx-auto lg:mx-0">
+                {/* Board Box (Priority 1) */}
+                <div className="flex-1 w-full aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl order-1 md:order-2 bg-black/10 dark:bg-slate-950">
                   {activePuzzle ? (
                     <BoardView
                       fen={puzzleGame?.fen() || activePuzzle.initialFen}
@@ -275,6 +271,16 @@ export default function RootReviewPage() {
                       arePiecesDraggable={false}
                     />
                   )}
+                </div>
+                
+                {/* Eval Bar (Horizontal on mobile, Vertical on md+) */}
+                <div className="h-3 md:h-auto md:w-6 bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden flex flex-row md:flex-col border border-slate-700/50 shrink-0 order-2 md:order-1">
+                  {/* Mobile Horizontal */}
+                  <div className="bg-white transition-all duration-500 ease-out md:hidden" style={{ width: `${evalState.percent}%` }} />
+                  <div className="bg-[#1b1f2b] flex-1 md:hidden" />
+                  {/* Desktop Vertical */}
+                  <div className="bg-white transition-all duration-500 ease-out hidden md:block" style={{ height: `${evalState.percent}%` }} />
+                  <div className="bg-[#1b1f2b] flex-1 hidden md:block" />
                 </div>
               </div>
 
@@ -377,7 +383,7 @@ export default function RootReviewPage() {
             {/* Left Column: Visual Starting Board */}
             <div className="lg:col-span-6 flex flex-col gap-4">
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Board Preview</h2>
-              <div className="w-full aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
+              <div className="w-full max-w-[640px] mx-auto lg:mx-0 aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                 <BoardView fen="start" arePiecesDraggable={false} />
               </div>
             </div>
@@ -486,10 +492,10 @@ export default function RootReviewPage() {
             </div>
           </div>
         )}
-      </div>
+      </ContentContainer>
 
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="game reviews" />
-    </div>
+    </PageContainer>
   );
 }
 
