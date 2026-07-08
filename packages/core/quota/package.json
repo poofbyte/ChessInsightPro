@@ -12,6 +12,7 @@
     "@libsql/client": "^0.14.0"
   },
   "devDependencies": {
+    "@types/node": "^26.1.0",
     "typescript": "^5.7.2"
   }
 }
