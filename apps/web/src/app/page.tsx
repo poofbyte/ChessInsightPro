@@ -428,7 +428,7 @@ export default function RootReviewPage() {
                 <textarea
                   value={pgnInput}
                   onChange={(e) => setPgnInput(e.target.value)}
-                  placeholder={`Paste PGN move history here...\nOr enter a Chess.com game URL\n\ne.g. https://www.chess.com/game/live/...`}
+                  placeholder={`Paste PGN move history here...\nOr enter a Chess.com / Lichess game URL\n\ne.g. https://www.chess.com/game/live/...\n      https://lichess.org/abcd1234`}
                   className="w-full h-44 bg-background border border-border focus:border-teal-500/80 rounded-2xl p-4 text-sm text-foreground placeholder:text-slate-500 focus:outline-none resize-none font-mono tracking-wide leading-relaxed"
                 />
                 
