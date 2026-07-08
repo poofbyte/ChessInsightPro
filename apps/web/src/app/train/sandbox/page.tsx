@@ -13,8 +13,14 @@ const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 export default function SandboxPage() {
   const { accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => { logActivity("page_view", "Train - Sandbox"); }, []);
-  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  useEffect(() => { if (hydrated && !accessToken) setShowSignUp(true); }, [hydrated, accessToken]);
   // Store FEN as the single source of truth — reconstruct Chess from it each time
   const [fen, setFen] = useState(INITIAL_FEN);
   const [history, setHistory] = useState<string[]>([INITIAL_FEN]);

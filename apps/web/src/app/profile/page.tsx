@@ -16,7 +16,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, clearAuth, accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
-  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  useEffect(() => { if (hydrated && !accessToken) setShowSignUp(true); }, [hydrated, accessToken]);
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [leitnerCards, setLeitnerCards] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"analytics" | "account">("analytics");

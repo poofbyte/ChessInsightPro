@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { generateTokens } from "@core/auth";
+import { generateTokens, getAccessSecret, getRefreshSecret } from "@core/auth";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
@@ -47,8 +47,8 @@ export async function POST(req: Request) {
     const role = (session.role as string) || "USER";
     
     // Generate new tokens
-    const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
-    const refreshSecret = process.env.JWT_REFRESH_SECRET || "default_refresh";
+    const accessSecret = getAccessSecret();
+    const refreshSecret = getRefreshSecret();
     
     const tokens = generateTokens(userId, role, accessSecret, refreshSecret);
     const newRefreshHash = crypto.createHash("sha256").update(tokens.refreshToken).digest("hex");

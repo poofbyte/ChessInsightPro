@@ -31,9 +31,15 @@ export const TermSchema = z.object({
 });
 
 export const OpeningSchema = z.object({
+  id: z.string().min(1),
   name: z.string().min(1),
   eco: z.string().min(1),
   moves: z.string().min(1),
+  category: z.string().min(1),
+  fen: z.string().min(1),
+  description: z.string().min(1),
+  keyIdeas: z.array(z.string()),
+  winRate: z.object({ white: z.number(), black: z.number(), draw: z.number() }),
 });
 
 export const SiteSettingsSchema = z.object({

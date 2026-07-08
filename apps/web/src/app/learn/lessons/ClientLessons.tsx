@@ -11,8 +11,14 @@ import SignUpPrompt from "@/components/SignUpPrompt";
 export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
   const { accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Lessons"); }, []);
-  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  useEffect(() => { if (hydrated && !accessToken) setShowSignUp(true); }, [hydrated, accessToken]);
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
   

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { verifyAccessToken } from "@core/auth";
+import { verifyAccessToken, getAccessSecret } from "@core/auth";
 
 export async function GET(req: Request) {
   try {
@@ -9,7 +9,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const token = authHeader.split(" ")[1];
-    const decoded = verifyAccessToken(token, process.env.JWT_ACCESS_SECRET || "default_access");
+    const decoded = verifyAccessToken(token, getAccessSecret());
     if (!decoded || !decoded.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

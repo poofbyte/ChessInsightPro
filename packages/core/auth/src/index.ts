@@ -1,6 +1,19 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Client } from "@libsql/client";
+import crypto from "crypto";
+
+export function getAccessSecret(): string {
+  const secret = process.env.JWT_ACCESS_SECRET;
+  if (!secret) throw new Error("JWT_ACCESS_SECRET environment variable is not set");
+  return secret;
+}
+
+export function getRefreshSecret(): string {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret) throw new Error("JWT_REFRESH_SECRET environment variable is not set");
+  return secret;
+}
 
 export async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, 10);

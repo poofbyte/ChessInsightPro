@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAccessToken } from "@core/auth";
+import { verifyAccessToken, getAccessSecret } from "@core/auth";
 
 export function requireAuth(req: Request): { userId: string } | NextResponse {
   const authHeader = req.headers.get("authorization");
@@ -8,9 +8,7 @@ export function requireAuth(req: Request): { userId: string } | NextResponse {
   }
   
   const token = authHeader.split(" ")[1];
-  const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
-  
-  const decoded = verifyAccessToken(token, accessSecret);
+  const decoded = verifyAccessToken(token, getAccessSecret());
   if (!decoded) {
     return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
   }
@@ -22,7 +20,7 @@ export function getAdminUserId(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.split(" ")[1];
-  const decoded = verifyAccessToken(token, process.env.JWT_ACCESS_SECRET || "default_access");
+  const decoded = verifyAccessToken(token, getAccessSecret());
   if (!decoded || decoded.role !== "ADMIN") return null;
   return decoded.userId;
 }

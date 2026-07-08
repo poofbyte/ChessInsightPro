@@ -100,6 +100,8 @@ export async function POST(req: Request) {
     }
 
     const msg = existing.rows[0];
+    const auditId = crypto.randomUUID();
+    let statements: { sql: string; args: any[] }[] = [];
     let auditAction = "CONTACT_UPDATED";
 
     if (action === "reply") {
@@ -108,17 +110,22 @@ export async function POST(req: Request) {
       }
 
       const replyId = crypto.randomUUID();
-      await dbClient.execute({
-        sql: `INSERT INTO contact_replies (id, message_id, body, sent_by, status) VALUES (?, ?, ?, ?, 'sent')`,
-        args: [replyId, messageId, replyBody.trim(), adminId],
-      });
+      statements = [
+        {
+          sql: `INSERT INTO contact_replies (id, message_id, body, sent_by, status) VALUES (?, ?, ?, ?, 'sent')`,
+          args: [replyId, messageId, replyBody.trim(), adminId],
+        },
+        {
+          sql: `UPDATE contact_messages SET status = 'replied' WHERE id = ?`,
+          args: [messageId],
+        },
+        {
+          sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
+          args: [auditId, adminId, "CONTACT_REPLIED", "contact_messages", messageId, JSON.stringify({ action, hasReply: true })],
+        },
+      ];
 
-      await dbClient.execute({
-        sql: `UPDATE contact_messages SET status = 'replied' WHERE id = ?`,
-        args: [messageId],
-      });
-
-      auditAction = "CONTACT_REPLIED";
+      await dbClient.batch(statements);
 
       const emailResult = await sendContactReplyEmail(
         msg.email as string,
@@ -130,25 +137,26 @@ export async function POST(req: Request) {
         console.error("[Admin Contact] Failed to send reply email:", emailResult.error);
       }
     } else if (action === "archive") {
-      await dbClient.execute({
-        sql: `UPDATE contact_messages SET archived_at = datetime('now') WHERE id = ?`,
-        args: [messageId],
-      });
-      auditAction = "CONTACT_ARCHIVED";
+      statements = [
+        { sql: `UPDATE contact_messages SET archived_at = datetime('now') WHERE id = ?`, args: [messageId] },
+        { sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`, args: [auditId, adminId, "CONTACT_ARCHIVED", "contact_messages", messageId, JSON.stringify({ action })] },
+      ];
+      await dbClient.batch(statements);
     } else if (action === "unarchive") {
-      await dbClient.execute({
-        sql: `UPDATE contact_messages SET archived_at = NULL WHERE id = ?`,
-        args: [messageId],
-      });
-      auditAction = "CONTACT_UNARCHIVED";
+      statements = [
+        { sql: `UPDATE contact_messages SET archived_at = NULL WHERE id = ?`, args: [messageId] },
+        { sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`, args: [auditId, adminId, "CONTACT_UNARCHIVED", "contact_messages", messageId, JSON.stringify({ action })] },
+      ];
+      await dbClient.batch(statements);
     } else if (action === "updateStatus") {
       if (!newStatus) {
         return NextResponse.json({ error: "Status is required" }, { status: 400 });
       }
-      await dbClient.execute({
-        sql: `UPDATE contact_messages SET status = ? WHERE id = ?`,
-        args: [newStatus, messageId],
-      });
+      statements = [
+        { sql: `UPDATE contact_messages SET status = ? WHERE id = ?`, args: [newStatus, messageId] },
+        { sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`, args: [auditId, adminId, "CONTACT_UPDATED", "contact_messages", messageId, JSON.stringify({ action, status: newStatus })] },
+      ];
+      await dbClient.batch(statements);
     } else if (action === "updateNotes") {
       await dbClient.execute({
         sql: `UPDATE contact_messages SET admin_notes = ? WHERE id = ?`,
@@ -157,19 +165,6 @@ export async function POST(req: Request) {
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
-
-    const auditId = crypto.randomUUID();
-    await dbClient.execute({
-      sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [
-        auditId,
-        adminId,
-        auditAction,
-        "contact_messages",
-        messageId,
-        JSON.stringify({ action, status: newStatus, hasReply: action === "reply" }),
-      ],
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

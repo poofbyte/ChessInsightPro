@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import crypto from "crypto";
 import { sendPasswordResetEmail } from "@core/email";
+import { getAccessSecret } from "@core/auth";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     
     // Create a time-limited token (e.g. JWT or simple signed string)
     // For simplicity, we'll use a signed string format: base64(email|expiry|hmac)
-    const secret = process.env.JWT_ACCESS_SECRET || "default_access";
+    const secret = getAccessSecret();
     const expiry = Date.now() + 1000 * 60 * 60; // 1 hour
     const dataToSign = `${email}|${expiry}`;
     const hmac = crypto.createHmac("sha256", secret).update(dataToSign).digest("hex");

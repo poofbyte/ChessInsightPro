@@ -10,8 +10,14 @@ import SignUpPrompt from "@/components/SignUpPrompt";
 export function ClientTerms({ terms }: { terms: Term[] }) {
   const { accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Terms"); }, []);
-  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  useEffect(() => { if (hydrated && !accessToken) setShowSignUp(true); }, [hydrated, accessToken]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
@@ -78,7 +84,7 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
                     {t.category}
                   </span>
                 </div>
-                <p className="text-slate-300 leading-relaxed text-sm">{t.definition}</p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">{t.definition}</p>
               </div>
             ))
           )}

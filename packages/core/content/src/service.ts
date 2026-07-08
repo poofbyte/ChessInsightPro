@@ -1,5 +1,6 @@
 import { ContentRepository, DbClient } from "./repository";
 import { z } from "zod";
+import crypto from "crypto";
 
 export class ContentService {
   private repo: ContentRepository;

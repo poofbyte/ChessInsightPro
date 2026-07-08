@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
       let newPlan = reqData.requested_plan as string;
       let newQuotasStr = reqData.requested_quotas as string | null;
-      let newRenewsAt = `datetime('now', '+30 days')`;
+      let newRenewsAt: string;
 
       if (currentUserPlan !== 'FREE' && currentRenewsAt && currentRenewsAt > new Date()) {
         const currentQuotas = typeof reqData.custom_quotas === 'string' && reqData.custom_quotas.trim().startsWith('{')
@@ -78,12 +78,14 @@ export async function POST(req: Request) {
 
         newQuotasStr = JSON.stringify(combinedQuotas);
         newPlan = 'CUSTOM';
-        newRenewsAt = `datetime('${currentRenewsAt.toISOString()}', '+30 days')`;
+        newRenewsAt = new Date(currentRenewsAt.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      } else {
+        newRenewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       }
 
       statements.push({
-        sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = ${newRenewsAt} WHERE id = ?`,
-        args: [newPlan, newQuotasStr, reqData.user_id as string]
+        sql: `UPDATE users SET plan = ?, custom_quotas = ?, plan_renews_at = ? WHERE id = ?`,
+        args: [newPlan, newQuotasStr, newRenewsAt, reqData.user_id as string]
       });
 
       statements.push({

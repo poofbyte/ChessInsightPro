@@ -28,8 +28,14 @@ const COACH_TIPS = [
 export default function PlayCoachPage() {
   const { accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => { logActivity("page_view", "Learn - Play Coach"); }, []);
-  useEffect(() => { if (!accessToken) setShowSignUp(true); }, [accessToken]);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
+  useEffect(() => { if (hydrated && !accessToken) setShowSignUp(true); }, [hydrated, accessToken]);
   const [selectedLevel, setSelectedLevel] = useState(BOT_LEVELS[0]);
   const [phase, setPhase] = useState<"setup" | "playing">("setup");
   const [chess, setChess] = useState<Chess | null>(null);

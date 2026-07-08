@@ -1,4 +1,5 @@
 import { Client } from "@libsql/client";
+import crypto from "crypto";
 
 export interface PlanConfig {
   reviewsPerDay?: number;

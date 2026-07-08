@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { hashPassword } from "@core/auth";
+import { hashPassword, getAccessSecret } from "@core/auth";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid token or password" }, { status: 400 });
     }
 
-    const secret = process.env.JWT_ACCESS_SECRET || "default_access";
+    const secret = getAccessSecret();
     
     // Decode token
     let decodedStr: string;
@@ -54,17 +54,10 @@ export async function POST(req: Request) {
     const userId = result.rows[0].id as string;
     const newHash = await hashPassword(password);
 
-    // Update password and invalidate sessions (optional, but good practice)
-    await dbClient.execute({
-      sql: `UPDATE users SET password_hash = ? WHERE id = ?`,
-      args: [newHash, userId]
-    });
-
-    // Invalidate all existing sessions for this user so they have to log in again
-    await dbClient.execute({
-      sql: `DELETE FROM sessions WHERE user_id = ?`,
-      args: [userId]
-    });
+    await dbClient.batch([
+      { sql: `UPDATE users SET password_hash = ? WHERE id = ?`, args: [newHash, userId] },
+      { sql: `DELETE FROM sessions WHERE user_id = ?`, args: [userId] },
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

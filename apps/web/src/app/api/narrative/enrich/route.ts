@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
 import { HfInference } from "@huggingface/inference";
 import { ensureDbReady } from "@/lib/db";
+import { requireAuth } from "@/lib/auth";
 
-// Use a free model that handles text well, e.g. Mistral or similar available on free API
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export async function POST(req: Request) {
   try {
+    const auth = requireAuth(req);
+    if (auth instanceof NextResponse) return auth;
+
     await ensureDbReady();
-    
-    // Fast path: if no API key, return a generic friendly wrapper
+
     if (!process.env.HUGGINGFACE_API_KEY) {
       return NextResponse.json({ 
-        enrichedText: "Here's what the engine says: " + (await req.json()).baseAnalysis,
+        enrichedText: "Coach says: analysis not available",
         fallback: true
       });
     }

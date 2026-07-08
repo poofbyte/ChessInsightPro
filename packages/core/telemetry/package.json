@@ -8,14 +8,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^3.23.8",
+    "zod": "^4.4.3",
     "dexie": "^4.0.10",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "@libsql/client": "^0.14.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
     "@types/uuid": "^10.0.0",
-    "@types/node": "^22.0.0",
-    "@libsql/client": "^0.14.0"
+    "@types/node": "^22.0.0"
   }
 }

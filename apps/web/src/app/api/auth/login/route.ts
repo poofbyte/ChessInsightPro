@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { verifyPassword, generateTokens, checkLoginRateLimit, recordLoginAttempt } from "@core/auth";
+import { verifyPassword, generateTokens, checkLoginRateLimit, recordLoginAttempt, getAccessSecret, getRefreshSecret } from "@core/auth";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
@@ -49,8 +49,8 @@ export async function POST(req: Request) {
     await recordLoginAttempt(dbClient as any, ip, email, true);
     
     // Generate tokens
-    const accessSecret = process.env.JWT_ACCESS_SECRET || "default_access";
-    const refreshSecret = process.env.JWT_REFRESH_SECRET || "default_refresh";
+    const accessSecret = getAccessSecret();
+    const refreshSecret = getRefreshSecret();
     
     const role = (user.role as string) || "USER";
     const { accessToken, refreshToken } = generateTokens(user.id as string, role, accessSecret, refreshSecret);

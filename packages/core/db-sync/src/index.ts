@@ -10,47 +10,59 @@ export interface TableDefinition {
   columns: ColumnDefinition[];
 }
 
+function safeId(name: string): string {
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+    throw new Error(`Invalid SQL identifier: ${name}`);
+  }
+  return name;
+}
+
+const cache = new Map<string, { existingColumns: Set<string> }>();
+
 export async function ensureSchema(client: Client, tables: TableDefinition[]) {
   for (const table of tables) {
-    const colDefs = table.columns.map(c => `${c.name} ${c.type}`).join(", ");
-    
-    // Check if table exists
-    const tableExists = await client.execute(
-      `SELECT name FROM sqlite_master WHERE type='table' AND name='${table.name}'`
-    );
+    const safeTable = safeId(table.name);
+    const colDefs = table.columns.map(c => `${safeId(c.name)} ${c.type}`).join(", ");
+
+    const tableExists = await client.execute({
+      sql: `SELECT name FROM sqlite_master WHERE type='table' AND name=?`,
+      args: [table.name],
+    });
 
     if (tableExists.rows.length === 0) {
-      await client.execute(`CREATE TABLE ${table.name} (${colDefs})`);
+      await client.execute(`CREATE TABLE ${safeTable} (${colDefs})`);
       continue;
     }
 
-    const tableInfo = await client.execute(`PRAGMA table_info(${table.name})`);
+    if (cache.has(table.name)) {
+      const cached = cache.get(table.name)!;
+      const missing = table.columns.filter(c => !cached.existingColumns.has(c.name));
+      if (missing.length === 0) continue;
+    }
+
+    const tableInfo = await client.execute({ sql: `PRAGMA table_info(${safeTable})`, args: [] });
     const existingColumns = new Set(tableInfo.rows.map(r => r.name as string));
+    cache.set(table.name, { existingColumns });
+
     const missingColumns = table.columns.filter(c => !existingColumns.has(c.name));
 
     if (missingColumns.length > 0) {
-      console.log(`Table ${table.name} is missing columns: ${missingColumns.map(c => c.name).join(', ')}. Performing safe migration...`);
-      
-      const backupName = `${table.name}_backup_${Date.now()}`;
-      const commonColumns = table.columns
-        .map(c => c.name)
+      console.log(`Table ${safeTable} is missing columns: ${missingColumns.map(c => c.name).join(', ')}. Performing safe migration...`);
+
+      const backupName = `${safeTable}_backup_${Date.now()}`;
+      const commonCols = table.columns
+        .map(c => safeId(c.name))
         .filter(name => existingColumns.has(name))
         .join(", ");
 
-      // 1. Rename existing table
-      await client.execute(`ALTER TABLE ${table.name} RENAME TO ${backupName}`);
-      
-      // 2. Create new table with updated schema
-      await client.execute(`CREATE TABLE ${table.name} (${colDefs})`);
-      
-      // 3. Copy existing data if there are common columns
-      if (commonColumns.length > 0) {
-        await client.execute(`INSERT INTO ${table.name} (${commonColumns}) SELECT ${commonColumns} FROM ${backupName}`);
+      await client.execute(`ALTER TABLE ${safeTable} RENAME TO ${backupName}`);
+      await client.execute(`CREATE TABLE ${safeTable} (${colDefs})`);
+
+      if (commonCols.length > 0) {
+        await client.execute(`INSERT INTO ${safeTable} (${commonCols}) SELECT ${commonCols} FROM ${backupName}`);
       }
-      
-      // We keep the backup table around just in case, but typically you'd drop it.
-      // await client.execute(`DROP TABLE ${backupName}`);
-      console.log(`Migration for ${table.name} complete. Old data preserved in ${backupName}`);
+
+      console.log(`Migration for ${safeTable} complete. Old data preserved in ${backupName}`);
     }
   }
 }

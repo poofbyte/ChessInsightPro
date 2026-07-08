@@ -6,11 +6,12 @@ const url = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
 if (!url) {
-  console.warn("TURSO_DATABASE_URL is not set. Database operations will fail.");
+  console.error("TURSO_DATABASE_URL is not set.");
+  throw new Error("TURSO_DATABASE_URL environment variable is required");
 }
 
 export const dbClient = createClient({
-  url: url || "file:local.db",
+  url,
   authToken,
 });
 

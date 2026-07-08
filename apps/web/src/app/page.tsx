@@ -57,6 +57,12 @@ export default function RootReviewPage() {
 
   const { accessToken } = useAuthStore();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, []);
 
   // Puzzle state
   const [activePuzzle, setActivePuzzle] = useState<any | null>(null);
@@ -455,7 +461,7 @@ export default function RootReviewPage() {
                 ) : (
                   <button
                     onClick={() => {
-                      if (!accessToken) setShowSignUp(true);
+                      if (!hydrated || !accessToken) setShowSignUp(true);
                       else handlePgnAnalyze();
                     }}
                     className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-black font-black text-sm rounded-2xl transition shadow-lg shadow-teal-500/10"

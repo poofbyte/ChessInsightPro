@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbClient, ensureDbReady } from "@/lib/db";
-import { verifyAccessToken } from "@core/auth";
+import { verifyAccessToken, getAccessSecret } from "@core/auth";
 import { getAllConfig } from "@core/config";
 
 function getPlanQuotas(pricingConfig: any, planId: string) {
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const token = authHeader.split(" ")[1];
-    const decoded = verifyAccessToken(token, process.env.JWT_ACCESS_SECRET || "default_access");
+    const decoded = verifyAccessToken(token, getAccessSecret());
     if (!decoded || !decoded.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -53,11 +53,11 @@ export async function GET(req: Request) {
     const pricingConfig = config.pricing_config || {};
 
     const isDaily = plan === "FREE";
-    const timeFilter = isDaily ? `datetime('now', 'start of day')` : `datetime('now', 'start of month')`;
+    const startDate = isDaily ? new Date(new Date().toISOString().split("T")[0]).toISOString() : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
     const usageResult = await dbClient.execute({
-      sql: `SELECT event_type, count(*) as count FROM usage_events WHERE user_id = ? AND created_at >= ${timeFilter} GROUP BY event_type`,
-      args: [decoded.userId]
+      sql: `SELECT event_type, count(*) as count FROM usage_events WHERE user_id = ? AND created_at >= ? GROUP BY event_type`,
+      args: [decoded.userId, startDate]
     });
 
     let reviewsUsed = 0;

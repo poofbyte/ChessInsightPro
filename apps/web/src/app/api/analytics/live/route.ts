@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { dbClient } from "@/lib/db";
+import { getAdminUserId } from "@/lib/auth";
 
-// Force dynamic so Next.js doesn't cache this endpoint
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  const adminId = getAdminUserId(req);
+  if (!adminId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let lastTimestamp = Date.now();
 
   const stream = new ReadableStream({
@@ -26,13 +31,11 @@ export async function GET(req: Request) {
           });
 
           if (result.rows.length > 0) {
-            // Update lastTimestamp to the latest one we got
             lastTimestamp = Number(result.rows[result.rows.length - 1].timestamp);
 
             const data = JSON.stringify({ events: result.rows });
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           } else {
-            // Send a ping to keep connection alive
             controller.enqueue(encoder.encode(`: ping\n\n`));
           }
         } catch (err) {

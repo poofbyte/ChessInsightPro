@@ -52,11 +52,12 @@ export async function POST(req: Request) {
         args: [plan, role, name, phone, bio, chess_com_url, lichess_url, fide_elo, userId]
       });
     } else if (action === "DELETE") {
-      // Cascading delete
-      await dbClient.execute({ sql: "DELETE FROM users WHERE id = ?", args: [userId] });
-      await dbClient.execute({ sql: "DELETE FROM profiles WHERE user_id = ?", args: [userId] });
-      await dbClient.execute({ sql: "DELETE FROM sessions WHERE user_id = ?", args: [userId] });
-      await dbClient.execute({ sql: "DELETE FROM games WHERE user_id = ?", args: [userId] });
+      await dbClient.batch([
+        { sql: "DELETE FROM users WHERE id = ?", args: [userId] },
+        { sql: "DELETE FROM profiles WHERE user_id = ?", args: [userId] },
+        { sql: "DELETE FROM sessions WHERE user_id = ?", args: [userId] },
+        { sql: "DELETE FROM games WHERE user_id = ?", args: [userId] },
+      ]);
     } else if (action === "CREATE") {
       const existing = await dbClient.execute({ sql: `SELECT id FROM users WHERE email = ?`, args: [email] });
       if (existing.rows.length > 0) return NextResponse.json({ error: "Email already in use" }, { status: 409 });
