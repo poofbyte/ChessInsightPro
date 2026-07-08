@@ -61,7 +61,7 @@ export default function SettingsPage() {
                 className={`flex-1 py-3 rounded-xl font-black text-sm transition-all ${
                   store.engineVersion === v
                     ? "bg-teal-500 text-black shadow-lg shadow-teal-500/20"
-                    : "bg-black/10 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-700"
+                    : "bg-black/10 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               >
                 Stockfish {v}
