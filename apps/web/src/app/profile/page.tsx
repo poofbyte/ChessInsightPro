@@ -119,13 +119,13 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 border-b border-border pb-px">
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "analytics" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-300"}`}
+            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "analytics" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
           >
             Analytics
           </button>
           <button
             onClick={() => setActiveTab("account")}
-            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "account" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-300"}`}
+            className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === "account" ? "border-teal-500 text-teal-400" : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
           >
             Account
           </button>
