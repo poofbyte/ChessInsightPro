@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Check, Star, X } from "lucide-react";
 import { calculateCustomPrice } from "@core/pricing";
 import { useAuthStore } from "@/app/store";
-import ReactMarkdown from "react-markdown";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ContentContainer } from "@/components/layout/ContentContainer";
 
@@ -151,9 +150,10 @@ export default function PricingPage() {
                   <span className={`font-bold mb-1 ${textPriceMuted}`}>{plan.currency}/{plan.period}</span>
                 </div>
                 {plan.description && (
-                  <div className={`text-sm font-bold mb-6 ${descColor}`}>
-                    <ReactMarkdown>{plan.description}</ReactMarkdown>
-                  </div>
+                  <div
+                    className={`text-sm font-bold mb-6 ${descColor}`}
+                    dangerouslySetInnerHTML={{ __html: plan.description }}
+                  />
                 )}
                 <ul className="space-y-4 mb-8 flex-1">
                   {plan.features.map((feat: any, i: number) => (
@@ -186,9 +186,7 @@ export default function PricingPage() {
           <div className="mt-16 p-8 bg-card border border-border rounded-3xl max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-black mb-2">{customPlanCfg.title}</h3>
-              <div className="text-slate-600 dark:text-slate-400 text-sm">
-                <ReactMarkdown>{customPlanCfg.description || ""}</ReactMarkdown>
-              </div>
+              <div className="text-slate-600 dark:text-slate-400 text-sm" dangerouslySetInnerHTML={{ __html: customPlanCfg.description || "" }} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -308,7 +306,7 @@ export default function PricingPage() {
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="prose prose-slate dark:prose-invert max-w-none text-sm">
                     {paymentConfig ? (
-                      <ReactMarkdown>{paymentConfig.payment_instructions || "Payment instructions not set."}</ReactMarkdown>
+                      <div dangerouslySetInnerHTML={{ __html: paymentConfig.payment_instructions || "Payment instructions not set." }} />
                     ) : (
                       <p className="animate-pulse">Loading instructions...</p>
                     )}
