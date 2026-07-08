@@ -107,14 +107,44 @@ export function BoardView({
     ...(customSquareStyles ?? {}), // hint squares from parent (highest priority)
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [measuredWidth, setMeasuredWidth] = useState<number>(boardWidth || 0);
+
+  useEffect(() => {
+    if (boardWidth) {
+      setMeasuredWidth(boardWidth);
+      return;
+    }
+    
+    if (!containerRef.current) return;
+    
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        // Since parent is aspect-square, we can use the smaller of width/height
+        const size = Math.min(width, height);
+        if (size > 0) {
+          // Add a small delay/raf to prevent ResizeObserver loop error
+          window.requestAnimationFrame(() => {
+            setMeasuredWidth(size);
+          });
+        }
+      }
+    });
+    
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [boardWidth]);
+
   return (
-    <div className="w-full h-full relative flex items-center justify-center">
+    <div ref={containerRef} className="w-full h-full relative flex items-center justify-center">
+      {measuredWidth > 0 && (
         <Chessboard
           position={fen || "start"}
           boardOrientation={orientation || "white"}
           onPieceDrop={onPieceDrop}
           arePiecesDraggable={arePiecesDraggable}
-          boardWidth={boardWidth}
+          boardWidth={measuredWidth}
           onSquareClick={handleSquareClick}
           showBoardNotation={showBoardNotation}
           customSquareStyles={mergedSquareStyles}
@@ -123,6 +153,7 @@ export function BoardView({
           customLightSquareStyle={{ backgroundColor: theme.light }}
           animationDuration={200}
         />
+      )}
     </div>
   );
 }
