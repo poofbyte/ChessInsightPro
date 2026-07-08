@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { logActivity } from "@/lib/activity-log";
 import { AlignLeft, Search } from "lucide-react";
 import { Term } from "@core/content";
@@ -21,13 +21,18 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
-  const CATEGORIES = ["All", ...Array.from(new Set(terms.map((t) => t.category)))];
+  const CATEGORIES = useMemo(() => {
+    return ["All", ...Array.from(new Set(terms.map((t) => t.category)))];
+  }, [terms]);
 
-  const filtered = terms.filter((t) => {
-    const matchSearch = t.term.toLowerCase().includes(search.toLowerCase()) || t.definition.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category === "All" || t.category === category;
-    return matchSearch && matchCat;
-  });
+  const filtered = useMemo(() => {
+    const searchLower = search.toLowerCase();
+    return terms.filter((t) => {
+      const matchSearch = t.term.toLowerCase().includes(searchLower) || t.definition.toLowerCase().includes(searchLower);
+      const matchCat = category === "All" || t.category === category;
+      return matchSearch && matchCat;
+    });
+  }, [terms, search, category]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
