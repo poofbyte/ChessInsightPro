@@ -1,5 +1,5 @@
 import { ContentService } from "./service";
-import { Rule, Lesson, Term, SiteSettings } from "./schema";
+import { Rule, Lesson, Term, Opening, SiteSettings } from "./schema";
 
 const DEFAULT_RULES: Rule[] = [
   {
