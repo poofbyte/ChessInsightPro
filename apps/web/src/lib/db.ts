@@ -18,6 +18,7 @@ let schemaSyncPromise: Promise<void> | null = null;
 
 import { hashPassword } from "@core/auth";
 import crypto from "crypto";
+import { ContentService, seedContent } from "@core/content";
 
 export async function ensureDbReady() {
   if (process.env.NODE_ENV === "test") return; // skip in tests or handle appropriately
@@ -25,7 +26,7 @@ export async function ensureDbReady() {
     schemaSyncPromise = ensureSchema(dbClient, ALL_TABLES)
       .then(async () => {
         console.log("Schema sync complete");
-        
+
         // Admin Bootstrap
         const adminEmail = process.env.ADMIN_BOOTSTRAP_EMAIL;
         const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD;
@@ -40,6 +41,15 @@ export async function ensureDbReady() {
             });
             console.log("Admin user bootstrapped successfully.");
           }
+        }
+
+        // Auto-seed CMS content (merge — keeps existing, adds missing)
+        try {
+          const contentService = new ContentService(dbClient);
+          await seedContent(contentService);
+          console.log("CMS content seeding complete.");
+        } catch (e) {
+          console.error("CMS content seeding failed:", e);
         }
       })
       .catch((e) => {

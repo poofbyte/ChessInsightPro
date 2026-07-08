@@ -68,6 +68,76 @@ const DEFAULT_LESSONS: Lesson[] = [
       { title: "The King", body: "The King moves one square in any direction. The goal of chess is to checkmate the opponent's king. Protect your king!", fen: "8/8/8/8/8/8/8/4K3 w - - 0 1" },
     ],
   },
+  {
+    id: "basic-tactics",
+    title: "Basic Tactics",
+    category: "Tactics",
+    duration: "8 min",
+    icon: "⚡",
+    slides: [
+      { title: "The Fork", body: "A fork is a single piece attacking two or more enemy pieces at once. Knights are especially good at forking because of their unique movement. Always look for forks — they win material.", fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1" },
+      { title: "The Pin", body: "A pin occurs when a piece cannot move without exposing a more valuable piece behind it. Bishops and rooks are excellent pinning pieces. Pins often lead to material gain.", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1" },
+      { title: "The Skewer", body: "A skewer is like a reverse pin — the more valuable piece is in front and must move, exposing a less valuable piece behind. This often happens with bishops, rooks, and queens along ranks, files, or diagonals.", fen: "r3k2r/ppp2ppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1" },
+      { title: "Discovered Attack", body: "A discovered attack happens when one piece moves away, revealing an attack from a piece behind it. This is a powerful tactical motif because it creates two threats at once.", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1" },
+      { title: "Double Check", body: "Double check is a special discovered attack where both the moving piece and the revealed piece give check. The king must move — blocks and captures don't work. Double check is often decisive.", fen: "4k3/8/8/8/3N4/8/8/3B4 w - - 0 1" },
+    ],
+  },
+  {
+    id: "opening-principles",
+    title: "Opening Principles",
+    category: "Opening",
+    duration: "7 min",
+    icon: "🏁",
+    slides: [
+      { title: "Control the Center", body: "The four center squares (d4, d5, e4, e5) are the most important on the board. Controlling them gives your pieces maximum mobility. Push your center pawns early.", fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1" },
+      { title: "Develop Your Pieces", body: "Bring your knights and bishops out early, ideally toward the center. Aim to develop each piece once in the opening — don't move the same piece twice without good reason.", fen: "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 1" },
+      { title: "Castle Early", body: "Castling gets your king to safety and activates your rook. Aim to castle within the first 10 moves. King-side castling (0-0) is slightly more common, but queen-side (0-0-0) can be strong too.", fen: "rnbq1rk1/ppppbppp/4pn2/8/2PP4/2N2N2/PP2BPPP/R1BQ1RK1 w - - 0 1" },
+      { title: "Don't Move Same Piece Twice", body: "In the opening, avoid moving a piece twice while other pieces remain undeveloped. Each move should bring a new piece into play. Wasting tempos gives your opponent an advantage.", fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1" },
+      { title: "Connect the Rooks", body: "Once both rooks are connected on the back rank with no pieces between them, the opening phase is complete. This signals you're ready for the middlegame.", fen: "r1bq1rk1/ppppbppp/2n2n2/4p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 1" },
+    ],
+  },
+  {
+    id: "middlegame-strategy",
+    title: "Middlegame Strategy",
+    category: "Strategy",
+    duration: "8 min",
+    icon: "🧠",
+    slides: [
+      { title: "Piece Activity", body: "Active pieces control more squares and create threats. Place rooks on open files, bishops on long diagonals, and knights on central outposts. Inactive pieces are a major disadvantage.", fen: "r4rk1/ppp2ppp/2np4/4n3/2B1P3/2NP4/PPP2PPP/R1B2RK1 w - - 0 1" },
+      { title: "Pawn Structure", body: "Pawns form the skeleton of your position. Avoid doubled, isolated, or backward pawns unless there's a concrete compensation. Pawn weaknesses are permanent and can be targeted in the endgame.", fen: "r1bq1rk1/pp2bppp/2np4/2p1p3/4P3/2NP1N2/PPP2PPP/R1BQR1K1 w - - 0 1" },
+      { title: "Outposts", body: "An outpost is a square protected by your pawn where a piece (usually a knight) cannot be chased away by enemy pawns. A knight on an outpost in enemy territory is a dominating force.", fen: "r1bq1rk1/pppp1ppp/2n5/4n3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 1" },
+      { title: "Weak Squares", body: "A square that cannot be defended by a pawn is a weak square. If your opponent can place a piece on a weak square, it can be very difficult to dislodge. Pay attention to color complexes.", fen: "r1bq1rk1/ppp2ppp/2np4/4N3/2B1P3/3P4/PPP2PPP/R1BQ1RK1 b - - 0 1" },
+      { title: "Open Files", body: "Rooks belong on open files (files with no pawns). If you have a semi-open file (only your opponent's pawn), try to place a rook on it. Control of open files often decides the game.", fen: "r4rk1/ppp2ppp/2np4/8/4P3/2NP4/PPP2PPP/R1B2RK1 w - - 0 1" },
+    ],
+  },
+  {
+    id: "endgame-basics",
+    title: "Endgame Basics",
+    category: "Endgame",
+    duration: "8 min",
+    icon: "🎯",
+    slides: [
+      { title: "King Activity", body: "In the endgame, the king transforms from a piece to protect into a fighting unit. Bring your king toward the center and use it to support your pawns and attack enemy pawns.", fen: "8/8/4k3/8/3K4/8/8/8 w - - 0 1" },
+      { title: "Pawn Promotion", body: "Getting a pawn to the 8th rank is the most common way to win an endgame. Create passed pawns (pawns with no enemy pawns blocking their path) and push them. A queen is almost always the best promotion.", fen: "8/8/8/3k4/8/3KP3/8/8 w - - 0 1" },
+      { title: "The Opposition", body: "Opposition is when two kings face each other with one square between them. The side NOT to move has the opposition, forcing the other king to give ground. This is a critical tool in pawn endgames.", fen: "8/8/8/3k4/8/3K4/8/8 w - - 0 1" },
+      { title: "Rook Endgames", body: "Rook endgames are the most common. Key principles: active rooks belong behind passed pawns (yours and your opponent's), cut off the enemy king, and use the 7th rank as a battering ram.", fen: "8/8/8/8/8/8/7k/1R4K1 w - - 0 1" },
+      { title: "Basic Checkmates", body: "The simplest checkmates: King + Queen vs King (force the king to edge, use queen to restrict), King + Rook vs King (same idea, but need both kings), Two Bishops (tricky but methodical).", fen: "8/8/8/8/8/8/6k1/3Q3K w - - 0 1" },
+    ],
+  },
+  {
+    id: "checkmate-patterns",
+    title: "Checkmate Patterns",
+    category: "Tactics",
+    duration: "7 min",
+    icon: "🏆",
+    slides: [
+      { title: "Back Rank Mate", body: "A classic mate where a rook or queen delivers checkmate on the back rank when the enemy king is trapped behind its own pawns. Always make an escape hole (moving a pawn) for your king to avoid this.", fen: "6k1/5ppp/8/8/8/8/8/5R1K w - - 0 1" },
+      { title: "Smothered Mate", body: "A knight delivers checkmate while the enemy king is surrounded by its own pieces. This is one of the most beautiful checkmate patterns and often arises from a forced sequence of checks.", fen: "6k1/6pp/8/8/8/8/8/4N2K w - - 0 1" },
+      { title: "Anastasia's Mate", body: "A rook and knight cooperate to deliver checkmate along the h-file. The knight covers the escape squares while the rook delivers check. A stunning pattern named after a novel by Wilhelm Heinse.", fen: "6k1/7p/8/8/8/8/8/5N1R w - - 0 1" },
+      { title: "Scholar's Mate", body: "The classic four-move checkmate against beginners. White attacks the f7 square with queen and bishop. Black can easily defend by developing knights and not weakening the f7 pawn.", fen: "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1" },
+      { title: "Fool's Mate", body: "The fastest possible checkmate in chess (two moves). White delivers mate on f2 after Black makes two terrible opening moves. It's almost impossible in serious play but illustrates basic king safety.", fen: "rnb1kbnr/pppp1ppp/8/4p3/6Pq/8/PPPPPP1P/RNBQKBNR w KQkq - 0 1" },
+    ],
+  },
 ];
 
 const DEFAULT_TERMS: Term[] = [
@@ -81,6 +151,16 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   maintenanceMode: false,
 };
 
+function getItemId(item: any): string | undefined {
+  return item.id || item.term;
+}
+
+function findIndex(arr: any[], item: any): number {
+  const id = getItemId(item);
+  if (!id) return -1;
+  return arr.findIndex((e) => getItemId(e) === id);
+}
+
 export async function seedContent(service: ContentService) {
   const seedItems = [
     { slug: "rules", type: "rules", data: DEFAULT_RULES },
@@ -90,11 +170,50 @@ export async function seedContent(service: ContentService) {
   ];
 
   for (const item of seedItems) {
-    // Only publish if it doesn't already exist to preserve idempotency
-    const existing = await service.getPublishedContent(item.slug);
+    const existing = await service.getPublishedContent<any>(item.slug);
+
     if (!existing) {
-      await service.publishContent(item.slug, item.type, item.data, "system-seeder", "Initial system seed");
-      console.log(`Seeded CMS content: ${item.slug}`);
+      await service.publishContent(item.slug, item.type, item.data, "system-seeder", "System seed");
+      console.log(`Seeded CMS content: ${item.slug} (new)`);
+      continue;
+    }
+
+    if (Array.isArray(existing) && Array.isArray(item.data)) {
+      let changed = false;
+      const merged = [...existing];
+
+      for (const seedItem of item.data) {
+        if (findIndex(merged, seedItem) === -1) {
+          merged.push(seedItem);
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await service.publishContent(item.slug, item.type, merged, "system-seeder", "Auto-merge: new items added");
+        console.log(`Seeded CMS content: ${item.slug} (${merged.length - existing.length} new items added, ${existing.length} kept)`);
+      } else {
+        console.log(`Seeded CMS content: ${item.slug} (up to date — ${existing.length} items)`);
+      }
+    } else if (typeof existing === "object" && existing !== null && typeof item.data === "object" && !Array.isArray(item.data)) {
+      let changed = false;
+      const merged = { ...existing };
+
+      for (const [key, value] of Object.entries(item.data)) {
+        if (!(key in merged)) {
+          (merged as any)[key] = value;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await service.publishContent(item.slug, item.type, merged, "system-seeder", "Auto-merge: new settings added");
+        console.log(`Seeded CMS content: ${item.slug} (merged)`);
+      } else {
+        console.log(`Seeded CMS content: ${item.slug} (up to date)`);
+      }
+    } else {
+      console.log(`Seeded CMS content: ${item.slug} (skipped — existing structure differs)`);
     }
   }
 }

@@ -168,12 +168,12 @@ export default function AdminContentPage() {
             {(content.lessons || []).map((lesson: any, li: number) => (
               <div key={lesson.id} className="bg-black/5 dark:bg-slate-900 border border-border rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1 grid grid-cols-4 gap-2 mr-4">
+                  <div className="flex-1 grid grid-cols-5 gap-2 mr-4">
                     <input type="text" value={lesson.title} onChange={(e) => {
                       const lessons = [...(content.lessons || [])];
                       lessons[li] = { ...lessons[li], title: e.target.value };
                       updateSection("lessons", lessons);
-                    }} className="px-3 py-1.5 bg-background border border-border rounded-lg text-sm font-bold col-span-2" placeholder="Lesson title" />
+                    }} className="px-3 py-1.5 bg-background border border-border rounded-lg text-sm font-bold" placeholder="Lesson title" />
                     
                     <input type="text" value={lesson.category} onChange={(e) => {
                       const lessons = [...(content.lessons || [])];
@@ -181,6 +181,12 @@ export default function AdminContentPage() {
                       updateSection("lessons", lessons);
                     }} className="px-3 py-1.5 bg-background border border-border rounded-lg text-sm" placeholder="Category" />
                     
+                    <input type="text" value={lesson.duration} onChange={(e) => {
+                      const lessons = [...(content.lessons || [])];
+                      lessons[li] = { ...lessons[li], duration: e.target.value };
+                      updateSection("lessons", lessons);
+                    }} className="px-3 py-1.5 bg-background border border-border rounded-lg text-sm" placeholder="Duration" />
+
                     <input type="text" value={lesson.icon} onChange={(e) => {
                       const lessons = [...(content.lessons || [])];
                       lessons[li] = { ...lessons[li], icon: e.target.value };
