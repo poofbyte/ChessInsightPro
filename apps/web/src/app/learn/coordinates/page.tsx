@@ -9,6 +9,9 @@ import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
@@ -139,9 +142,9 @@ export default function CoordinatesPage() {
         )}
 
         {phase === "playing" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7">
-              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+            <div className="w-full xl:w-[55%]">
+              <ChessboardContainer className={`rounded-3xl overflow-hidden border-2 transition-colors bg-black/10 dark:bg-slate-950 shadow-2xl ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen="start"
                   arePiecesDraggable={false}
@@ -152,11 +155,11 @@ export default function CoordinatesPage() {
                     [target]: { background: "rgba(20,180,120,0.4)", borderRadius: "4px" },
                   }}
                 />
-              </div>
+              </ChessboardContainer>
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <PanelStack className="w-full xl:w-[45%]">
               {/* Target */}
-              <div className="p-6 bg-card border border-border rounded-2xl text-center">
+              <Panel className="text-center !p-6">
                 {mode === "find-square" ? (
                   <>
                     <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Click this square</p>
@@ -179,26 +182,26 @@ export default function CoordinatesPage() {
                     </button>
                   </form>
                 )}
-              </div>
+              </Panel>
               {/* Timer */}
-              <div className={`p-5 bg-card border border-border rounded-2xl text-center ${timeLeft <= 10 ? "border-rose-500/50" : ""}`}>
+              <Panel className={`text-center !p-5 ${timeLeft <= 10 ? "border-rose-500/50" : ""}`}>
                 <div className={`text-4xl font-black tabular-nums ${timeLeft <= 10 ? "text-rose-400 animate-pulse" : "text-foreground"}`}>{timeLeft}s</div>
                 <div className="h-1.5 bg-black/10 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
                   <div className="h-full bg-rose-500 transition-all" style={{ width: `${(timeLeft / 30) * 100}%` }} />
                 </div>
-              </div>
+              </Panel>
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-card border border-border rounded-xl text-center">
+                <Panel className="text-center !p-4">
                   <div className="text-3xl font-black text-emerald-400">{score}</div>
                   <div className="text-xs text-slate-500">Correct</div>
-                </div>
-                <div className="p-4 bg-card border border-border rounded-xl text-center">
+                </Panel>
+                <Panel className="text-center !p-4">
                   <div className="text-3xl font-black text-rose-400">{errors}</div>
                   <div className="text-xs text-slate-500">Errors</div>
-                </div>
+                </Panel>
               </div>
-            </div>
+            </PanelStack>
           </div>
         )}
 

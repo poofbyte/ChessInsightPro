@@ -35,8 +35,6 @@ export function BoardView({
 }: Props) {
   const { boardTheme } = useChessStore();
   const theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.classicLight;
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [measuredWidth, setMeasuredWidth] = useState<number | undefined>(boardWidth);
 
   // Click-to-move states — these are SEPARATE from parent hint highlights
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
@@ -47,30 +45,6 @@ export function BoardView({
     setSelectedSquare(null);
     setMoveOptionSquares({});
   }, [fen, arePiecesDraggable]);
-
-  useEffect(() => {
-    if (boardWidth !== undefined) {
-      setMeasuredWidth(boardWidth);
-      return;
-    }
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    if (container.clientWidth > 0) {
-      setMeasuredWidth(container.clientWidth);
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width } = entry.contentRect;
-        if (width > 0) setMeasuredWidth(width);
-      }
-    });
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [boardWidth]);
 
   const handleSquareClick = (square: string) => {
     if (onSquareClick) onSquareClick(square);
@@ -134,14 +108,13 @@ export function BoardView({
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full aspect-square relative">
-      {measuredWidth !== undefined && measuredWidth > 0 && (
+    <div className="w-full h-full relative flex items-center justify-center">
         <Chessboard
           position={fen || "start"}
           boardOrientation={orientation || "white"}
           onPieceDrop={onPieceDrop}
           arePiecesDraggable={arePiecesDraggable}
-          boardWidth={measuredWidth}
+          boardWidth={boardWidth}
           onSquareClick={handleSquareClick}
           showBoardNotation={showBoardNotation}
           customSquareStyles={mergedSquareStyles}
@@ -150,7 +123,6 @@ export function BoardView({
           customLightSquareStyle={{ backgroundColor: theme.light }}
           animationDuration={200}
         />
-      )}
     </div>
   );
 }

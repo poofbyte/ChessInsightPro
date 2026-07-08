@@ -38,8 +38,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center p-8 bg-background">
-      <div className="w-full max-w-md p-8 bg-card border border-border rounded-3xl shadow-2xl">
+    <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-background">
+      <div className="w-full max-w-md p-4 md:p-8 bg-card border border-border rounded-3xl shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black mb-2">Reset Password</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm">Enter your email to receive a reset link.</p>

@@ -67,7 +67,7 @@ export default function AdminAuditLogPage() {
           );
 
           const detailsInfo = l.details ? (
-            <pre className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-black/5 dark:bg-slate-900 p-2 rounded-lg max-w-[200px] overflow-x-auto">
+            <pre className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-black/5 dark:bg-slate-900 p-2 rounded-lg max-w-[200px] overflow-x-auto">
               {(() => {
                 try { return JSON.stringify(JSON.parse(l.details), null, 2); }
                 catch { return l.details; }

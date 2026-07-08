@@ -8,6 +8,11 @@ import { playMoveSound, useAuthStore } from "../../store";
 import { Trophy, ChevronRight, RotateCcw, CheckCircle, BookOpen } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 const ENDGAMES = [
   {
@@ -132,9 +137,9 @@ export default function EndgamesPage() {
     d === "Intermediate" ? "text-amber-400 bg-amber-500/10" : "text-rose-400 bg-rose-500/10";
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={!!selected} title="Endgame Study" message="Your endgame study progress will be lost if you leave.">
-      <div className="max-w-6xl mx-auto">
+      <ContentContainer maxWidth="max-w-6xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-yellow-500/15 border border-yellow-500/20">
             <Trophy className="w-6 h-6 text-yellow-400" />
@@ -145,41 +150,18 @@ export default function EndgamesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* List */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
-              ))}
-            </div>
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-              {filtered.map((eg) => (
-                <button key={eg.id} onClick={() => launch(eg)} className={`w-full p-4 rounded-2xl border text-left transition flex items-center justify-between ${selected?.id === eg.id ? "border-yellow-500 bg-yellow-500/10" : "border-border bg-card hover:border-slate-600"}`}>
-                  <div>
-                    <div className="font-bold text-foreground text-sm">{eg.title}</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{eg.category}</div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${diffColor(eg.difficulty)}`}>{eg.difficulty}</span>
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Board + Info */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
+        <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+          {/* Board + Info (Priority on mobile) */}
+          <PanelStack className="w-full xl:w-[55%] order-1 xl:order-2">
             {selected && chess ? (
               <>
-                <div className="aspect-square rounded-2xl overflow-hidden border border-border">
+                <ChessboardContainer className="rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                   <BoardView fen={chess.fen()} onPieceDrop={handleMove} />
-                </div>
-                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+                </ChessboardContainer>
+                <Panel className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-black text-foreground">{selected.title}</h3>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${diffColor(selected.difficulty)}`}>{selected.difficulty}</span>
+                    <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${diffColor(selected.difficulty)}`}>{selected.difficulty}</span>
                   </div>
                   <div className="flex items-center gap-2 text-teal-400 text-xs font-bold">
                     <Trophy className="w-3 h-3" /> Goal: {selected.goal}
@@ -192,21 +174,46 @@ export default function EndgamesPage() {
                   <button onClick={() => { setChess(new Chess(selected.fen)); }} className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 hover:text-foreground transition">
                     <RotateCcw className="w-3 h-3" /> Reset Position
                   </button>
-                </div>
+                </Panel>
               </>
             ) : (
-              <div className="aspect-square rounded-2xl border border-dashed border-slate-700 flex items-center justify-center">
+              <Panel className="aspect-square flex items-center justify-center border-dashed">
                 <div className="text-center space-y-3">
-                  <BookOpen className="w-12 h-12 text-slate-700 mx-auto" />
+                  <BookOpen className="w-12 h-12 text-slate-500 mx-auto" />
                   <p className="text-slate-500 text-sm">Select an endgame to study</p>
                 </div>
-              </div>
+              </Panel>
             )}
-          </div>
+          </PanelStack>
+
+          {/* List */}
+          <PanelStack className="w-full xl:w-[45%] order-2 xl:order-1">
+            <Panel className="!p-4 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {categories.map((c) => (
+                  <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${category === c ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
+                ))}
+              </div>
+              <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                {filtered.map((eg) => (
+                  <button key={eg.id} onClick={() => launch(eg)} className={`w-full p-4 rounded-2xl border text-left transition flex items-center justify-between ${selected?.id === eg.id ? "border-yellow-500 bg-yellow-500/10" : "border-border bg-card hover:border-slate-600"}`}>
+                    <div>
+                      <div className="font-bold text-foreground text-sm">{eg.title}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{eg.category}</div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${diffColor(eg.difficulty)}`}>{eg.difficulty}</span>
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Panel>
+          </PanelStack>
         </div>
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="endgames" />
-    </div>
+    </PageContainer>
   );
 }

@@ -17,7 +17,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-md p-8 bg-card border border-border rounded-3xl shadow-2xl text-center">
+      <div className="w-full max-w-md p-4 md:p-8 bg-card border border-border rounded-3xl shadow-2xl text-center">
         <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
         <h1 className="text-2xl font-black mb-2">Invalid Link</h1>
         <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">This password reset link is invalid or has expired.</p>
@@ -69,7 +69,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-card border border-border rounded-3xl shadow-2xl">
+    <div className="w-full max-w-md p-4 md:p-8 bg-card border border-border rounded-3xl shadow-2xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-black mb-2">New Password</h1>
         <p className="text-slate-600 dark:text-slate-400 text-sm">Enter a new secure password for your account.</p>
@@ -143,7 +143,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex-1 flex items-center justify-center p-8 bg-background">
+    <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-background">
       <Suspense fallback={<div className="text-slate-500">Loading...</div>}>
         <ResetPasswordForm />
       </Suspense>

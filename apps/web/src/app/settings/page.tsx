@@ -8,6 +8,7 @@ import ContactForm from "@/components/ContactForm";
 import { BoardView } from "../../components/BoardView";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ContentContainer } from "@/components/layout/ContentContainer";
+import { Panel } from "@/components/layout/Panel";
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
 
@@ -45,7 +46,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Engine Settings */}
-        <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
+        <Panel className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <Cpu className="w-5 h-5 text-teal-400" />
             <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">Analysis Engine</h2>
@@ -65,17 +66,17 @@ export default function SettingsPage() {
                 }`}
               >
                 Stockfish {v}
-                {v === "18" && <span className="ml-2 text-[10px] font-black uppercase tracking-wider opacity-70">Latest</span>}
+                {v === "18" && <span className="ml-2 text-xs font-black uppercase tracking-wider opacity-70">Latest</span>}
               </button>
             ))}
           </div>
           <div className="p-3 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
             <strong className="text-slate-700 dark:text-slate-300">Current engine:</strong> Stockfish {store.engineVersion} — Lite Single-threaded WebAssembly build. All analysis runs locally.
           </div>
-        </section>
+        </Panel>
 
         {/* Board Theme */}
-        <section className="p-6 bg-card border border-border rounded-2xl space-y-5">
+        <Panel className="space-y-5">
           <div className="flex items-center gap-2">
             <Palette className="w-5 h-5 text-purple-400" />
             <h2 className="font-bold text-sm text-purple-400 uppercase tracking-wider">Board Theme</h2>
@@ -120,10 +121,10 @@ export default function SettingsPage() {
               );
             })}
           </div>
-        </section>
+        </Panel>
 
         {/* Contact Us */}
-        <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
+        <Panel className="space-y-4">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-teal-400" />
             <h2 className="font-bold text-sm text-teal-400 uppercase tracking-wider">Contact Us</h2>
@@ -132,25 +133,25 @@ export default function SettingsPage() {
             {content.contactDesc}
           </p>
           <ContactForm />
-        </section>
+        </Panel>
 
         {/* Legal */}
-        <section className="p-6 bg-card border border-border rounded-2xl space-y-4">
+        <Panel className="space-y-4">
           <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider">Legal</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="/privacy" className="flex-1 p-4 bg-black/5 dark:bg-slate-900 rounded-xl text-center hover:bg-teal-500/10 hover:border-teal-500/30 border border-transparent transition">
               <p className="font-bold text-sm text-foreground">Privacy Policy</p>
-              <p className="text-[10px] text-slate-500 mt-1">How we handle your data</p>
+              <p className="text-xs text-slate-500 mt-1">How we handle your data</p>
             </a>
             <a href="/terms" className="flex-1 p-4 bg-black/5 dark:bg-slate-900 rounded-xl text-center hover:bg-teal-500/10 hover:border-teal-500/30 border border-transparent transition">
               <p className="font-bold text-sm text-foreground">Terms of Service</p>
-              <p className="text-[10px] text-slate-500 mt-1">Rules &amp; guidelines</p>
+              <p className="text-xs text-slate-500 mt-1">Rules &amp; guidelines</p>
             </a>
           </div>
-        </section>
+        </Panel>
 
         {/* About */}
-        <section className="p-6 bg-card border border-border rounded-2xl space-y-5">
+        <Panel className="space-y-5">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
               <Brain className="w-5 h-5" />
@@ -166,27 +167,27 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Version</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-0.5">Version</p>
               <p className="text-sm font-bold text-foreground">2.0.0</p>
             </div>
             <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Engine</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-0.5">Engine</p>
               <p className="text-sm font-bold text-foreground">Stockfish {store.engineVersion} (WASM)</p>
             </div>
             <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Storage</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-0.5">Storage</p>
               <p className="text-sm font-bold text-foreground">IndexedDB (offline-first)</p>
             </div>
             <div className="p-3.5 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Platforms</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-0.5">Platforms</p>
               <p className="text-sm font-bold text-foreground">Web · Mobile · Tablet</p>
             </div>
           </div>
 
 
 
-          <p className="text-[10px] text-slate-500">&copy; {new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
-        </section>
+          <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} ChessInsight Pro. All rights reserved.</p>
+        </Panel>
       </ContentContainer>
     </PageContainer>
   );

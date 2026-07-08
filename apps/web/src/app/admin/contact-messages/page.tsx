@@ -336,13 +336,13 @@ export default function AdminContactMessagesPage() {
         keyExtractor={(msg) => msg.id}
         renderRow={(msg, isMobile) => {
           const categoryBadge = (
-            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${CATEGORY_COLORS[msg.category] || "bg-slate-500/10 text-slate-500"}`}>
+            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${CATEGORY_COLORS[msg.category] || "bg-slate-500/10 text-slate-500"}`}>
               {getCategoryLabel(msg.category)}
             </span>
           );
           
           const statusBadge = (
-            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${STATUS_BADGES[msg.status] || "bg-slate-500/10 text-slate-500"}`}>
+            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${STATUS_BADGES[msg.status] || "bg-slate-500/10 text-slate-500"}`}>
               {getStatusLabel(msg.status)}
             </span>
           );
@@ -370,9 +370,9 @@ export default function AdminContactMessagesPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {categoryBadge}
-                    <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</span>
+                    <span className="text-xs text-slate-500">{new Date(msg.created_at).toLocaleDateString()}</span>
                     {msg.reply_count > 0 && (
-                      <span className="text-[10px] text-teal-500">{msg.reply_count} replies</span>
+                      <span className="text-xs text-teal-500">{msg.reply_count} replies</span>
                     )}
                   </div>
                   {actionBtn}
@@ -460,31 +460,31 @@ export default function AdminContactMessagesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Name</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Name</p>
                   <p className="font-bold">{selected.name}</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Email</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Email</p>
                   <p className="font-bold text-sm break-all">{selected.email}</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Subject</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Subject</p>
                   <p className="font-bold">{selected.subject}</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Category</p>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${CATEGORY_COLORS[selected.category] || "bg-slate-500/10 text-slate-500"}`}>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Category</p>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${CATEGORY_COLORS[selected.category] || "bg-slate-500/10 text-slate-500"}`}>
                     {getCategoryLabel(selected.category)}
                   </span>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${STATUS_BADGES[selected.status] || "bg-slate-500/10 text-slate-500"}`}>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${STATUS_BADGES[selected.status] || "bg-slate-500/10 text-slate-500"}`}>
                     {getStatusLabel(selected.status)}
                   </span>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Date</p>
                   <p className="text-sm">{new Date(selected.created_at).toLocaleString()}</p>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export default function AdminContactMessagesPage() {
               )}
 
               <div className="p-4 bg-black/5 dark:bg-slate-900 border border-border rounded-2xl">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Message</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Message</p>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{selected.message}</p>
               </div>
 
@@ -521,11 +521,11 @@ export default function AdminContactMessagesPage() {
                           <div className="flex items-center gap-2">
                             <Reply className="w-3.5 h-3.5 text-teal-500" />
                             <span className="text-xs font-bold text-teal-500">Sent</span>
-                            <span className="text-[10px] text-slate-500">
+                            <span className="text-xs text-slate-500">
                               {new Date(reply.created_at).toLocaleString()}
                             </span>
                           </div>
-                          <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[9px] font-bold rounded">
+                          <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-xs font-bold rounded">
                             {reply.status}
                           </span>
                         </div>

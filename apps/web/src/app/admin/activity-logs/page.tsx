@@ -163,12 +163,12 @@ export default function AdminActivityLogsPage() {
                     <td className="p-4 text-xs text-slate-500">{formatDate(log.created_at)}</td>
                     <td className="p-4 font-medium text-xs">{log.email}</td>
                     <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${activityColor(log.activity_type)}`}>
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${activityColor(log.activity_type)}`}>
                         {activityLabel(log.activity_type)}
                       </span>
                     </td>
                     <td className="p-4 text-xs">{log.activity_name || "—"}</td>
-                    <td className="p-4 text-[10px] text-slate-500">{log.ip_address || "—"}</td>
+                    <td className="p-4 text-xs text-slate-500">{log.ip_address || "—"}</td>
                     <td className="p-4">
                       <button
                         onClick={() => setSelectedLog(log)}
@@ -216,27 +216,27 @@ export default function AdminActivityLogsPage() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">User</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">User</p>
                   <p className="text-sm font-bold mt-1">{selectedLog.email}</p>
                 </div>
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Activity Type</p>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${activityColor(selectedLog.activity_type)}`}>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Activity Type</p>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${activityColor(selectedLog.activity_type)}`}>
                     {activityLabel(selectedLog.activity_type)}
                   </span>
                 </div>
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Date & Time</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Date & Time</p>
                   <p className="text-sm mt-1">{formatDate(selectedLog.created_at)}</p>
                 </div>
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IP Address</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">IP Address</p>
                   <p className="text-sm mt-1">{selectedLog.ip_address || "—"}</p>
                 </div>
               </div>
               {selectedLog.activity_name && (
                 <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Activity Name</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Activity Name</p>
                   <p className="text-sm font-bold mt-1">{selectedLog.activity_name}</p>
                 </div>
               )}
@@ -245,7 +245,7 @@ export default function AdminActivityLogsPage() {
                   const details = JSON.parse(selectedLog.details);
                   return (
                     <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Details</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Details</p>
                       <div className="bg-black/5 dark:bg-slate-900 border border-border rounded-xl p-4 space-y-2">
                         {Object.entries(details).map(([key, value]) => (
                           <div key={key} className="flex justify-between items-center py-1 border-b border-border/50 last:border-0">
@@ -259,7 +259,7 @@ export default function AdminActivityLogsPage() {
                 } catch {
                   return (
                     <div className="p-3 bg-black/5 dark:bg-slate-900 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Details (raw)</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Details (raw)</p>
                       <pre className="text-xs text-slate-500 whitespace-pre-wrap">{selectedLog.details}</pre>
                     </div>
                   );

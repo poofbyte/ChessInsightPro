@@ -7,6 +7,11 @@ import { ScrollText, ChevronLeft, ChevronRight } from "lucide-react";
 import { Rule } from "@core/content";
 import { useAuthStore } from "@/app/store";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 export function ClientRules({ rules }: { rules: Rule[] }) {
   const { accessToken } = useAuthStore();
@@ -26,8 +31,8 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
   const rule = rules[idx];
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-5xl mx-auto">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/20">
             <ScrollText className="w-6 h-6 text-amber-400" />
@@ -52,13 +57,14 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
         </div>
 
         {/* Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-6">
-            <div className="aspect-square rounded-2xl overflow-hidden border border-border">
+        <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+          <div className="w-full xl:w-[55%]">
+            <ChessboardContainer className="rounded-3xl overflow-hidden border-2 border-border">
               <BoardView fen={rule.fen} arePiecesDraggable={false} />
-            </div>
+            </ChessboardContainer>
           </div>
-          <div className="lg:col-span-6 flex flex-col gap-5 justify-center">
+          <PanelStack className="w-full xl:w-[45%]">
+            <Panel className="flex flex-col gap-5 justify-center">
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{rule.icon}</span>
@@ -77,7 +83,8 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
               <span className="text-xs font-black text-amber-400 uppercase tracking-widest">💡 Pro Tip</span>
               <p className="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">{rule.tip}</p>
             </div>
-          </div>
+            </Panel>
+          </PanelStack>
         </div>
 
         {/* Navigation */}
@@ -90,8 +97,8 @@ export function ClientRules({ rules }: { rules: Rule[] }) {
             Next <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-      </div>
+      </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="rules" />
-    </div>
+    </PageContainer>
   );
 }

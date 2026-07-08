@@ -114,7 +114,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
         />
       )}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-72 lg:w-60 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shrink-0 border-r border-border bg-background flex flex-col h-full ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 md:w-60 lg:w-64 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shrink-0 border-r border-border bg-background flex flex-col h-full ${
           isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
@@ -125,7 +125,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
         </div>
         <div>
           <h1 className="font-bold tracking-tight text-base leading-tight">ChessInsight</h1>
-          <span className="text-[10px] text-teal-400 font-semibold uppercase tracking-wider">Pro v2.0</span>
+          <span className="text-xs text-teal-400 font-semibold uppercase tracking-wider">Pro v2.0</span>
         </div>
       </Link>
 
@@ -146,7 +146,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
           return (
             <div key={gi}>
               {group.section && (
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
                   {group.section}
                 </p>
               )}
@@ -156,7 +156,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
                   key={href}
                   href={href}
                   onClick={onClose}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm ${
+                  className={`flex items-center gap-2.5 px-3 py-3 rounded-xl transition-all duration-150 text-sm ${
                     isActive(href)
                       ? "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-l-[3px] border-teal-500 pl-[9px] font-semibold"
                       : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 font-medium"
@@ -174,7 +174,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
         
         {!pathname.startsWith("/admin") && user?.role === "ADMIN" && (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-500 px-3 mb-1.5">
               Administration
             </p>
             <div className="space-y-0.5">
@@ -215,22 +215,22 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
         <div className="mx-3 mb-2 p-3 rounded-2xl bg-black/5 dark:bg-slate-900/60 border border-teal-500/20">
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
-              <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
+              <span className="text-xs text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest">Est. ELO</span>
               <div className="text-xl font-black mt-0.5 text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400">
                 {estimatedElo !== undefined ? estimatedElo : '---'}
               </div>
-              <div className="text-[9px] text-slate-500">{gamesPlayed ?? 0} games</div>
+              <div className="text-xs text-slate-500">{gamesPlayed ?? 0} games</div>
             </div>
             
             {quotas && (
               <div className="text-right">
-                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                <span className="text-xs text-teal-600 dark:text-teal-400 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
                   {quotas.plan === 'FREE' ? 'Free' : quotas.plan} <Flame className="w-3 h-3 text-teal-500" />
                 </span>
                 <div className="text-xl font-black mt-0.5 text-slate-800 dark:text-white">
                   {quotas.limits.reviews.remaining === 'unlimited' ? '∞' : quotas.limits.reviews.remaining}
                 </div>
-                <div className="text-[9px] text-slate-500">reviews left</div>
+                <div className="text-xs text-slate-500">reviews left</div>
               </div>
             )}
           </div>
@@ -239,7 +239,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
             <>
               <div className="space-y-2 mb-3">
                 <div>
-                  <div className="flex justify-between text-[9px] text-slate-600 dark:text-slate-400 mb-1">
+                  <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
                     <span>Puzzles</span>
                     <span className="font-bold text-foreground">
                       {quotas.limits.puzzles.remaining === 'unlimited' ? '∞' : quotas.limits.puzzles.remaining} left
@@ -255,7 +255,7 @@ export function Sidebar({ estimatedElo, gamesPlayed, isOpen, onClose }: { estima
               </div>
               <Link 
                 href="/pricing"
-                className="block w-full py-1.5 text-center bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-bold rounded-lg transition-colors border border-teal-500/20"
+                className="block w-full py-1.5 text-center bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 text-xs font-bold rounded-lg transition-colors border border-teal-500/20"
               >
                 Upgrade Plan
               </Link>

@@ -11,6 +11,11 @@ import { PUZZLE_DB, PUZZLE_THEMES, LocalPuzzle, getPuzzlesByTheme } from "../../
 import { Grid3X3, Filter, ChevronRight, CheckCircle, RotateCcw } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 export default function CustomPuzzlesPage() {
   const { accessToken } = useAuthStore();
@@ -266,9 +271,9 @@ export default function CustomPuzzlesPage() {
   const filtered = getFilteredPuzzles();
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={status !== "idle" && !!activePuzzle} title="Puzzle in Progress" message="Your puzzle progress will be lost if you leave.">
-      <div className="max-w-6xl mx-auto">
+      <ContentContainer maxWidth="max-w-6xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-purple-500/15 border border-purple-500/20">
             <Grid3X3 className="w-6 h-6 text-purple-400" />
@@ -279,11 +284,11 @@ export default function CustomPuzzlesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
           {/* Filters + list */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
+          <PanelStack className="w-full xl:w-[45%] order-2 xl:order-1">
             {/* Theme filter */}
-            <div className="p-4 bg-card border border-border rounded-2xl space-y-3">
+            <Panel className="space-y-3">
               <div className="flex items-center gap-2 text-xs font-black uppercase text-purple-400 tracking-widest">
                 <Filter className="w-4 h-4" /> Theme
               </div>
@@ -298,10 +303,10 @@ export default function CustomPuzzlesPage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </Panel>
 
             {/* Rating filter */}
-            <div className="p-4 bg-card border border-border rounded-2xl space-y-3">
+            <Panel className="space-y-3">
               <div className="text-xs font-black uppercase text-purple-400 tracking-widest">Difficulty</div>
               <div className="grid grid-cols-4 gap-1">
                 {(["all", "easy", "medium", "hard"] as const).map((r) => (
@@ -320,7 +325,7 @@ export default function CustomPuzzlesPage() {
                 >
                   Start Random Puzzle from Filter
                 </button>
-            </div>
+            </Panel>
 
             {/* Puzzle list */}
             <div className="flex-1 space-y-2 max-h-[400px] overflow-y-auto">
@@ -345,13 +350,13 @@ export default function CustomPuzzlesPage() {
                 ))
               )}
             </div>
-          </div>
+          </PanelStack>
 
-          {/* Board */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
+          {/* Board + Info */}
+          <PanelStack className="w-full xl:w-[55%] order-1 xl:order-2">
             {activePuzzle && chess ? (
               <>
-                <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${status === "correct" || status === "done" ? "border-emerald-500" : status === "wrong" ? "border-rose-500" : "border-border"}`}>
+                <ChessboardContainer className={`rounded-3xl overflow-hidden border-2 transition-colors bg-black/10 dark:bg-slate-950 shadow-2xl ${status === "correct" || status === "done" ? "border-emerald-500" : status === "wrong" ? "border-rose-500" : "border-border"}`}>
                   <BoardView
                     fen={chess.fen()}
                     onPieceDrop={handleMove}
@@ -359,10 +364,10 @@ export default function CustomPuzzlesPage() {
                     customSquareStyles={customSquareStyles}
                     customArrows={customArrows}
                   />
-                </div>
+                </ChessboardContainer>
                 
                 {/* Info panel */}
-                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+                <Panel className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-purple-400 uppercase tracking-widest">{activePuzzle.theme}</span>
                     <RatingBadge rating={activePuzzle.rating} />
@@ -396,10 +401,10 @@ export default function CustomPuzzlesPage() {
                       <RotateCcw className="w-3 h-3" /> Reset
                     </button>
                   </div>
-                </div>
+                </Panel>
 
                 {/* Hint Card */}
-                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+                <Panel className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
                     <div className="flex gap-1.5">
@@ -450,22 +455,22 @@ export default function CustomPuzzlesPage() {
                     </div>
                   )}
 
-                </div>
+                </Panel>
               </>
             ) : (
-              <div className="aspect-square rounded-2xl border border-dashed border-slate-700 flex items-center justify-center">
+              <Panel className="aspect-square flex items-center justify-center border-dashed">
                 <div className="text-center space-y-3">
                   <Grid3X3 className="w-12 h-12 text-slate-700 mx-auto" />
                   <p className="text-slate-500 text-sm">Select a puzzle from the list</p>
                 </div>
-              </div>
+              </Panel>
             )}
-          </div>
+          </PanelStack>
         </div>
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="custom puzzles" />
-    </div>
+    </PageContainer>
   );
 }
 

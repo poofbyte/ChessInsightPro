@@ -355,7 +355,7 @@ export default function AdminUsersPage() {
                             </div>
                             {log.activity_name && <p className="text-slate-600 dark:text-slate-300 font-medium">{log.activity_name}</p>}
                             {log.details && Object.keys(JSON.parse(log.details)).length > 0 && (
-                              <pre className="text-[10px] mt-1 text-slate-500 overflow-x-auto">
+                              <pre className="text-xs mt-1 text-slate-500 overflow-x-auto">
                                 {JSON.stringify(JSON.parse(log.details), null, 2)}
                               </pre>
                             )}

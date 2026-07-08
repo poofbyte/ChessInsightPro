@@ -103,7 +103,7 @@ export default function ContactForm() {
             className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50"
             placeholder="Your name"
           />
-          {fieldErrors.name && <p id="contact-name-error" className="text-[10px] text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p id="contact-name-error" className="text-xs text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.name}</p>}
         </div>
 
         <div>
@@ -121,7 +121,7 @@ export default function ContactForm() {
             className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50"
             placeholder="you@example.com"
           />
-          {fieldErrors.email && <p id="contact-email-error" className="text-[10px] text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.email}</p>}
+          {fieldErrors.email && <p id="contact-email-error" className="text-xs text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.email}</p>}
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export default function ContactForm() {
           className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50"
           placeholder="Brief summary of your message"
         />
-        {fieldErrors.subject && <p id="contact-subject-error" className="text-[10px] text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.subject}</p>}
+        {fieldErrors.subject && <p id="contact-subject-error" className="text-xs text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.subject}</p>}
       </div>
 
       <div>
@@ -161,7 +161,7 @@ export default function ContactForm() {
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
-        {fieldErrors.category && <p id="contact-category-error" className="text-[10px] text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.category}</p>}
+        {fieldErrors.category && <p id="contact-category-error" className="text-xs text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.category}</p>}
       </div>
 
       <div>
@@ -179,7 +179,7 @@ export default function ContactForm() {
           className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50 resize-y min-h-[100px]"
           placeholder="Describe your question, bug, or feature request in detail"
         />
-        {fieldErrors.message && <p id="contact-message-error" className="text-[10px] text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.message}</p>}
+        {fieldErrors.message && <p id="contact-message-error" className="text-xs text-rose-400 mt-1 font-medium" role="alert">{fieldErrors.message}</p>}
       </div>
 
       <div>

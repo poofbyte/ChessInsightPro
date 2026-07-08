@@ -10,6 +10,11 @@ import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 interface DailyPuzzle {
   id: string;
@@ -318,9 +323,9 @@ export default function DailyPuzzlePage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={status !== "idle" && !!chess} title="Daily Puzzle" message="Your puzzle progress will be lost if you leave.">
-      <div className="max-w-5xl mx-auto">
+      <ContentContainer maxWidth="max-w-5xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-yellow-500/15 border border-yellow-500/20">
@@ -343,12 +348,12 @@ export default function DailyPuzzlePage() {
         )}
 
         {puzzle && chess && (
-          <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
             {/* Board */}
-            <div className="lg:col-span-7">
-              <div className={`rounded-2xl overflow-hidden border-2 transition-all duration-200 ${
-                status === "correct" ? "border-emerald-500 shadow-lg shadow-emerald-500/20" :
-                status === "wrong" ? "border-rose-500 shadow-lg shadow-rose-500/20" :
+            <div className="w-full xl:w-[55%] flex flex-col gap-4">
+              <ChessboardContainer className={`rounded-3xl overflow-hidden border-2 transition-all duration-200 bg-black/10 dark:bg-slate-950 shadow-2xl ${
+                status === "correct" ? "border-emerald-500 shadow-emerald-500/20" :
+                status === "wrong" ? "border-rose-500 shadow-rose-500/20" :
                 status === "done" ? "border-emerald-600" : "border-border"
               }`}>
                 <BoardView
@@ -358,17 +363,17 @@ export default function DailyPuzzlePage() {
                   customSquareStyles={customSquareStyles}
                   customArrows={customArrows}
                 />
-              </div>
+              </ChessboardContainer>
               {/* Mobile: show status under board */}
-              <div className="mt-3 lg:hidden">
+              <div className="xl:hidden">
                 <StatusBanner status={status} solved={solved} />
               </div>
             </div>
 
             {/* Info panel */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <PanelStack className="w-full xl:w-[45%]">
               {/* Puzzle Info */}
-              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+              <Panel className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-yellow-400">Today's Puzzle</span>
                   <span className="text-xs text-slate-500">Rating: {puzzle.rating?.rating ?? "—"}</span>
@@ -383,15 +388,15 @@ export default function DailyPuzzlePage() {
                 <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                   Find the best move sequence for the side to play.
                 </p>
-              </div>
+              </Panel>
 
               {/* Status - desktop */}
-              <div className="hidden lg:block">
+              <div className="hidden xl:block">
                 <StatusBanner status={status} solved={solved} />
               </div>
 
               {/* Hint Card */}
-              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+              <Panel className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints & Tools</span>
                   <div className="flex gap-1.5">
@@ -451,11 +456,11 @@ export default function DailyPuzzlePage() {
                     </div>
                   </div>
                 )}
-              </div>
+              </Panel>
 
               {/* Solved card */}
               {(solved || status === "done") && (
-                <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-4">
+                <Panel className="bg-emerald-500/10 border-emerald-500/30 space-y-4">
                   <p className="text-emerald-400 font-black text-lg text-center">
                     {solved ? "🎉 Puzzle Solved!" : "✓ Puzzle Complete"}
                   </p>
@@ -465,12 +470,12 @@ export default function DailyPuzzlePage() {
                     </pre>
                   )}
                   <p className="text-slate-600 dark:text-slate-400 text-sm text-center">Come back tomorrow for a new challenge.</p>
-                </div>
+                </Panel>
               )}
 
               {/* History panel */}
               {history.length > 0 && (
-                <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+                <Panel className="space-y-3">
                   <span className="text-xs font-black uppercase tracking-widest text-violet-400">Recent History</span>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                     {history.slice(0, 10).map((h) => (
@@ -488,15 +493,15 @@ export default function DailyPuzzlePage() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </Panel>
               )}
-            </div>
+            </PanelStack>
           </div>
         )}
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="daily puzzle" />
-    </div>
+    </PageContainer>
   );
 }
 

@@ -268,7 +268,7 @@ export function PricingTab({ config, updateConfig }: { config: PricingConfig, up
                   </>
                 )}
               </div>
-              <p className="text-[10px] text-slate-500 mt-2">These limits are globally enforced for all users on this plan. Changing them affects existing subscribers immediately.</p>
+              <p className="text-xs text-slate-500 mt-2">These limits are globally enforced for all users on this plan. Changing them affects existing subscribers immediately.</p>
             </div>
           </section>
       ))}

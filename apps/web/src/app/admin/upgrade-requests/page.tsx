@@ -121,7 +121,7 @@ export default function AdminUpgradeRequestsPage() {
                     <td className="p-4">
                       {r.status === "PENDING" ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-teal-500 font-bold flex items-center gap-1">
+                          <span className="text-xs text-teal-500 font-bold flex items-center gap-1">
                             <Eye className="w-3 h-3" /> Review
                           </span>
                           <button
@@ -142,7 +142,7 @@ export default function AdminUpgradeRequestsPage() {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-[10px] text-slate-500 italic">Processed</span>
+                        <span className="text-xs text-slate-500 italic">Processed</span>
                       )}
                     </td>
                   </tr>
@@ -167,20 +167,20 @@ export default function AdminUpgradeRequestsPage() {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">User</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">User</p>
                   <p className="font-bold">{selectedRequest.user_email}</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Requested Plan</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Requested Plan</p>
                   <p className="font-bold">{selectedRequest.requested_plan === "TIER1" ? "Pro" : selectedRequest.requested_plan === "TIER2" ? "Elite" : "Custom"}</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Price</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Price</p>
                   <p className="font-bold text-teal-500">{selectedRequest.requested_price_bdt} BDT</p>
                 </div>
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
-                  <span className={`inline-block px-2.5 py-1 text-[10px] font-bold rounded-full ${
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                  <span className={`inline-block px-2.5 py-1 text-xs font-bold rounded-full ${
                     selectedRequest.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' :
                     selectedRequest.status === 'APPROVED' ? 'bg-teal-500/10 text-teal-500' :
                     'bg-rose-500/10 text-rose-500'
@@ -238,7 +238,7 @@ export default function AdminUpgradeRequestsPage() {
 
               {selectedRequest.created_at && (
                 <div className="p-4 bg-black/5 dark:bg-slate-900 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Submitted At</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Submitted At</p>
                   <p className="text-sm">{new Date(selectedRequest.created_at).toLocaleString()}</p>
                 </div>
               )}

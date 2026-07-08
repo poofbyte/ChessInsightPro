@@ -9,6 +9,9 @@ import { useAuthStore } from "@/app/store";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 export function ClientOpenings({ openings }: { openings: Opening[] }) {
   const { accessToken } = useAuthStore();
@@ -40,13 +43,15 @@ export function ClientOpenings({ openings }: { openings: Opening[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar">
-              {categories.map((c) => (
-                <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${filter === c ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
-              ))}
-            </div>
+        <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+          <PanelStack className="w-full xl:w-[45%] order-2 xl:order-1">
+            <Panel className="!p-4">
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+                {categories.map((c) => (
+                  <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${filter === c ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"}`}>{c}</button>
+                ))}
+              </div>
+            </Panel>
             <div className="space-y-2">
               {filtered.length === 0 ? (
                 <div className="p-8 text-center bg-card border border-border rounded-2xl text-slate-500">
@@ -71,15 +76,15 @@ export function ClientOpenings({ openings }: { openings: Opening[] }) {
                 ))
               )}
             </div>
-          </div>
+          </PanelStack>
 
-          <div className="lg:col-span-7">
+          <PanelStack className="w-full xl:w-[55%] order-1 xl:order-2">
             {selected ? (
-              <div className="space-y-5">
-                <div className="aspect-square rounded-2xl overflow-hidden border border-border max-w-[400px]">
+              <>
+                <ChessboardContainer className="rounded-3xl overflow-hidden border-2 border-border max-w-[400px] xl:max-w-[500px]">
                   <BoardView fen={selected.fen} arePiecesDraggable={false} />
-                </div>
-                <div className="space-y-4">
+                </ChessboardContainer>
+                <Panel className="space-y-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h2 className="text-2xl font-black">{selected.name}</h2>
@@ -104,7 +109,7 @@ export function ClientOpenings({ openings }: { openings: Opening[] }) {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 pt-2 border-t border-border">
                     <h3 className="text-xs font-black uppercase text-emerald-400 tracking-widest">Key Ideas</h3>
                     {selected.keyIdeas.map((idea, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -114,18 +119,18 @@ export function ClientOpenings({ openings }: { openings: Opening[] }) {
                     ))}
                   </div>
 
-                  <div className="p-3 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border">
+                  <div className="p-3 bg-black/5 dark:bg-slate-900/60 rounded-xl border border-border mt-2">
                     <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Moves</span>
                     <p className="font-mono text-teal-600 dark:text-teal-300 mt-1 text-sm">{selected.moves}</p>
                   </div>
-                </div>
-              </div>
+                </Panel>
+              </>
             ) : (
-              <div className="flex items-center justify-center h-64 border border-dashed border-slate-500/30 rounded-2xl">
+              <Panel className="flex items-center justify-center h-64 border-dashed">
                 <p className="text-slate-500 text-sm">Select an opening to study</p>
-              </div>
+              </Panel>
             )}
-          </div>
+          </PanelStack>
         </div>
       </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="openings" />

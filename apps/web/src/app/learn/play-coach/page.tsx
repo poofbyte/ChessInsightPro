@@ -8,6 +8,11 @@ import { playMoveSound, useChessStore, useAuthStore } from "../../store";
 import { Bot, Brain, RefreshCw, MessageSquare } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 const BOT_LEVELS = [
   { id: "beginner",    label: "Beginner",    elo: 600,  delay: 2000, depth: 1, description: "Perfect for learning the rules." },
@@ -128,9 +133,9 @@ export default function PlayCoachPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={phase === "playing"} title="Game in Progress" message="Your game against the coach will be lost if you leave.">
-      <div className="max-w-5xl mx-auto">
+      <ContentContainer maxWidth="max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-blue-500/15 border border-blue-500/20">
             <Bot className="w-6 h-6 text-blue-400" />
@@ -185,19 +190,19 @@ export default function PlayCoachPage() {
         )}
 
         {phase === "playing" && chess && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-border">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+            <div className="w-full xl:w-[55%] flex flex-col gap-4">
+              <ChessboardContainer className="rounded-3xl overflow-hidden border-2 border-border">
                 <BoardView fen={chess.fen()} orientation={playerColor} onPieceDrop={handleMove} />
-              </div>
+              </ChessboardContainer>
               {status && (
                 <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 font-bold text-sm text-center">
                   {status}
                 </div>
               )}
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-4">
-              <div className="p-5 bg-card border border-border rounded-2xl">
+            <PanelStack className="w-full xl:w-[45%]">
+              <Panel>
                 <div className="flex items-center gap-2 text-blue-400 font-bold text-sm mb-3">
                   <Brain className="w-4 h-4" /> Virtual Coach Tip
                 </div>
@@ -205,8 +210,8 @@ export default function PlayCoachPage() {
                   <MessageSquare className="w-4 h-4 text-blue-400 mb-2" />
                   {tip}
                 </div>
-              </div>
-              <div className="p-4 bg-card border border-border rounded-2xl space-y-2 text-sm">
+              </Panel>
+              <Panel className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Difficulty</span>
                   <span className="font-bold text-foreground">{selectedLevel.label}</span>
@@ -219,16 +224,16 @@ export default function PlayCoachPage() {
                   <span className="text-slate-600 dark:text-slate-400">Turn</span>
                   <span className="font-bold text-foreground capitalize">{chess.turn() === "w" ? "White" : "Black"}</span>
                 </div>
-              </div>
+              </Panel>
               <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-black/10 dark:bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-bold transition">
                 <RefreshCw className="w-4 h-4" /> New Game
               </button>
-            </div>
+            </PanelStack>
           </div>
         )}
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Play & Coach" />
-    </div>
+    </PageContainer>
   );
 }

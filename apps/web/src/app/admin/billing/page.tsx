@@ -155,7 +155,7 @@ export default function AdminBillingPage() {
                         {planLabel(sub.plan)}
                       </span>
                       {sub.customQuotas && (
-                        <span className="ml-2 text-[10px] text-slate-500">(custom quotas)</span>
+                        <span className="ml-2 text-xs text-slate-500">(custom quotas)</span>
                       )}
                     </td>
                     <td className="p-4 text-slate-500 text-xs flex items-center gap-1.5">

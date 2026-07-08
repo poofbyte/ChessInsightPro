@@ -29,6 +29,10 @@ import SignUpPrompt from "../components/SignUpPrompt";
 import NavigationGuard from "../components/NavigationGuard";
 import { PageContainer } from "../components/layout/PageContainer";
 import { ContentContainer } from "../components/layout/ContentContainer";
+import { ChessboardContainer } from "../components/layout/ChessboardContainer";
+import { ResponsiveToolbar } from "../components/layout/ResponsiveToolbar";
+import { PanelStack } from "../components/layout/PanelStack";
+import { Panel } from "../components/layout/Panel";
 
 const GameLineChart = dynamic(() => import("../components/GameLineChart"), { ssr: false });
 
@@ -246,11 +250,11 @@ export default function RootReviewPage() {
         
         {game ? (
           /* ACTIVE GAME REVIEW STATE */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
             {/* Left: Board, Eval, and Controls */}
-            <div className="lg:col-span-7 flex flex-col gap-4">
+            <div className="w-full xl:w-[55%] flex flex-col gap-4">
               
-              <div className="flex justify-between items-center bg-card/60 border border-border p-4 rounded-2xl">
+              <Panel className="flex justify-between items-center !p-4 !rounded-2xl">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-black/5 dark:bg-slate-900 border border-slate-700" />
                   <span className="text-sm font-semibold">{game.black.name}</span>
@@ -261,11 +265,11 @@ export default function RootReviewPage() {
                 >
                   Unload Game
                 </button>
-              </div>
+              </Panel>
 
-              <div className="flex flex-col md:flex-row gap-4 max-w-[640px] w-full mx-auto lg:mx-0">
+              <div className="flex flex-col md:flex-row gap-4 w-full">
                 {/* Board Box (Priority 1) */}
-                <div className="flex-1 w-full aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl order-1 md:order-2 bg-black/10 dark:bg-slate-950">
+                <ChessboardContainer className="rounded-3xl overflow-hidden border border-border shadow-2xl order-1 md:order-2 bg-black/10 dark:bg-slate-950">
                   {activePuzzle ? (
                     <BoardView
                       fen={puzzleGame?.fen() || activePuzzle.initialFen}
@@ -279,7 +283,7 @@ export default function RootReviewPage() {
                       arePiecesDraggable={false}
                     />
                   )}
-                </div>
+                </ChessboardContainer>
                 
                 {/* Eval Bar (Horizontal on mobile, Vertical on md+) */}
                 <div className="h-3 md:h-auto md:w-6 bg-black/10 dark:bg-slate-800 rounded-full overflow-hidden flex flex-row md:flex-col border border-slate-700/50 shrink-0 order-2 md:order-1">
@@ -292,12 +296,12 @@ export default function RootReviewPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center bg-card/60 border border-border p-4 rounded-2xl">
+              <Panel className="flex justify-between items-center !p-4 !rounded-2xl">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-white border border-slate-300" />
                   <span className="text-sm font-semibold">{game.white.name}</span>
                 </div>
-                <div className="flex gap-2">
+                <ResponsiveToolbar className="w-auto">
                   <NavButtonMemo
                     disabled={currentMoveIndex === 0}
                     onClick={() => setCurrentMoveIndex(Math.max(0, currentMoveIndex - 1))}
@@ -312,8 +316,8 @@ export default function RootReviewPage() {
                   >
                     <ChevronRight className="w-4 h-4 text-foreground" />
                   </NavButtonMemo>
-                </div>
-              </div>
+                </ResponsiveToolbar>
+              </Panel>
 
               {activePuzzle && (
                 <BlunderDrillPanel
@@ -325,19 +329,19 @@ export default function RootReviewPage() {
             </div>
 
             {/* Right: Analysis & Feedback Panel */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <PanelStack className="w-full xl:w-[45%]">
               {/* Eval score */}
-              <div className="p-5 bg-card/80 border border-border rounded-2xl text-center shadow-lg">
+              <Panel className="text-center">
                 <span className={`text-4xl font-black tracking-tight ${evalState.isWhiteAhead ? "text-foreground" : "text-slate-600 dark:text-slate-400"}`}>
                   {evalState.score}
                 </span>
-                <p className="text-[10px] text-slate-500 mt-1.5 uppercase font-bold tracking-widest">
+                <p className="text-xs text-slate-500 mt-1.5 uppercase font-bold tracking-widest">
                   {evalState.isWhiteAhead ? "White advantage" : "Black advantage"}
                 </p>
-              </div>
+              </Panel>
 
               {/* Coach panel */}
-              <div className="p-5 bg-card/85 border border-border rounded-2xl space-y-4 shadow-lg">
+              <Panel className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-teal-400 font-bold text-sm">
                     <Brain className="w-4 h-4 text-teal-400 animate-pulse" />
@@ -360,16 +364,16 @@ export default function RootReviewPage() {
                       || <p className="italic text-slate-500">Evaluating position parameters...</p>
                   }
                 </div>
-              </div>
+              </Panel>
 
               {/* Analysis Tabs Container */}
-              <div className="flex-1 flex flex-col bg-card/60 border border-border rounded-2xl overflow-hidden shadow-lg min-h-[350px]">
-                <div className="grid grid-cols-4 border-b border-border text-xs font-bold text-center shrink-0">
+              <Panel className="!p-0 flex-1 flex flex-col min-h-[350px]">
+                <div className="flex overflow-x-auto scrollbar-hide whitespace-nowrap border-b border-border text-xs font-bold text-center shrink-0">
                   {["Move Log", "Accuracy Chart", "Positional Metrics", "Blunders"].map((tab, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveTab(i)}
-                      className={`py-3.5 transition-all ${activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-black/5 dark:bg-slate-900/40" : "text-slate-600 dark:text-slate-400 hover:text-foreground"}`}
+                      className={`flex-1 min-w-[120px] py-3.5 transition-all ${activeTab === i ? "border-b-2 border-teal-500 text-teal-400 bg-black/5 dark:bg-slate-900/40" : "text-slate-600 dark:text-slate-400 hover:text-foreground"}`}
                     >
                       {tab}
                     </button>
@@ -381,26 +385,26 @@ export default function RootReviewPage() {
                   {activeTab === 2 && currentMetrics && <MetricsViewMemo metrics={currentMetrics} />}
                   {activeTab === 3 && <PuzzlesTabMemo game={game} onLaunch={launchPuzzle} />}
                 </div>
-              </div>
-            </div>
+              </Panel>
+            </PanelStack>
           </div>
         ) : (
           /* EMPTY STATE - UPLOAD / RESOLVE GAME */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
             
             {/* Left Column: Visual Starting Board */}
-            <div className="lg:col-span-6 flex flex-col gap-4">
+            <div className="w-full xl:w-[50%] flex flex-col gap-4">
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Board Preview</h2>
-              <div className="w-full max-w-[640px] mx-auto lg:mx-0 aspect-square rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
+              <ChessboardContainer className="rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                 <BoardView fen="start" arePiecesDraggable={false} />
-              </div>
+              </ChessboardContainer>
             </div>
 
             {/* Right Column: Paste Box and Previous reviews list */}
-            <div className="lg:col-span-6 flex flex-col gap-6">
+            <PanelStack className="w-full xl:w-[50%]">
               
               {/* Main uploader card */}
-              <div className="p-8 bg-card border border-border rounded-3xl shadow-2xl space-y-6">
+              <Panel className="space-y-6">
                 
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
@@ -471,7 +475,7 @@ export default function RootReviewPage() {
                     Start Game Review
                   </button>
                 )}
-              </div>
+              </Panel>
 
               {/* Previously reviewed list */}
               {historicalGames.length > 0 && (
@@ -490,14 +494,14 @@ export default function RootReviewPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-teal-400 bg-teal-500/5 px-2 py-1 rounded-lg border border-teal-500/10">{g.result}</span>
-                          <Play className="w-3.5 h-3.5 text-slate-500 group-hover:text-teal-400 transition" />
+                          <Play className="w-4 h-4 text-slate-500 group-hover:text-teal-400 transition" />
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
+            </PanelStack>
           </div>
         )}
       </ContentContainer>
@@ -542,7 +546,7 @@ const MoveLogMemo = React.memo(function MoveLog({ game, currentIndex, onSelect }
           >
             <span className="font-semibold text-sm">{isWhite ? `${moveNumber}. ` : ""}{move.san}</span>
             {move.evaluation?.classification && (
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/10 dark:bg-slate-800">
+              <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/10 dark:bg-slate-800">
                 {move.evaluation.classification}
               </span>
             )}
@@ -589,7 +593,7 @@ const PuzzlesTabMemo = React.memo(function PuzzlesTab({ game, onLaunch }: { game
           <div key={move.moveIndex} className="p-4 bg-black/5 dark:bg-slate-900 border border-border rounded-xl flex justify-between items-center">
             <div>
               <span className="text-sm font-semibold">Move {move.moveIndex}: {move.san}</span>
-              <span className="text-[10px] block text-slate-600 dark:text-slate-400 mt-0.5">Motifs: {move.evaluation.facts?.tacticalMotifs.join(", ") || "None"}</span>
+              <span className="text-xs block text-slate-600 dark:text-slate-400 mt-0.5">Motifs: {move.evaluation.facts?.tacticalMotifs.join(", ") || "None"}</span>
             </div>
             <button onClick={() => onLaunch(game, idx)} className="px-3 py-1.5 bg-teal-500 text-black text-xs font-bold rounded-lg hover:bg-teal-400 transition">
               Launch Puzzle

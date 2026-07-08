@@ -44,7 +44,7 @@ export default function SignUpPrompt({ open, onClose, feature }: { open: boolean
             </Link>
           </div>
 
-          <p className="text-[10px] text-slate-500">
+          <p className="text-xs text-slate-500">
             Free tier includes 5 game reviews and 10 training sessions per month.
           </p>
         </div>

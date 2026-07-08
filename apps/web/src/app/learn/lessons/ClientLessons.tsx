@@ -7,6 +7,11 @@ import { BoardView } from "@/components/BoardView";
 import { Lesson } from "@core/content";
 import { useAuthStore } from "@/app/store";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
   const { accessToken } = useAuthStore();
@@ -28,8 +33,8 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
   const slide = lesson.slides[slideIdx];
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-      <div className="max-w-6xl mx-auto">
+    <PageContainer>
+      <ContentContainer maxWidth="max-w-6xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
             <GraduationCap className="w-6 h-6 text-teal-400" />
@@ -40,9 +45,10 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
           {/* Sidebar / Lesson List */}
-          <div className="col-span-12 md:col-span-4 space-y-4">
+          <PanelStack className="w-full xl:w-[35%]">
+            <Panel className="space-y-4 !p-4">
             {lessons.map((l, i) => {
               const isActive = i === activeLessonIdx;
               return (
@@ -65,11 +71,12 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
                 </button>
               );
             })}
-          </div>
+            </Panel>
+          </PanelStack>
 
           {/* Main Lesson Content */}
-          <div className="col-span-12 md:col-span-8">
-            <div className="bg-card border border-border rounded-3xl overflow-hidden flex flex-col h-[600px]">
+          <PanelStack className="w-full xl:w-[65%]">
+            <Panel className="!p-0 flex flex-col xl:h-[600px] overflow-hidden">
               {/* Header */}
               <div className="p-6 border-b border-border bg-black/20 flex items-center justify-between">
                 <div>
@@ -84,15 +91,15 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
               </div>
 
               {/* Content */}
-              <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-                <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center border-r border-border">
+              <div className="flex-1 flex flex-col xl:flex-row min-h-0">
+                <div className="w-full xl:w-1/2 p-6 flex flex-col justify-center border-b xl:border-b-0 xl:border-r border-border">
                   <h3 className="text-2xl font-black mb-4">{slide.title}</h3>
                   <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">{slide.body}</p>
                 </div>
-                <div className="w-full lg:w-1/2 p-6 flex items-center justify-center bg-black/40">
-                  <div className="w-full aspect-square border border-border rounded-xl overflow-hidden shadow-2xl">
+                <div className="w-full xl:w-1/2 p-6 flex items-center justify-center bg-black/40">
+                  <ChessboardContainer className="w-full border-border rounded-xl">
                     <BoardView fen={slide.fen} arePiecesDraggable={false} />
-                  </div>
+                  </ChessboardContainer>
                 </div>
               </div>
 
@@ -121,11 +128,11 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
                   </button>
                 )}
               </div>
-            </div>
-          </div>
+            </Panel>
+          </PanelStack>
         </div>
-      </div>
+      </ContentContainer>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="lessons" />
-    </div>
+    </PageContainer>
   );
 }

@@ -11,6 +11,11 @@ import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Swords, Shield, Trophy, Zap } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 const BATTLE_DURATION = 180;
 
@@ -251,9 +256,9 @@ export default function PuzzleBattlePage() {
   const userWins = userScore > botScore;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={phase === "playing"} title="Puzzle Battle in Progress" message="Your battle progress will be lost if you leave.">
-      <div className="max-w-5xl mx-auto">
+      <ContentContainer maxWidth="max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/20">
             <Swords className="w-6 h-6 text-red-400" />
@@ -297,38 +302,38 @@ export default function PuzzleBattlePage() {
         )}
 
         {phase === "playing" && puzzle && chess && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7">
-              <div className={`aspect-square rounded-2xl overflow-hidden border-2 transition-colors ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+            <div className="w-full xl:w-[55%]">
+              <ChessboardContainer className={`rounded-3xl overflow-hidden border-2 transition-colors bg-black/10 dark:bg-slate-950 shadow-2xl ${flash === "correct" ? "border-emerald-500" : flash === "wrong" ? "border-rose-500" : "border-border"}`}>
                 <BoardView
                   fen={chess.fen()}
                   onPieceDrop={handleMove}
                   customSquareStyles={customSquareStyles}
                   customArrows={customArrows}
                 />
-              </div>
+              </ChessboardContainer>
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <PanelStack className="w-full xl:w-[45%]">
               {/* Timer */}
-              <div className="text-center p-4 bg-card border border-border rounded-2xl">
+              <Panel className="text-center !p-4">
                 <div className={`text-4xl font-black tabular-nums ${timeLeft <= 30 ? "text-rose-400 animate-pulse" : "text-foreground"}`}>
                   {mins}:{secs.toString().padStart(2, "0")}
                 </div>
-              </div>
+              </Panel>
               {/* Score race */}
-              <div className="p-5 bg-card border border-border rounded-2xl space-y-4">
+              <Panel className="space-y-4">
                 <ScoreBar label="You" score={userScore} color="teal" />
                 <div className="text-center text-xs text-slate-500 font-bold">vs</div>
                 <ScoreBar label={`Bot (${botRating})`} score={botScore} color="rose" />
-              </div>
-              <div className="p-4 bg-card border border-border rounded-xl">
+              </Panel>
+              <Panel className="!p-4">
                 <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Current Puzzle</p>
                 <p className="font-bold text-foreground mt-1">{puzzle.theme === "fallback" ? "Mixed Tactical Motif" : (puzzle.theme || "Mixed Tactical Motif")}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{puzzle.hint}</p>
-              </div>
+              </Panel>
 
               {/* Hint Card */}
-              <div className="p-5 bg-card border border-border rounded-2xl space-y-3">
+              <Panel className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-widest text-teal-400">Hints</span>
                   <div className="flex gap-1.5">
@@ -371,14 +376,14 @@ export default function PuzzleBattlePage() {
                       <span>• 3 Hints used:</span>
                       <span className="text-rose-400 font-bold">-5 ELO</span>
                     </div>
-                    <div className="flex justify-between border-t border-border pt-1 mt-1 text-[10px] text-slate-500">
+                    <div className="flex justify-between border-t border-border pt-1 mt-1 text-xs text-slate-500">
                       <span>• Mistake Penalty:</span>
                       <span className="text-rose-500 font-semibold">-10 ELO each</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </Panel>
+            </PanelStack>
           </div>
         )}
 
@@ -419,10 +424,10 @@ export default function PuzzleBattlePage() {
             </button>
           </div>
         )}
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Puzzle Battle" />
-    </div>
+    </PageContainer>
   );
 }
 

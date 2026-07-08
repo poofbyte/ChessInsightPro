@@ -253,7 +253,7 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Phone Number <span className="text-rose-500">*</span></p>
                     <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} disabled={!!initialPhone && initialPhone.trim() !== ""} className={`w-full px-4 py-2.5 rounded-xl transition-all shadow-sm ${!!initialPhone && initialPhone.trim() !== "" ? 'bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-foreground focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500'}`} placeholder="+1234567890" />
-                    {!!initialPhone && initialPhone.trim() !== "" && <p className="text-[10px] text-slate-500 mt-1.5">Phone number cannot be changed once set.</p>}
+                    {!!initialPhone && initialPhone.trim() !== "" && <p className="text-xs text-slate-500 mt-1.5">Phone number cannot be changed once set.</p>}
                   </div>
                 </div>
 

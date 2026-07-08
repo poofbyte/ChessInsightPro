@@ -17,7 +17,7 @@ interface GameLineChartProps {
 
 export default function GameLineChart({ data }: GameLineChartProps) {
   return (
-    <div className="w-full h-64">
+    <div className="w-full h-64 min-h-[250px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <XAxis dataKey="moveIndex" stroke="#64748b" fontSize={10} />

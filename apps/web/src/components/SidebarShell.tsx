@@ -47,7 +47,7 @@ export function SidebarShell({ children }: { children: React.ReactNode }) {
           </div>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 -mr-2 text-slate-600 dark:text-slate-400 hover:text-foreground transition-colors"
+            className="p-3 -mr-2 text-slate-600 dark:text-slate-400 hover:text-foreground transition-colors"
             aria-label="Open Menu"
           >
             <Menu className="w-5 h-5" />

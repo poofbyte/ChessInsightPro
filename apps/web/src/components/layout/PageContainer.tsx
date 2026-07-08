@@ -1,15 +1,16 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-export function PageContainer({
+export const PageContainer = React.memo(({
   children,
-  className = "",
+  className,
 }: {
   children: React.ReactNode;
   className?: string;
-}) {
+}) => {
   return (
-    <div className={`flex flex-col flex-1 w-full min-h-0 overflow-y-auto bg-background ${className}`}>
+    <div className={cn("flex flex-col flex-1 w-full min-h-0 overflow-y-auto bg-background", className)}>
       {children}
     </div>
   );
-}
+});

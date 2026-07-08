@@ -8,6 +8,11 @@ import { playMoveSound, useAuthStore } from "../../store";
 import { Dumbbell, RefreshCw, Brain, MessageSquare } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
 import NavigationGuard from "@/components/NavigationGuard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ContentContainer } from "@/components/layout/ContentContainer";
+import { ChessboardContainer } from "@/components/layout/ChessboardContainer";
+import { PanelStack } from "@/components/layout/PanelStack";
+import { Panel } from "@/components/layout/Panel";
 
 const SCENARIOS = [
   { id: "middlegame-1", label: "Open Position Battle", fen: "r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9", desc: "Practice dynamic middlegame play in a sharp position." },
@@ -74,9 +79,9 @@ export default function PracticePage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+    <PageContainer>
       <NavigationGuard when={phase === "playing"} title="Practice Session" message="Your practice session progress will be lost if you leave.">
-      <div className="max-w-5xl mx-auto">
+      <ContentContainer maxWidth="max-w-5xl">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
             <Dumbbell className="w-6 h-6 text-teal-400" />
@@ -135,20 +140,20 @@ export default function PracticePage() {
         )}
 
         {phase === "playing" && chess && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7 flex flex-col gap-4">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-border">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+            <div className="w-full xl:w-[55%] flex flex-col gap-4">
+              <ChessboardContainer className="rounded-3xl overflow-hidden border border-border shadow-2xl bg-black/10 dark:bg-slate-950">
                 <BoardView fen={fen} orientation={orientation} onPieceDrop={handleMove} />
-              </div>
+              </ChessboardContainer>
               {status && (
                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 font-bold text-sm text-center">
                   {status}
                 </div>
               )}
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            <PanelStack className="w-full xl:w-[45%]">
               {/* Coach tip */}
-              <div className="p-5 bg-card border border-border rounded-2xl">
+              <Panel>
                 <div className="flex items-center gap-2 text-teal-400 font-bold text-sm mb-3">
                   <Brain className="w-4 h-4" /> Thinking Tip
                 </div>
@@ -156,9 +161,9 @@ export default function PracticePage() {
                   <MessageSquare className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
                   {tip}
                 </div>
-              </div>
+              </Panel>
               {/* Game info */}
-              <div className="p-4 bg-card border border-border rounded-xl space-y-2 text-sm">
+              <Panel className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Turn</span>
                   <span className="font-bold text-foreground">{chess.turn() === "w" ? "White" : "Black"}</span>
@@ -170,16 +175,16 @@ export default function PracticePage() {
                 {chess.isCheck() && (
                   <div className="text-orange-400 font-bold">⚠ In Check!</div>
                 )}
-              </div>
+              </Panel>
               <button onClick={() => setPhase("setup")} className="flex items-center justify-center gap-2 p-3 bg-teal-500 text-white hover:bg-teal-600 rounded-xl text-sm font-bold transition shadow shadow-teal-500/20">
                 <RefreshCw className="w-4 h-4" /> New Practice
               </button>
-            </div>
+            </PanelStack>
           </div>
         )}
-      </div>
+      </ContentContainer>
       </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="practice" />
-    </div>
+    </PageContainer>
   );
 }

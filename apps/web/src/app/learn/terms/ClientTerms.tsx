@@ -80,7 +80,7 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
               <div key={i} className="p-6 bg-card border border-border rounded-2xl hover:border-violet-500/30 transition">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-bold text-violet-400">{t.term}</h3>
-                  <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-[10px] font-bold text-violet-300 uppercase tracking-widest">
+                  <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-bold text-violet-300 uppercase tracking-widest">
                     {t.category}
                   </span>
                 </div>
