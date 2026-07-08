@@ -10,6 +10,7 @@ import { initializeProfile } from "@chessinsight/player-profile";
 import { PUZZLE_DB, PUZZLE_THEMES, LocalPuzzle, getPuzzlesByTheme } from "../../../lib/puzzle-db";
 import { Grid3X3, Filter, ChevronRight, CheckCircle, RotateCcw } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 export default function CustomPuzzlesPage() {
   const { accessToken } = useAuthStore();
@@ -266,6 +267,7 @@ export default function CustomPuzzlesPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={status !== "idle" && !!activePuzzle} title="Puzzle in Progress" message="Your puzzle progress will be lost if you leave.">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-purple-500/15 border border-purple-500/20">
@@ -461,6 +463,7 @@ export default function CustomPuzzlesPage() {
           </div>
         </div>
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="custom puzzles" />
     </div>
   );

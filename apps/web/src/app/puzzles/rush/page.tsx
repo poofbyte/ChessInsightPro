@@ -10,6 +10,7 @@ import { initializeProfile } from "@chessinsight/player-profile";
 import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Zap, Timer, X, CheckCircle, Trophy } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const DURATION = 180; // 3 minutes
 const MAX_STRIKES = 3;
@@ -241,6 +242,7 @@ export default function PuzzleRushPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={phase === "playing"} title="Puzzle Rush" message="Your rush progress will be lost if you leave.">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-orange-500/15 border border-orange-500/20">
@@ -416,6 +418,7 @@ export default function PuzzleRushPage() {
           </div>
         )}
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Puzzle Rush" />
     </div>
   );

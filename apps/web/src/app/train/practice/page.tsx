@@ -7,6 +7,7 @@ import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound, useAuthStore } from "../../store";
 import { Dumbbell, RefreshCw, Brain, MessageSquare } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const SCENARIOS = [
   { id: "middlegame-1", label: "Open Position Battle", fen: "r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 9", desc: "Practice dynamic middlegame play in a sharp position." },
@@ -74,6 +75,7 @@ export default function PracticePage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={phase === "playing"} title="Practice Session" message="Your practice session progress will be lost if you leave.">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
@@ -176,6 +178,7 @@ export default function PracticePage() {
           </div>
         )}
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="practice" />
     </div>
   );

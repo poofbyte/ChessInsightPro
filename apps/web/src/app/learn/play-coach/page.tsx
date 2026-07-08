@@ -7,6 +7,7 @@ import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound, useChessStore, useAuthStore } from "../../store";
 import { Bot, Brain, RefreshCw, MessageSquare } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const BOT_LEVELS = [
   { id: "beginner",    label: "Beginner",    elo: 600,  delay: 2000, depth: 1, description: "Perfect for learning the rules." },
@@ -128,6 +129,7 @@ export default function PlayCoachPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={phase === "playing"} title="Game in Progress" message="Your game against the coach will be lost if you leave.">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-blue-500/15 border border-blue-500/20">
@@ -225,6 +227,7 @@ export default function PlayCoachPage() {
           </div>
         )}
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Play & Coach" />
     </div>
   );

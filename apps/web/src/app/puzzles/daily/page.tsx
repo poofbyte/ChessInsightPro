@@ -9,6 +9,7 @@ import { playMoveSound, useAuthStore } from "../../store";
 import { db } from "../../db";
 import { initializeProfile } from "@chessinsight/player-profile";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 interface DailyPuzzle {
   id: string;
@@ -318,6 +319,7 @@ export default function DailyPuzzlePage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={status !== "idle" && !!chess} title="Daily Puzzle" message="Your puzzle progress will be lost if you leave.">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -492,6 +494,7 @@ export default function DailyPuzzlePage() {
           </div>
         )}
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="daily puzzle" />
     </div>
   );

@@ -26,6 +26,7 @@ import {
 import { BoardView } from "../components/BoardView";
 import { useAuthStore } from "./store";
 import SignUpPrompt from "../components/SignUpPrompt";
+import NavigationGuard from "../components/NavigationGuard";
 import { PageContainer } from "../components/layout/PageContainer";
 import { ContentContainer } from "../components/layout/ContentContainer";
 
@@ -240,6 +241,7 @@ export default function RootReviewPage() {
 
   return (
     <PageContainer>
+      <NavigationGuard when={!!game || isAnalyzing} title="Game Review in Progress" message="Your analysis progress will be lost if you leave this page.">
       <ContentContainer maxWidth="max-w-[1600px]" className="space-y-6">
         
         {game ? (
@@ -499,6 +501,7 @@ export default function RootReviewPage() {
           </div>
         )}
       </ContentContainer>
+      </NavigationGuard>
 
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="game reviews" />
     </PageContainer>

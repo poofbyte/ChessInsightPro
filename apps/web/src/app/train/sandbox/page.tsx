@@ -7,6 +7,7 @@ import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound, useAuthStore } from "../../store";
 import { BarChart2, RefreshCw, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -103,6 +104,7 @@ export default function SandboxPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={fen !== INITIAL_FEN} title="Analysis Board" message="Your analysis position will be lost if you leave.">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-teal-500/15 border border-teal-500/20">
@@ -188,6 +190,7 @@ export default function SandboxPage() {
           </div>
         </div>
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="analysis board" />
     </div>
   );

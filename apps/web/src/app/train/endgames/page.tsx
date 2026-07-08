@@ -7,6 +7,7 @@ import { Chess } from "@chessinsight/chess-core";
 import { playMoveSound, useAuthStore } from "../../store";
 import { Trophy, ChevronRight, RotateCcw, CheckCircle, BookOpen } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const ENDGAMES = [
   {
@@ -132,6 +133,7 @@ export default function EndgamesPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={!!selected} title="Endgame Study" message="Your endgame study progress will be lost if you leave.">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-yellow-500/15 border border-yellow-500/20">
@@ -203,6 +205,7 @@ export default function EndgamesPage() {
           </div>
         </div>
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="endgames" />
     </div>
   );

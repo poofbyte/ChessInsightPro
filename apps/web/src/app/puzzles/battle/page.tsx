@@ -10,6 +10,7 @@ import { initializeProfile } from "@chessinsight/player-profile";
 import { getRandomPuzzle, LocalPuzzle } from "../../../lib/puzzle-db";
 import { Swords, Shield, Trophy, Zap } from "lucide-react";
 import SignUpPrompt from "@/components/SignUpPrompt";
+import NavigationGuard from "@/components/NavigationGuard";
 
 const BATTLE_DURATION = 180;
 
@@ -251,6 +252,7 @@ export default function PuzzleBattlePage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+      <NavigationGuard when={phase === "playing"} title="Puzzle Battle in Progress" message="Your battle progress will be lost if you leave.">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/20">
@@ -418,6 +420,7 @@ export default function PuzzleBattlePage() {
           </div>
         )}
       </div>
+      </NavigationGuard>
       <SignUpPrompt open={showSignUp} onClose={() => setShowSignUp(false)} feature="Puzzle Battle" />
     </div>
   );
