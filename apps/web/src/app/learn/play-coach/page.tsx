@@ -61,7 +61,10 @@ export default function PlayCoachPage() {
       const baseAnalysis = `The player played ${san}. Provide a quick tip for the resulting position.`;
       const res = await fetch("/api/narrative/enrich", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
+        },
         body: JSON.stringify({ baseAnalysis, context: fen }),
       });
       if (res.ok) {
