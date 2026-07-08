@@ -108,6 +108,14 @@ export default function PricingPage() {
     }
   };
 
+  useEffect(() => {
+    const handler = (event: ErrorEvent) => {
+      console.error("[Pricing] Caught error:", event.message, event.error || event);
+    };
+    window.addEventListener("error", handler);
+    return () => window.removeEventListener("error", handler);
+  }, []);
+
   return (
     <PageContainer className="relative">
       <ContentContainer maxWidth="max-w-6xl" className="space-y-12">
@@ -156,7 +164,7 @@ export default function PricingPage() {
                   />
                 )}
                 <ul className="space-y-4 mb-8 flex-1">
-                  {plan.features.map((feat: any, i: number) => (
+                  {(plan.features || []).map((feat: any, i: number) => (
                     <li key={i} className={`flex items-center gap-3 text-sm font-semibold ${textMuted}`}>
                       <Check className={`w-5 h-5 ${checkColor} shrink-0`} /> {feat.text}
                     </li>
