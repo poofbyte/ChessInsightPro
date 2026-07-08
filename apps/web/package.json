@@ -27,6 +27,7 @@
     "@chessinsight/weakness-detector": "workspace:*",
     "@core/auth": "workspace:*",
     "@core/config": "workspace:*",
+    "@core/content": "workspace:*",
     "@core/db-sync": "workspace:*",
     "@core/email": "workspace:*",
     "@core/intelligence": "workspace:*",
@@ -45,8 +46,8 @@
     "react-quill-new": "^3.8.3",
     "recharts": "^2.15.4",
     "uuid": "^11.1.1",
-    "zustand": "^5.0.3",
-    "@core/content": "workspace:*"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -32,7 +32,7 @@ export default function ContactForm() {
 
     const parsed = contactFormSchema.safeParse({ name, email, subject, category, message });
     if (!parsed.success) {
-      const errors = parsed.error.flatten().fieldErrors;
+      const errors = parsed.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       const flattened: Record<string, string> = {};
       for (const [key, vals] of Object.entries(errors)) {
         if (vals && vals.length > 0) flattened[key] = vals[0];
