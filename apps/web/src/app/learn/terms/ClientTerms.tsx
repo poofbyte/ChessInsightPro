@@ -44,14 +44,14 @@ export function ClientTerms({ terms }: { terms: Term[] }) {
 
         {/* Controls */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="flex items-center flex-1 gap-2 px-4 py-2.5 bg-card border border-border rounded-2xl focus-within:border-violet-500 transition-colors">
+            <Search className="w-5 h-5 shrink-0 text-slate-400" />
             <input
               type="text"
               placeholder="Search terms..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-2xl text-sm focus:outline-none focus:border-violet-500 transition-colors"
+              className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-slate-400"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
