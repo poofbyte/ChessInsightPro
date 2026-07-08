@@ -1,5 +1,6 @@
 export interface DbClient {
   execute(stmt: any): Promise<any>;
+  batch(statements: any[]): Promise<any>;
 }
 
 export interface ContentEntry {
@@ -66,5 +67,9 @@ export class ContentRepository {
             VALUES (?, ?, ?, ?, ?)`,
       args: [revision.id, revision.entry_id, revision.data, revision.change_summary, revision.author_id],
     });
+  }
+
+  async batch(statements: { sql: string; args: any[] }[]): Promise<any> {
+    return this.db.batch(statements);
   }
 }

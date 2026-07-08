@@ -64,4 +64,47 @@ export class ContentService {
     await this.repo.createRevision(revision);
     await this.repo.updateEntry(entry.id, "published", revisionId);
   }
+
+  async publishMultiple(
+    items: { slug: string; contentType: string; data: any; authorId?: string | null; changeSummary?: string | null }[]
+  ): Promise<void> {
+    if (items.length === 0) return;
+
+    const statements: { sql: string; args: any[] }[] = [];
+
+    for (const item of items) {
+      let entry = await this.repo.getEntryBySlug(item.slug);
+
+      if (!entry) {
+        const entryId = crypto.randomUUID();
+        statements.push({
+          sql: `INSERT INTO content_entries (id, slug, content_type, status, published_version_id) 
+                VALUES (?, ?, ?, ?, ?) ON CONFLICT(slug) DO NOTHING`,
+          args: [entryId, item.slug, item.contentType, "published", null],
+        });
+        entry = {
+          id: entryId,
+          slug: item.slug,
+          content_type: item.contentType,
+          status: "published",
+          published_version_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+      }
+
+      const revisionId = crypto.randomUUID();
+      statements.push({
+        sql: `INSERT INTO content_revisions (id, entry_id, data, change_summary, author_id) 
+              VALUES (?, ?, ?, ?, ?)`,
+        args: [revisionId, entry.id, JSON.stringify(item.data), item.changeSummary ?? null, item.authorId ?? null],
+      });
+      statements.push({
+        sql: `UPDATE content_entries SET status = ?, published_version_id = ?, updated_at = datetime('now') WHERE id = ?`,
+        args: ["published", revisionId, entry.id],
+      });
+    }
+
+    await this.repo.batch(statements);
+  }
 }

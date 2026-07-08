@@ -30,8 +30,8 @@ export const BaseEventSchema = z.object({
   version: z.number(),
   priority: EventPrioritySchema,
   metadata: TelemetryMetadataSchema,
-  properties: z.record(z.any()),
-  context: z.record(z.any()).optional(),
+  properties: z.record(z.string(), z.any()),
+  context: z.record(z.string(), z.any()).optional(),
 });
 
 export type TelemetryMetadata = z.infer<typeof TelemetryMetadataSchema>;

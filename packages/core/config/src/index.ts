@@ -69,3 +69,40 @@ export async function setConfig(db: any, key: string, value: any, adminUserId: s
   configCache[key] = value;
   return value;
 }
+
+export async function setConfigBatch(db: any, configs: { key: string; value: any; adminUserId: string }[]) {
+  if (configs.length === 0) return;
+
+  const statements: { sql: string; args: any[] }[] = [];
+
+  for (const { key, value, adminUserId } of configs) {
+    const strValue = typeof value === "object" ? JSON.stringify(value) : String(value);
+
+    statements.push({
+      sql: `INSERT INTO system_config (key, value, updated_by) 
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET 
+              value = excluded.value, 
+              updated_by = excluded.updated_by, 
+              updated_at = datetime('now')`,
+      args: [key, strValue, adminUserId],
+    });
+
+    statements.push({
+      sql: `INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, details)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [
+        globalThis.crypto.randomUUID(),
+        adminUserId,
+        "UPDATE_CONFIG",
+        "system_config",
+        key,
+        JSON.stringify({ newValue: value }),
+      ],
+    });
+
+    configCache[key] = value;
+  }
+
+  await db.batch(statements);
+}
