@@ -72,7 +72,7 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
                 </div>
                 <div className="flex items-center gap-2">
                   {lesson.slides.map((_, i) => (
-                    <div key={i} className={`w-2.5 h-2.5 rounded-full transition ${i === slideIdx ? "bg-teal-400 scale-125" : i < slideIdx ? "bg-teal-500/50" : "bg-slate-700"}`} />
+                    <div key={i} className={`w-2.5 h-2.5 rounded-full transition ${i === slideIdx ? "bg-teal-400 scale-125" : i < slideIdx ? "bg-teal-500/50" : "bg-slate-300 dark:bg-slate-700"}`} />
                   ))}
                 </div>
               </div>
@@ -81,7 +81,7 @@ export function ClientLessons({ lessons }: { lessons: Lesson[] }) {
               <div className="flex-1 flex flex-col lg:flex-row min-h-0">
                 <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center border-r border-border">
                   <h3 className="text-2xl font-black mb-4">{slide.title}</h3>
-                  <p className="text-slate-300 leading-relaxed text-lg">{slide.body}</p>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">{slide.body}</p>
                 </div>
                 <div className="w-full lg:w-1/2 p-6 flex items-center justify-center bg-black/40">
                   <div className="w-full aspect-square border border-border rounded-xl overflow-hidden shadow-2xl">
